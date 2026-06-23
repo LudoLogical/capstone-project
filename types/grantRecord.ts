@@ -70,6 +70,11 @@ type GrantRecord = {
   grant: Grant;
 
   /**
+   *
+   */
+  alignmentAnalysis: string;
+
+  /**
    * The stage of the Grant lifecycle that the associated Initiative is
    * currently in with the associated Grant.
    */

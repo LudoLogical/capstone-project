@@ -134,6 +134,11 @@ export type DocumentDatum = BaseInitiativeDatum & {
  *
  */
 export type ChatInferenceDatum = BaseInitiativeDatum & {
+  /**
+   *
+   */
+  responseID: string;
+
   // TODO: Waiting on evaluate method(s)
 };
 

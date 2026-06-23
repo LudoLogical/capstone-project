@@ -2,6 +2,12 @@ import { AuthoritativeDatum, InitiativeDatum } from "./data";
 import { Location, Region } from "./geo";
 
 /**
+ * Defined by \@google/gen-ai; see
+ * https://googleapis.github.io/js-genai/release_docs/types/types.ContentListUnion.html
+ */
+type ContentListUnion = undefined;
+
+/**
  *
  */
 export type DatumAnalysis<T> = {
@@ -61,9 +67,36 @@ export type GrantWritingAnalysis = {
   initiativeData: DatumAnalysis<InitiativeDatum>[];
 };
 
+export type GrantReportingConversation = {
+  /**
+   *
+   */
+  conversation: ContentListUnion;
+
+  /**
+   *
+   */
+  suggestions: string[][];
+
+  /**
+   *
+   */
+  aiMarkedAnswered: boolean;
+
+  /**
+   *
+   */
+  userMarkedAnswered: boolean;
+};
+
 /**
  *
  */
 export type GrantReportingAnalysis = GrantWritingAnalysis & {
+  /**
+   *
+   */
+  conversations: GrantReportingConversation[];
+
   // TODO: Waiting on sequence diagram from Priyal
 };
