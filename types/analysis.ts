@@ -19,7 +19,7 @@ export type DatumAnalysis<T> = {
   /**
    *
    */
-  rationale: string | null; // NTS: null if not added by AI
+  rationale: string | null; // null iff not added by AI
 
   /**
    *

@@ -11,6 +11,9 @@ export type BaseDatum = {
    *
    */
   source: string;
+  // Current plan: support one or more formal citation styles for
+  // AuthoritativeDatum and NSRServiceDatum, but only an informal
+  // reference to the origin of the claim(s) for subtypes of BaseInitiativeDatum
 
   /**
    *
@@ -78,11 +81,6 @@ export type NSRServiceDatum = BaseDatum & {
  *
  */
 export type BaseInitiativeDatum = BaseDatum & {
-  /**
-   *
-   */
-  content: string;
-
   /**
    *
    */

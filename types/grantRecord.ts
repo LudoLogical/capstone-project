@@ -26,7 +26,7 @@ export enum GrantLifecycleStage {
   /**
    * The Initiative has confirmed that they have applied for the Grant, but has
    * yet to confirm whether they were awarded the Grant. (It's possible that
-   * the grantor has yet to make or share their final decision.)
+   * the Grantor has yet to make or share their final decision.)
    */
   Applied = "APPLIED",
 
@@ -70,7 +70,8 @@ type GrantRecord = {
   grant: Grant;
 
   /**
-   *
+   * An AI-generated analysis of the alignment between the User and Grant
+   * associated with this GrantRecord.
    */
   alignmentAnalysis: string;
 
@@ -84,6 +85,9 @@ type GrantRecord = {
    * The dates and times (in UTC) at which the Initiative associated with this
    * GrantRecord expressed interest in collaborating with other Initiatives on
    * the associated Grant.
+   *
+   * @deprecated
+   * *The feature associated with this property is currently under review.*
    */
   collabInterestExpressions: Date[];
 

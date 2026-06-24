@@ -4,10 +4,18 @@ import { Region } from "./geo";
 import GrantRecord from "./grantRecord";
 
 /**
- *
+ * An entity that serves a public or social mission and pursues Grants to
+ * acquire at least some of its support. Must be either a legally incorporated
+ * non-profit organization or a community project that is fiscally sponsored by NSR.
  */
 type Initiative = {
   id: string;
+
+  /**
+   * The email address at which this Initiative should be contacted regarding
+   * shared interest in collaborating on Grants.
+   */
+  contactEmail: string;
 
   /**
    * The set of issues that are related to the work done by this Initiative.
