@@ -59,6 +59,25 @@ export enum GrantLifecycleStage {
 }
 
 /**
+ * A record of a single instance in which one Initiative contacted
+ * another Initiative to express interest in collaborating with them
+ * on a specific Grant.
+ */
+export type CollabContactRecord = {
+  /**
+   * The unique ID of the Initiative that received the expression of interest
+   * documented by this CollabContactRecord.
+   */
+  recipientID: string;
+
+  /**
+   * The date and time (in UTC) at which the expression of interest documented
+   * by this CollabContactRecord was sent.
+   */
+  timestamp: Date;
+};
+
+/**
  * A record of a single Initiative's interactions with a single Grant.
  */
 type GrantRecord = {
@@ -83,16 +102,6 @@ type GrantRecord = {
    * currently in with the associated Grant.
    */
   stage: GrantLifecycleStage;
-
-  /**
-   * The dates and times (in UTC) at which the Initiative associated with this
-   * GrantRecord expressed interest in collaborating with other Initiatives on
-   * the associated Grant.
-   *
-   * @deprecated
-   * *The feature associated with this property is currently under review.*
-   */
-  collabInterestExpressions: Date[];
 
   /**
    * The grant writing analyses that the associated Initiative has started
