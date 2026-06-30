@@ -1,5 +1,5 @@
 import { Issue } from "./constants";
-import { DocumentDatum } from "./data";
+import { InitiativeSource } from "./data";
 import { Region } from "./geo";
 import GrantRecord from "./grantRecord";
 
@@ -9,6 +9,9 @@ import GrantRecord from "./grantRecord";
  * non-profit organization or a community project that is fiscally sponsored by NSR.
  */
 type Initiative = {
+  /**
+   * The unique ID of this Initiative.
+   */
   id: string;
 
   /**
@@ -43,10 +46,10 @@ type Initiative = {
   averageAnnualBudget: number;
 
   /**
-   * The documents that this Initiative has uploaded to support
-   * one or more analyses.
+   * The InitiativeSources that this Initiative has supplied to support
+   * GrantAnalysis instance(s).
    */
-  documents: DocumentDatum[];
+  sources: InitiativeSource[];
 };
 
 export default Initiative;

@@ -1,4 +1,4 @@
-import { GrantWritingAnalysis, GrantReportingAnalysis } from "./analysis";
+import { BaseGrantAnalysis, GrantReportingAnalysis } from "./analysis";
 import Grant from "./grant";
 
 /**
@@ -62,6 +62,9 @@ export enum GrantLifecycleStage {
  * A record of a single Initiative's interactions with a single Grant.
  */
 type GrantRecord = {
+  /**
+   * The unique ID of this GrantRecord.
+   */
   id: string;
 
   /**
@@ -95,7 +98,7 @@ type GrantRecord = {
    * The grant writing analyses that the associated Initiative has started
    * for the associated Grant.
    */
-  writingAnalyses: GrantWritingAnalysis[];
+  writingAnalyses: BaseGrantAnalysis[];
 
   /**
    * The grant reporting analyses that the associated Initiative has started

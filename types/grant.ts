@@ -16,6 +16,9 @@ import Initiative from "./initiative";
  * award is used to support, and/or producing impact reports for the Grantor.
  */
 type Grant = {
+  /**
+   * The unique ID of this Grant.
+   */
   id: string;
 
   /**
@@ -39,7 +42,7 @@ type Grant = {
    * Stored as an array instead of a Set for consistency with the
    * Initiative type.
    */
-  issueIDs: Issue[];
+  issues: Issue[];
 
   /**
    * The geographic area(s) within which work supported by this Grant
@@ -172,8 +175,9 @@ type Grant = {
     awardTerm: number;
 
     /**
-     * The date and time (in UTC) by which the awardee(s) of this Grant must
-     * submit their first impact report(s), or null if no reporting is required.
+     * The date and time (in UTC) by which the awardee(s) of this Grant
+     * must submit their first impact report(s), or `null` if no reporting
+     * is required.
      */
     firstReportDeadline: Date;
 
