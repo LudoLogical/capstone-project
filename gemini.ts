@@ -1,9 +1,4 @@
-import {
-  GoogleGenAI,
-  Type,
-  ThinkingLevel,
-  ContentListUnion,
-} from "@google/genai";
+import { GoogleGenAI, ThinkingLevel, ContentListUnion } from "@google/genai";
 
 function getAI() {
   return new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });

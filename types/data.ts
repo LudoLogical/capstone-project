@@ -1,4 +1,19 @@
 /**
+ * @module data
+ * This module defines two families of types: `Source`s and `Datum` instances.
+ *
+ * A `Datum` is a single, *specific* piece of information.
+ * @example In Census Tract 123, 12% of residents are below the poverty line.
+ * @example In 2025, NSR spent a total of $10,000 on renewable energy projects.
+ *
+ * A `Source` is a database, document, or other point of origin from which a
+ * `Datum` might be *extracted*. `Source`s typically contain many possible
+ * `Datum` instances, but that is not always the case.
+ * @example The United States Census
+ * @example NSR's Annual Financial Report for Fiscal Year 2025
+ */
+
+/**
  * An abstract type that defines the properties shared by all Datum variants.
  */
 export type BaseDatum = {

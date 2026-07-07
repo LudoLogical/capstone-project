@@ -22,6 +22,11 @@ type Grant = {
   id: string;
 
   /**
+   * The name of this Grant.
+   */
+  name: string;
+
+  /**
    * The URL of the original listing for this Grant.
    */
   link: string;
@@ -84,7 +89,7 @@ type Grant = {
      * The specific criteria that quality an Initiative to participate in the
      * application process for this Grant.
      *
-     * Every requirement in this object must appear in and be extracted directly
+     * Every requirement in this array must appear in and be extracted directly
      * from the original listing for this Grant.
      */
     eligibility: string[];
@@ -93,7 +98,7 @@ type Grant = {
      * The tasks, materials, commitments, steps, and/or phases that comprise
      * the application process for this Grant.
      *
-     * Every requirement in this object must appear in and be extracted directly
+     * Every requirement in this array must appear in and be extracted directly
      * from the original listing for this Grant.
      */
     application: string[];
@@ -102,7 +107,7 @@ type Grant = {
      * The responsibilities that the recipient(s) of this Grant must fulfill.
      * Does not include reports.
      *
-     * Every requirement in this object must appear in and be extracted directly
+     * Every requirement in this array must appear in and be extracted directly
      * from the original listing for this Grant.
      */
     awardee: string[];
@@ -111,10 +116,30 @@ type Grant = {
      * The contents, structure, and frequency of the report(s) that the
      * recipient(s) of this Grant must produce for its Grantor.
      *
-     * Every requirement in this object must appear in and be extracted directly
-     * from the original listing for this Grant.
+     * Every requirement in this object must appear in and be extracted
+     * directly from the original listing for this Grant.
      */
-    reporting: string[];
+    reporting: {
+      /**
+       * The contents, structure, and frequency of the report(s) that the
+       * recipient(s) of this Grant must produce for its Grantor.
+       *
+       * Every requirement in this array must (1) appear in and be extracted
+       * directly from the original listing for this Grant and (2) be phrased
+       * as an affirmative statement directed at the Grant recipient(s).
+       */
+      asStatements: string[];
+
+      /**
+       * The contents, structure, and frequency of the report(s) that the
+       * recipient(s) of this Grant must produce for its Grantor.
+       *
+       * Every requirement in this array must (1) appear in and be extracted
+       * directly from the original listing for this Grant and (2) be phrased
+       * as a question asked of the Grant recipient(s).
+       */
+      asQuestions: string[];
+    };
   };
 
   /**
