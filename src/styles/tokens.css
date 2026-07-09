@@ -1,0 +1,96 @@
+:root {
+  /* Fonts */
+  --font-ui: "Hanken Grotesk", sans-serif;
+  --font-serif: "Source Serif 4", serif;
+
+  /* Surfaces */
+  --color-bg: #f5ede4;
+  --color-surface: #ffffff;
+  --color-surface-alt: #fbf4ec;
+  --color-surface-alt-2: #fdfbf8;
+  --color-header-bg: rgba(251, 246, 240, 0.9);
+
+  /* Borders */
+  --color-border: #eee3d8;
+  --color-border-strong: #e0d2c4;
+  --color-border-soft: #e9dfd4;
+  --color-divider: #f3eae0;
+  --color-divider-2: #efe6dc;
+
+  /* Text */
+  --color-text: #2b2422;
+  --color-text-body: #3d342e;
+  --color-text-secondary: #5c5048;
+  --color-text-muted: #6b5f56;
+  --color-text-faint: #9a8f84;
+
+  /* Accent (brand orange) */
+  --color-accent: #e8633f;
+  --color-accent-ink: #c8482a;
+  --color-accent-ink-2: #7a4a38;
+  --color-accent-tint: #fdede7;
+  --color-accent-tint-border: #f6d2c5;
+  --color-accent-tint-2: #f8e6d8;
+  --color-accent-gradient: linear-gradient(90deg, #f2a93b, #e8633f);
+  --color-accent-radial: radial-gradient(
+    circle at 50% 78%,
+    #f2a93b,
+    #e8633f 72%
+  );
+  --color-destructive: #b5572f;
+
+  /* Success / green */
+  --color-success-ink: #2f7a4e;
+  --color-success-ink-2: #3e8e5a;
+  --color-success-bg: #eaf5ee;
+  --color-success-bg-2: #f4faf6;
+  --color-success-border: #cce5d6;
+  --color-success-border-2: #d7ebdd;
+
+  /* Warning / amber */
+  --color-warning-ink: #9a6a1e;
+  --color-warning-bg: #fbefd9;
+  --color-warning-bg-2: #fbf6ef;
+  --color-warning-border: #efd9ae;
+  --color-warning-border-2: #efe0cd;
+
+  /* Info / blue */
+  --color-info-ink: #2f6f8f;
+  --color-info-bg: #e9f1f5;
+  --color-info-bg-2: #f4fafc;
+  --color-info-border: #dce9ef;
+  --color-info-border-2: #cfe0e8;
+
+  /* Neutral / declined */
+  --color-neutral-ink: #9a8c80;
+  --color-neutral-bg: #f1ece6;
+
+  /* Focus ring */
+  --color-focus: #1e5c7a;
+
+  /* Radii */
+  --radius-xs: 6px;
+  --radius-sm: 9px;
+  --radius-md: 11px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-2xl: 20px;
+  --radius-pill: 999px;
+
+  /* Shadows */
+  --shadow-soft: 0 10px 26px rgba(232, 99, 63, 0.12);
+  --shadow-float: 0 12px 30px rgba(43, 36, 34, 0.1);
+  --shadow-toast: 0 8px 24px rgba(43, 36, 34, 0.3);
+  --shadow-card: 0 2px 8px rgba(43, 36, 34, 0.06);
+  --shadow-cta: 0 8px 22px rgba(232, 99, 63, 0.28);
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 32px;
+  --space-8: 40px;
+}
