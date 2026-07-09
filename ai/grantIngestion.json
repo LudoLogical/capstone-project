@@ -1,0 +1,140 @@
+{
+  "type": "OBJECT",
+  "properties": {
+    "details": {
+      "type": "OBJECT",
+      "description": "If the webpage that you are investigating is a listing for a single, specific grant opportunity, populate this object with details about it. However, if the webpage is NOT not a listing for a single, specific grant opportunity, simply omit this object.",
+      "properties": {
+        "name": {
+          "type": "STRING",
+          "description": "The name of the grant opportunity."
+        },
+        "purpose": {
+          "type": "STRING",
+          "description": "A short summary of the purpose of the grant opportunity. Must be 2-4 sentences."
+        },
+        "issues": {
+          "type": "ARRAY",
+          "items": {
+            "type": "STRING"
+          },
+          "description": "A comprehensive list of the (one or more) challenges that the grant can be used to address."
+        },
+        "targetRegions": {
+          "type": "ARRAY",
+          "items": {
+            "type": "STRING"
+          },
+          "description": "A comprehensive list of the (one or more) geographic areas targeted by the grant opportunity."
+        },
+        "awardTerm": {
+          "type": "INTEGER",
+          "description": "The total amount of time (in months) over which the funding and/or benefits associated with the grant is/are to be distributed and used."
+        },
+        "totalMonetaryAward": {
+          "type": "NUMBER",
+          "description": "The total amount of money (in USD) that the/each awardee would receive. If the grant award does not include any money, write 0."
+        },
+        "annualMonetaryAward": {
+          "type": "NUMBER",
+          "description": "The amount of money (in USD) that the/each awardee would receive each year. If the award term is less than 12 months (i.e., 1 year), write the totalMonetaryAward. If the grant award does not include any money, write 0."
+        },
+        "nonMonetaryBenefits": {
+          "type": "ARRAY",
+          "items": {
+            "type": "STRING"
+          },
+          "description": "A comprehensive list of the non-monetary benefits that the/each awardee would receive. If the grant award does not include any non-monetary benefits, supply an empty list."
+        },
+        "eligibilityRequirements": {
+          "type": "ARRAY",
+          "items": {
+            "type": "STRING"
+          },
+          "description": "A comprehensive list of the (one or more) criteria that organizations must satisfy to be eligible for the grant opportunity."
+        },
+        "applicationRequirements": {
+          "type": "ARRAY",
+          "items": {
+            "type": "STRING"
+          },
+          "description": "A comprehensive list of the (one or more) things that organizations must do to apply for the grant opportunity."
+        },
+        "awardeeRequirements": {
+          "type": "ARRAY",
+          "items": {
+            "type": "STRING"
+          },
+          "description": "A comprehensive list of the responsibilities that the/each awardee must fulfill. If there is no mention of any such responsibilities, supply an empty list."
+        },
+        "reportingRequirements": {
+          "type": "OBJECT",
+          "properties": {
+            "asStatements": {
+              "type": "ARRAY",
+              "items": {
+                "type": "STRING"
+              },
+              "description": "A comprehensive list of the things that the/each awardee must report to the grantor. Phrase each requirement as a declarative bullet point (e.g., 'Number of people served each month'). If there is no mention of any such requirements, supply an empty list."
+            },
+            "asQuestions": {
+              "type": "ARRAY",
+              "items": {
+                "type": "STRING"
+              },
+              "description": "A comprehensive list of the things that the/each awardee must report to the grantor. Phrase each requirement as a question asked of the/each awardee (e.g., 'How many people did you serve each month?'). If there is no mention of any such requirements, supply an empty list."
+            }
+          },
+          "required": ["asStatements", "asQuestions"]
+        },
+        "applicationWindowStart": {
+          "type": "STRING",
+          "format": "date-time",
+          "nullable": true,
+          "description": "The date and time (in UTC) at which applications for the grant opportunity become open. Some grant opportunities accept applications as soon as they are published; if that is the case here, or if there is no mention of a start date, write null."
+        },
+        "applicationWindowEnd": {
+          "type": "STRING",
+          "format": "date-time",
+          "nullable": true,
+          "description": "The date and time (in UTC) at which applications for the current grant opportunity are no longer accepted. Some grant opportunities are always available; if that is the case here, write null."
+        },
+        "notificationDate": {
+          "type": "STRING",
+          "format": "date-time",
+          "nullable": true,
+          "description": "The date and time (in UTC) at or by which the grantor will notify applicants about whether they were selected to receive the grant. If there is no mention of such a date, write null."
+        },
+        "firstReportDeadline": {
+          "type": "STRING",
+          "format": "date-time",
+          "nullable": true,
+          "description": "The date and time (in UTC) at or by which the/each awardee must submit their first (or only) report to the grantor. If you cannot determine this using the information accessible to you, or if no reporting is required, write null."
+        },
+        "reportFrequency": {
+          "type": "INTEGER",
+          "description": "The length (in months) of the reporting period for this grant (i.e., the amount of time between each report deadline). If no reporting is required, write -1. If only one report is required, or if you cannot determine this value using the information available to you, write 0."
+        }
+      },
+      "required": [
+        "name",
+        "purpose",
+        "issues",
+        "targetRegions",
+        "awardTerm",
+        "totalMonetaryAward",
+        "annualMonetaryAward",
+        "nonMonetaryBenefits",
+        "eligibilityRequirements",
+        "applicationRequirements",
+        "awardeeRequirements",
+        "reportingRequirements",
+        "applicationWindowStart",
+        "applicationWindowEnd",
+        "notificationDate",
+        "firstReportDeadline",
+        "reportFrequency"
+      ]
+    }
+  }
+}

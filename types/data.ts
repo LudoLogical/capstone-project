@@ -13,6 +13,8 @@
  * @example NSR's Annual Financial Report for Fiscal Year 2025
  */
 
+import { Location } from "./geo";
+
 /**
  * An abstract type that defines the properties shared by all Datum variants.
  */
