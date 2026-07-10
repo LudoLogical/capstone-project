@@ -1,5 +1,3 @@
-const SCRAPE_DEPTH = 1;
-
 const PAGE_LINK_PATTERN =
   /<a\b[^>]*\bhref\s*=\s*["']\s*((?!(?:mailto:|tel:|javascript:))[^"'#]+)["']/gi;
 

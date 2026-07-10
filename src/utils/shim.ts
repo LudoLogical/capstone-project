@@ -1,4 +1,4 @@
-import { ingestGrant } from "./ai/gemini";
+import { ingestGrant } from "../ai/gemini";
 
 const testResults = await ingestGrant(
   "https://pittsburghfoundation.org/grant-opps",
