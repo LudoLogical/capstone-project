@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
-    "target": "ES2025",
+    "target": "esnext",
     "useDefineForClassFields": true,
-    "lib": ["ES2025"],
-    "module": "ESNext",
+    "lib": ["ESNext"],
+    "module": "esnext",
     "skipLibCheck": true,
 
     "moduleResolution": "bundler",
