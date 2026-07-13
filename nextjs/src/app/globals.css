@@ -1,26 +1,174 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* ---------------------------------------------------------------------------
+ * Design tokens — ported from vite/src/styles/tokens.css.
+ *
+ * Declaring them in @theme (rather than as plain CSS custom properties) makes
+ * them first-class Tailwind utilities: `bg-accent`, `text-ink-muted`,
+ * `shadow-cta`, `font-serif`, `animate-nc-rise`. That is what keeps the brand
+ * palette on a coherent design system without ever reaching for an arbitrary
+ * value.
+ *
+ * Radii and spacing are deliberately NOT tokenised — they snap to Tailwind's
+ * baseline scale instead (11px -> rounded-xl, 18px -> p-4, ...).
+ * ------------------------------------------------------------------------ */
+@theme {
+  /* Fonts — wired to the next/font/google variables set in layout.tsx */
+  --font-ui: var(--font-hanken-grotesk), sans-serif;
+  --font-serif: var(--font-source-serif), serif;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  /* Surfaces */
+  --color-canvas: #f5ede4;
+  --color-surface: #ffffff;
+  --color-surface-alt: #fbf4ec;
+  --color-surface-alt-2: #fdfbf8;
+  --color-header-bg: rgba(251, 246, 240, 0.9);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  /* Borders */
+  --color-border: #eee3d8;
+  --color-border-strong: #e0d2c4;
+  --color-border-soft: #e9dfd4;
+  --color-divider: #f3eae0;
+  --color-divider-2: #efe6dc;
+
+  /* Text ("ink" — the vocabulary the accent tokens already use) */
+  --color-ink: #2b2422;
+  --color-ink-body: #3d342e;
+  --color-ink-secondary: #5c5048;
+  --color-ink-muted: #6b5f56;
+  --color-ink-faint: #9a8f84;
+
+  /* Accent (brand orange) */
+  --color-accent: #e8633f;
+  --color-accent-warm: #f2a93b; /* gradient partner for --color-accent */
+  --color-accent-ink: #c8482a;
+  --color-accent-ink-2: #7a4a38;
+  --color-accent-tint: #fdede7;
+  --color-accent-tint-soft: #fff7f1; /* card-ai gradient start */
+  --color-accent-tint-border: #f6d2c5;
+  --color-accent-tint-2: #f8e6d8;
+
+  /* Success / green */
+  --color-success-ink: #2f7a4e;
+  --color-success-ink-2: #3e8e5a;
+  --color-success-bg: #eaf5ee;
+  --color-success-bg-2: #f4faf6;
+  --color-success-border: #cce5d6;
+  --color-success-border-2: #d7ebdd;
+
+  /* Warning / amber */
+  --color-warning-ink: #9a6a1e;
+  --color-warning-bg: #fbefd9;
+  --color-warning-bg-2: #fbf6ef;
+  --color-warning-border: #efd9ae;
+  --color-warning-border-2: #efe0cd;
+
+  /* Info / blue */
+  --color-info-ink: #2f6f8f;
+  --color-info-bg: #e9f1f5;
+  --color-info-bg-2: #f4fafc;
+  --color-info-border: #dce9ef;
+  --color-info-border-2: #cfe0e8;
+
+  /* Neutral / declined */
+  --color-neutral-ink: #9a8c80;
+  --color-neutral-bg: #f1ece6;
+
+  /* Focus ring (WCAG 2.4.7) */
+  --color-focus: #1e5c7a;
+
+  /* One-off hues that only ever appeared as raw hex in the source */
+  --color-glow: #fbefe3; /* avatar halo ring */
+  --color-selection: #f8d6c8; /* ::selection */
+  --color-checkbox: #cdbfb2; /* unchecked checkbox border */
+  --color-scrim: rgba(43, 36, 34, 0.35); /* modal backdrop */
+  --color-bar-average: #c4a882; /* RUEA bar: peer average */
+  --color-bar-max: #7a6548; /* RUEA bar: peer max */
+  --color-readiness-warn: #d4a017; /* account readiness, 75-89% */
+
+  /* Shadows */
+  --shadow-soft: 0 10px 26px rgba(232, 99, 63, 0.12);
+  --shadow-float: 0 12px 30px rgba(43, 36, 34, 0.1);
+  --shadow-toast: 0 8px 24px rgba(43, 36, 34, 0.3);
+  --shadow-cta: 0 8px 22px rgba(232, 99, 63, 0.28);
+
+  /* Animations */
+  --animate-nc-rise: ncRise 0.4s ease both;
+  --animate-nc-toast: ncToast 0.25s ease both;
+  --animate-nc-pop: ncToast 0.2s ease both;
+
+  @keyframes ncRise {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes ncToast {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ---------------------------------------------------------------------------
+ * Base layer — global rules with no utility equivalent, because they target
+ * pseudo-elements, a pseudo-class on *every* element, or a media query. All of
+ * it is load-bearing accessibility behaviour carried over verbatim from
+ * vite/src/styles/global.css. Everything else in that file is either handled
+ * by Preflight or expressed as utilities at the call site.
+ * ------------------------------------------------------------------------ */
+@layer base {
+  /* Preflight drops both of these; the original relied on them. */
+  button {
+    cursor: pointer;
+  }
+
+  a {
+    color: inherit;
+  }
+
+  button,
+  input,
+  textarea,
+  select {
+    font-family: inherit;
+    color: inherit;
+  }
+
+  ::selection {
+    background: var(--color-selection);
+  }
+
+  /* WCAG 1.4.3 — placeholder text contrast */
+  ::placeholder {
+    color: var(--color-ink-muted);
+    opacity: 1;
+  }
+
+  /* WCAG 2.4.7 — always-visible keyboard focus */
+  :focus-visible {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* WCAG 2.3.3 — respect reduced-motion */
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 }
