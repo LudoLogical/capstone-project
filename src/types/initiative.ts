@@ -7,7 +7,7 @@ import GrantRecord from "./grantRecord";
  * The manner in which an Initiative is structured and understood from a
  * legal perspective.
  */
-enum InitiativeType {
+export enum InitiativeType {
   /**
    * An Initiative that is not an independent legal entity and is thus only
    * eligible to receive grant funding through another Initiative (like NSR).

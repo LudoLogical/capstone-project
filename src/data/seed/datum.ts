@@ -6,8 +6,13 @@ import type {
 import type { DatumAnalysis } from "@/types/analysis";
 import { LOC_HILLTOP } from "./geo";
 
+// The signed-in user (Maya Torres of Hilltop Wellness Collective; see
+// SESSION_USER in ./index) uploaded every InitiativeSource in this seed.
+export const USER_MAYA_ID = "user-maya-torres";
+
 export const SRC_ANNUAL_IMPACT_SURVEY: DocumentSource = {
   folder: "Impact Surveys",
+  creator: USER_MAYA_ID,
   isDeleted: false,
   file: new File(
     [
@@ -22,6 +27,7 @@ export const SRC_ANNUAL_IMPACT_SURVEY: DocumentSource = {
 
 export const SRC_BUDGET_RECORDS: DocumentSource = {
   folder: "Budget Records",
+  creator: USER_MAYA_ID,
   isDeleted: false,
   file: new File(
     ["Hilltop Wellness Collective — FY2025 Budget Summary (seed placeholder)"],
@@ -37,6 +43,7 @@ export const SRC_BUDGET_RECORDS: DocumentSource = {
 // ---- Authoritative (Vibrancy Index) data ----------------------------------
 
 export const DATUM_CVD_RATE: AuthoritativeDatum = {
+  id: 1,
   content: "Cardiovascular disease rate among Hilltop adults",
   citation:
     "Allegheny County Health Department, 2025 Community Health Assessment",
@@ -45,9 +52,11 @@ export const DATUM_CVD_RATE: AuthoritativeDatum = {
   value: 8.4,
   unit: "% of adults",
   context: { minimum: 4.1, average: 13.2, maximum: 21.6 },
+  issues: ["Health"],
 };
 
 export const DATUM_PRODUCE_ACCESS: AuthoritativeDatum = {
+  id: 2,
   content: "Households within a 10-minute walk of fresh produce",
   citation: "Vibrancy Index, Food Access Layer, 2025",
   evaluateMethod: "bar",
@@ -55,9 +64,11 @@ export const DATUM_PRODUCE_ACCESS: AuthoritativeDatum = {
   value: 61,
   unit: "% of households",
   context: { minimum: 22, average: 48, maximum: 89 },
+  issues: ["Food Security", "Health"],
 };
 
 export const DATUM_MEDIAN_INCOME: AuthoritativeDatum = {
+  id: 3,
   content: "Median household income",
   citation: "US Census ACS 5-Year Estimates, 2024",
   evaluateMethod: "bar",
@@ -65,9 +76,11 @@ export const DATUM_MEDIAN_INCOME: AuthoritativeDatum = {
   value: 38200,
   unit: "USD / year",
   context: { minimum: 21400, average: 52100, maximum: 118700 },
+  issues: ["Community"],
 };
 
 export const DATUM_PHYSICAL_ACTIVITY: AuthoritativeDatum = {
+  id: 4,
   content: "Adults meeting the CDC physical activity guideline",
   citation: "Vibrancy Index, Health & Wellness Layer, 2025",
   evaluateMethod: "bar",
@@ -75,11 +88,13 @@ export const DATUM_PHYSICAL_ACTIVITY: AuthoritativeDatum = {
   value: 71,
   unit: "% of adults",
   context: { minimum: 39, average: 58, maximum: 82 },
+  issues: ["Health", "Community"],
 };
 
 // ---- Initiative-supplied data ----------------------------------------------
 
 export const DATUM_RESIDENTS_REACHED: InitiativeDatum = {
+  id: 5,
   content:
     "1,240 unique residents served by Hilltop Wellness Collective programs in 2025",
   citation: "Hilltop Wellness Collective, 2025 Annual Impact Survey",
@@ -88,6 +103,7 @@ export const DATUM_RESIDENTS_REACHED: InitiativeDatum = {
 };
 
 export const DATUM_PROGRAM_RETENTION: InitiativeDatum = {
+  id: 6,
   content: "68% of program participants returned for a second season",
   citation: "Hilltop Wellness Collective, 2025 Annual Impact Survey",
   evaluateMethod: "bar",

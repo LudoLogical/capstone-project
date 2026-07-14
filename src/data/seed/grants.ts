@@ -43,16 +43,20 @@ export const GRANT_HEALTHY_NEIGHBORHOODS: Grant = {
       "Attend the quarterly grantee convening",
       "Display City of Pittsburgh acknowledgment on program materials",
     ],
-    reporting: {
-      asStatements: [
-        "Submit a mid-year progress update",
-        "Submit a final impact report within 60 days of award term end",
-      ],
-      asQuestions: [
-        "Have you submitted a mid-year progress update?",
-        "Have you submitted a final impact report within 60 days of the award term end?",
-      ],
-    },
+    reporting: [
+      {
+        shortName: "Mid-year update",
+        statement: "Submit a mid-year progress update.",
+        question: "Have you submitted a mid-year progress update?",
+      },
+      {
+        shortName: "Final impact report",
+        statement:
+          "Submit a final impact report within 60 days of award term end.",
+        question:
+          "Have you submitted a final impact report within 60 days of the award term end?",
+      },
+    ],
   },
   guidance: {
     application: [
@@ -104,14 +108,15 @@ export const GRANT_FOOD_ACCESS: Grant = {
       "Track pounds of produce distributed monthly",
       "Participate in the annual grantee site visit",
     ],
-    reporting: {
-      asStatements: [
-        "Submit one annual impact report at the end of the award term",
-      ],
-      asQuestions: [
-        "Have you submitted one annual impact report at the end of the award term?",
-      ],
-    },
+    reporting: [
+      {
+        shortName: "Annual impact report",
+        statement:
+          "Submit one annual impact report at the end of the award term.",
+        question:
+          "Have you submitted one annual impact report at the end of the award term?",
+      },
+    ],
   },
   guidance: {
     application: [
@@ -160,12 +165,14 @@ export const GRANT_YOUTH_DIGITAL_WELLNESS: Grant = {
       "Include one staff bio relevant to digital literacy instruction",
     ],
     awardee: ["Submit youth participation counts each quarter"],
-    reporting: {
-      asStatements: ["Submit a final report within 45 days of award term end"],
-      asQuestions: [
-        "Have you submitted a final report within 45 days of the award term end?",
-      ],
-    },
+    reporting: [
+      {
+        shortName: "Final report",
+        statement: "Submit a final report within 45 days of award term end.",
+        question:
+          "Have you submitted a final report within 45 days of the award term end?",
+      },
+    ],
   },
   guidance: {
     application: [
@@ -220,16 +227,20 @@ export const GRANT_GREEN_SPACES: Grant = {
       "Host at least one public planting or stewardship event per year",
       "Submit quarterly site photos",
     ],
-    reporting: {
-      asStatements: [
-        "Submit a mid-year update",
-        "Submit a final impact report within 60 days of award term end",
-      ],
-      asQuestions: [
-        "Have you submitted a mid-year update?",
-        "Have you submitted a final impact report within 60 days of the award term end?",
-      ],
-    },
+    reporting: [
+      {
+        shortName: "Mid-year update",
+        statement: "Submit a mid-year update.",
+        question: "Have you submitted a mid-year update?",
+      },
+      {
+        shortName: "Final impact report",
+        statement:
+          "Submit a final impact report within 60 days of award term end.",
+        question:
+          "Have you submitted a final impact report within 60 days of the award term end?",
+      },
+    ],
   },
   guidance: {
     application: [
