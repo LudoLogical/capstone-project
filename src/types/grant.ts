@@ -3,6 +3,39 @@ import { Region } from "./geo";
 import Initiative from "./initiative";
 
 /**
+ * A requirement that the recipient(s) of a specific Grant must satisfy
+ * when preparing the report(s) that they must submit to the
+ * corresponding grantor.
+ */
+export type ReportingRequirement = {
+  /**
+   * A brief, heading-style moniker for this ReportingRequirement.
+   * Must be no more than a few words long.
+   *
+   * @example
+   * "People supported"
+   */
+  shortName: string;
+
+  /**
+   * The ReportingRequirement itself, phrased as an affirmative command.
+   *
+   * @example
+   * "Include the number of people that the program supported in 2025."
+   */
+  statement: string;
+
+  /**
+   * The ReportingRequirement itself, phrased as a question asked of the
+   * Grant recipient(s)
+   *
+   * @example
+   * "How many people did the program support in 2025?"
+   */
+  question: string;
+};
+
+/**
  * An opportunity for one or more Initiatives to be awarded funding and/or
  * non-monetary benefits from a Grantor for use in furtherance of a specific
  * and often geographically bounded purpose that serves a public interest.
@@ -116,30 +149,10 @@ type Grant = {
      * The contents, structure, and frequency of the report(s) that the
      * recipient(s) of this Grant must produce for its Grantor.
      *
-     * Every requirement in this object must appear in and be extracted
+     * Every ReportingRequirement in this array must appear in and be extracted
      * directly from the original listing for this Grant.
      */
-    reporting: {
-      /**
-       * The contents, structure, and frequency of the report(s) that the
-       * recipient(s) of this Grant must produce for its Grantor.
-       *
-       * Every requirement in this array must (1) appear in and be extracted
-       * directly from the original listing for this Grant and (2) be phrased
-       * as an affirmative statement directed at the Grant recipient(s).
-       */
-      asStatements: string[];
-
-      /**
-       * The contents, structure, and frequency of the report(s) that the
-       * recipient(s) of this Grant must produce for its Grantor.
-       *
-       * Every requirement in this array must (1) appear in and be extracted
-       * directly from the original listing for this Grant and (2) be phrased
-       * as a question asked of the Grant recipient(s).
-       */
-      asQuestions: string[];
-    };
+    reporting: ReportingRequirement[];
   };
 
   /**
@@ -159,7 +172,7 @@ type Grant = {
      * extracted directly from the original listing for this Grant.
      * @see {@link Grant.requirements}
      */
-    application: string[]; // TODO: could be { header: string, body: string } instead
+    application: string[];
 
     /**
      * A set of AI-generated recommendations about what to include and/or
@@ -169,7 +182,7 @@ type Grant = {
      * extracted directly from the original listing for this Grant.
      * @see {@link Grant.requirements}
      */
-    reporting: string[]; // TODO: could be { header: string, body: string } instead
+    reporting: string[];
   };
 
   /**

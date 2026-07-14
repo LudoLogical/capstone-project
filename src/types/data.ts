@@ -13,6 +13,7 @@
  * @example NSR's Annual Financial Report for Fiscal Year 2025
  */
 
+import { Issue } from "./constants";
 import { Location } from "./geo";
 
 /**
@@ -20,18 +21,17 @@ import { Location } from "./geo";
  */
 export type BaseDatum = {
   /**
+   * The unique ID of this Datum.
+   */
+  id: number;
+
+  /**
    * A short, descriptive statement of this Datum.
    */
   content: string;
 
   /**
    * A short description of the source from which this Datum originates.
-   *
-   * @alpha
-   * The format of this description has not yet been decided. We currently plan
-   * to support one or more formal citation styles for the AuthoritativeDatum
-   * and NSRServiceDatum subtypes, but only an informal reference to the origin
-   * of the content for the InitiativeDatum subtype.
    */
   citation: string;
 
@@ -89,6 +89,14 @@ export type AuthoritativeDatum = BaseDatum & {
   };
 
   /**
+   * The set of issues to which this AuthoritativeDatum is relevant.
+   *
+   * Stored as an array instead of a Set for consistency with the
+   * Initiative type.
+   */
+  issues: Issue[];
+
+  /**
    * The method by which this AuthoritativeDatum should be visualized.
    *
    * @override
@@ -126,6 +134,11 @@ export type BaseInitiativeSource = {
   folder: string | null;
 
   /**
+   * The ID of the user who uploaded/added this InitiativeSource.
+   */
+  creator: string;
+
+  /**
    * True if this InitiativeSource has been deleted or is currently
    * marked for deletion; false otherwise.
    */
@@ -136,6 +149,11 @@ export type BaseInitiativeSource = {
  * An InitiativeSource that is a message in a GrantReportingConversation.
  */
 export type ChatSource = BaseInitiativeSource & {
+  /**
+   * A short AI-generated summary of the content of this ChatSource.
+   */
+  contentSummary: string;
+
   /**
    * The unique ID of the GrantReportingConversation from which this
    * ChatSource originates.

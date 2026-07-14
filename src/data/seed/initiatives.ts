@@ -1,17 +1,26 @@
 import type Initiative from "@/types/initiative";
 import type { WebpageSource, ChatSource } from "@/types/data";
 import { REGION_PITTSBURGH, REGION_ALLEGHENY_COUNTY } from "./geo";
-import { SRC_ANNUAL_IMPACT_SURVEY, SRC_BUDGET_RECORDS } from "./datum";
+import {
+  SRC_ANNUAL_IMPACT_SURVEY,
+  SRC_BUDGET_RECORDS,
+  USER_MAYA_ID,
+} from "./datum";
+import { InitiativeType } from "@/types/initiative";
 
 const SRC_WEBSITE: WebpageSource = {
   folder: null,
+  creator: USER_MAYA_ID,
   isDeleted: false,
   link: "https://hilltopwellness.org",
 };
 
 const SRC_CHAT_STUB: ChatSource = {
   folder: null,
+  creator: USER_MAYA_ID,
   isDeleted: false,
+  contentSummary:
+    "You shared that 100% of people have Awesome Individual Syndrome.",
   conversationID: "conv-onboarding-1",
   messageIndex: 0,
 };
@@ -27,6 +36,9 @@ export const INITIATIVE_HILLTOP_WELLNESS: Initiative = {
     "Hilltop Wellness Collective builds resident-led health and wellness programming in Pittsburgh's Hilltop neighborhoods.",
   programs: ["Neighborhood walking groups", "Nutrition workshops"],
   contactEmail: "maya@hilltopwellness.org",
+  // Started as a fiscally sponsored project of NSR in 2017; independent
+  // 501(c)(3) since 2021 (see ACCOUNT_SECTIONS in ./accountFacts).
+  type: InitiativeType.RegisteredNonProfitOrganization,
   issues: ["Health", "Community"],
   serviceAreas: [REGION_PITTSBURGH],
   grantRecords: new Map(),
@@ -46,6 +58,7 @@ export const INITIATIVE_HILLTOP_HARVEST: Initiative = {
     "Growing and distributing fresh produce within walking distance of every household in the Hilltop neighborhoods.",
   programs: ["Community gardens", "Mobile produce stand"],
   contactEmail: "hello@hilltopharvest.org",
+  type: InitiativeType.FinanciallySponsoredProject,
   issues: ["Food Security", "Community"],
   serviceAreas: [REGION_PITTSBURGH],
   grantRecords: new Map(),
@@ -60,6 +73,7 @@ export const INITIATIVE_RIVERSIDE_YOUTH_STUDIO: Initiative = {
     "Giving Pittsburgh teens hands-on media and coding skills in a low-pressure studio setting.",
   programs: ["After-school coding", "Video production", "Podcasting"],
   contactEmail: "team@riversideyouthstudio.org",
+  type: InitiativeType.RegisteredNonProfitOrganization,
   issues: ["Youth", "Technology"],
   serviceAreas: [REGION_PITTSBURGH],
   grantRecords: new Map(),
@@ -74,6 +88,7 @@ export const INITIATIVE_ALLEGHENY_COMMONS: Initiative = {
     "Building and maintaining resilient green space across Allegheny County's most heat-vulnerable neighborhoods.",
   programs: ["Pocket parks", "Rain gardens", "Landscape planning"],
   contactEmail: "contact@alleghenycommons.org",
+  type: InitiativeType.RegisteredNonProfitOrganization,
   issues: ["Environment", "Community"],
   serviceAreas: [REGION_ALLEGHENY_COUNTY],
   grantRecords: new Map(),

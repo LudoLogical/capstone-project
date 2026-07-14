@@ -1,0 +1,13 @@
+{
+  "type": "OBJECT",
+  "properties": {
+    "suggestions": {
+      "type": "ARRAY",
+      "description": "A list of the ID numbers of the most genuinely helpful data points from the batch provided, most genuinely helpful first.",
+      "items": {
+        "type": "NUMBER"
+      }
+    }
+  },
+  "required": ["suggestions"]
+}
