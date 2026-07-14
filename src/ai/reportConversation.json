@@ -1,0 +1,21 @@
+{
+  "type": "OBJECT",
+  "properties": {
+    "message": {
+      "type": "STRING",
+      "description": "Your response to the staff member, written in a plain and warm tone of voice. It may contain one question at most. If and only if you are seeking final confirmation, it must start with \"here's what I have for this section.\""
+    },
+    "suggestions": {
+      "type": "ARRAY",
+      "description": "A list of the ID numbers of the most genuinely helpful data points from the batch provided, most genuinely helpful first.",
+      "items": {
+        "type": "NUMBER"
+      }
+    },
+    "is_sufficient": {
+      "type": "BOOLEAN",
+      "description": "True if and only if you have received final confirmation from the staff member; false if not."
+    }
+  },
+  "required": ["message", "suggestions"]
+}
