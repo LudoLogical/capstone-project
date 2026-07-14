@@ -6,6 +6,62 @@ import { useGrantView, isSavedStage } from "@/store/derived";
 import { formatCurrencyFull, formatDate } from "@/utils/format";
 import JargonTerm from "@/components/JargonTerm";
 
+function formatReportFrequency(months: number): string {
+  if (months < 0) return "None required";
+  if (months === 0) return "Single report";
+  if (months === 12) return "Annually";
+  return `Every ${months} months`;
+}
+
+function TimelineCell({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-xl border border-divider-2 p-3.5">
+      <div className="mb-1 text-xs text-ink-muted">{label}</div>
+      <div className="text-sm font-semibold">{value}</div>
+    </div>
+  );
+}
+
+function DetailCard({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="mb-3.5 rounded-2xl border border-border bg-surface p-6">
+      <div className="mb-3 text-base font-bold">{title}</div>
+      {children}
+    </div>
+  );
+}
+
+function BulletList({
+  items,
+  ordered = false,
+}: {
+  items: string[];
+  ordered?: boolean;
+}) {
+  const Tag = ordered ? "ol" : "ul";
+  return (
+    <Tag className="flex flex-col gap-2">
+      {items.map((item, i) => (
+        <li key={i} className="flex gap-2.5 text-sm leading-relaxed text-ink-body">
+          <span
+            aria-hidden
+            className="flex-none font-bold text-accent-ink-2"
+          >
+            {ordered ? `${i + 1}.` : "•"}
+          </span>
+          <span>{item}</span>
+        </li>
+      ))}
+    </Tag>
+  );
+}
+
 export default function GrantDetailPage() {
   const { grantId = "" } = useParams<{ grantId: string }>();
   const router = useRouter();
@@ -45,13 +101,27 @@ export default function GrantDetailPage() {
 
       <div className="mb-5 rounded-2xl border border-border bg-surface p-8">
         <div className="mb-2 font-serif text-3xl">
-          {grant.purpose.split(".")[0]}
+          {grant.name}
         </div>
         <div className="mb-4 text-sm text-ink-muted">
           {grant.grantor} · {grant.targetRegions.map((r) => r.name).join(", ")}
         </div>
-        <div className="mb-4 text-xl font-bold text-accent-ink-2">
-          {formatCurrencyFull(grant.award.totalAmount)} total
+        <a
+          href={grant.link}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mb-4 inline-flex items-center gap-2 rounded-lg border border-border-strong bg-white px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-ink no-underline transition duration-150 hover:border-accent"
+        >
+          View grant on website ↗
+        </a>
+        <div className="mb-4 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+          <span className="text-xl font-bold text-accent-ink-2">
+            {formatCurrencyFull(grant.award.totalAmount)} total
+          </span>
+          <span className="text-sm text-ink-muted">
+            · {formatCurrencyFull(grant.award.annualAmount)}/year avg over{" "}
+            {grant.timeline.awardTerm} months
+          </span>
         </div>
         <div className="mb-5 flex flex-wrap gap-2">
           {grant.issues.map((tag) => (
@@ -68,26 +138,34 @@ export default function GrantDetailPage() {
         </p>
 
         <div className="mb-6 grid grid-cols-3 gap-3">
-          <div className="rounded-xl border border-divider-2 p-3.5">
-            <div className="mb-1 text-xs text-ink-muted">Applications open</div>
-            <div className="text-sm font-semibold">
-              {formatDate(grant.timeline.applicationWindowStart)}
-            </div>
-          </div>
-          <div className="rounded-xl border border-divider-2 p-3.5">
-            <div className="mb-1 text-xs text-ink-muted">
-              Applications close
-            </div>
-            <div className="text-sm font-semibold">
-              {formatDate(grant.timeline.applicationWindowEnd)}
-            </div>
-          </div>
-          <div className="rounded-xl border border-divider-2 p-3.5">
-            <div className="mb-1 text-xs text-ink-muted">Decision by</div>
-            <div className="text-sm font-semibold">
-              {formatDate(grant.timeline.notificationDate)}
-            </div>
-          </div>
+          <TimelineCell
+            label="Applications open"
+            value={formatDate(grant.timeline.applicationWindowStart)}
+          />
+          <TimelineCell
+            label="Applications close"
+            value={formatDate(grant.timeline.applicationWindowEnd)}
+          />
+          <TimelineCell
+            label="Decision by"
+            value={formatDate(grant.timeline.notificationDate)}
+          />
+          <TimelineCell
+            label="Award term"
+            value={`${grant.timeline.awardTerm} months`}
+          />
+          <TimelineCell
+            label="First report due"
+            value={
+              grant.timeline.reportFrequency < 0
+                ? "Not required"
+                : formatDate(grant.timeline.firstReportDeadline)
+            }
+          />
+          <TimelineCell
+            label="Reporting frequency"
+            value={formatReportFrequency(grant.timeline.reportFrequency)}
+          />
         </div>
 
         <div className="flex flex-wrap gap-2.5">
@@ -108,13 +186,6 @@ export default function GrantDetailPage() {
             className="inline-flex items-center gap-2 rounded-lg border border-border-strong bg-white px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 enabled:hover:border-accent disabled:cursor-not-allowed disabled:opacity-50"
           >
             Share link
-          </button>
-          <button
-            disabled
-            title="Coming soon"
-            className="inline-flex items-center gap-2 rounded-lg border border-border-strong bg-white px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 enabled:hover:border-accent disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            View grant on website ↗
           </button>
         </div>
 
@@ -162,13 +233,80 @@ export default function GrantDetailPage() {
         )}
       </div>
 
+      {grant.award.benefits.length > 0 && (
+        <DetailCard title="What's included beyond the funding">
+          <BulletList items={grant.award.benefits} />
+        </DetailCard>
+      )}
+
+      {grant.requirements.eligibility.length > 0 && (
+        <DetailCard title="Who's eligible">
+          <BulletList items={grant.requirements.eligibility} />
+        </DetailCard>
+      )}
+
+      {grant.requirements.application.length > 0 && (
+        <DetailCard title="How to apply">
+          <BulletList items={grant.requirements.application} ordered />
+        </DetailCard>
+      )}
+
+      {grant.requirements.awardee.length > 0 && (
+        <DetailCard title="If you're awarded, you'll need to">
+          <BulletList items={grant.requirements.awardee} />
+        </DetailCard>
+      )}
+
+      {grant.requirements.reporting.length > 0 && (
+        <DetailCard title="Reporting requirements">
+          <div className="flex flex-col gap-3.5">
+            {grant.requirements.reporting.map((r) => (
+              <div key={r.shortName}>
+                <div className="text-sm font-bold text-ink">{r.shortName}</div>
+                <div className="text-sm leading-relaxed text-ink-body">
+                  {r.statement}
+                </div>
+              </div>
+            ))}
+          </div>
+        </DetailCard>
+      )}
+
       <div className="flex flex-col flex-wrap gap-3.5">
+        {(grant.guidance.application.length > 0 ||
+          grant.guidance.reporting.length > 0) && (
+          <div className="rounded-2xl border border-accent-tint-border bg-linear-to-br from-accent-tint-soft to-accent-tint px-6 py-5">
+            <div className="mb-2.5 inline-flex items-center gap-1 rounded-full border border-accent-tint-border bg-accent-tint px-3 py-1 text-xs font-bold text-accent-ink">
+              ✦ AI-ASSISTED
+            </div>
+            <div className="mb-3 text-base font-bold">
+              How to make your submission stronger
+            </div>
+            {grant.guidance.application.length > 0 && (
+              <div className="mb-3.5">
+                <div className="mb-1.5 text-xs font-bold tracking-wider text-ink-muted uppercase">
+                  For your application
+                </div>
+                <BulletList items={grant.guidance.application} />
+              </div>
+            )}
+            {grant.guidance.reporting.length > 0 && (
+              <div>
+                <div className="mb-1.5 text-xs font-bold tracking-wider text-ink-muted uppercase">
+                  For your reports
+                </div>
+                <BulletList items={grant.guidance.reporting} />
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="rounded-2xl border border-accent-tint-border bg-linear-to-br from-accent-tint-soft to-accent-tint px-6 py-5">
           <div className="mb-2.5 inline-flex items-center gap-1 rounded-full border border-accent-tint-border bg-accent-tint px-3 py-1 text-xs font-bold text-accent-ink">
             ✦ AI-ASSISTED
           </div>
           <div className="mb-1.5 text-base font-bold">
-            <JargonTerm termKey="fit">See how well this fits you</JargonTerm>
+            See how well this fits you
           </div>
           <p className="mb-3.5 text-sm leading-relaxed text-ink-muted">
             An estimated fit score based on your profile and past funded

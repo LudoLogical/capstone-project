@@ -153,7 +153,7 @@ export default function ReportFlowPage() {
       <div className="flex items-start gap-7">
         <aside className="sticky top-22 w-56 flex-none rounded-2xl border border-border bg-surface p-4">
           <div className="mb-1 text-sm font-bold">
-            {grant.purpose.split(".")[0]}
+            {grant.name}
           </div>
           <button
             onClick={() => addToast("Opening Account Profile data manager...")}

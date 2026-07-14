@@ -38,7 +38,7 @@ export default function FitAnalysisPage() {
         ✦ AI-ASSISTED
       </div>
       <h1 className="mb-3.5 font-serif text-3xl leading-tight font-medium">
-        How {grant.purpose.split(".")[0]} fits {ACCOUNT_ORG_NAME}
+        How {grant.name} fits {ACCOUNT_ORG_NAME}
       </h1>
 
       <div className="mb-5 rounded-xl border border-info-border-2 bg-info-bg-2 p-4 text-sm leading-normal text-ink-body">

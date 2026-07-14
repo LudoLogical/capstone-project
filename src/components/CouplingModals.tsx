@@ -63,7 +63,7 @@ function CouplingPrompt({ modal }: { modal: NonNullable<CouplingModal> }) {
 
   if (!view) return null;
   const saved = isSavedStage(view.stage);
-  const grantName = view.grant.purpose.split(".")[0];
+  const grantName = view.grant.name;
 
   // ── Save: offer to also list as a collaborator ─────────────────
   if (modal.type === "save") {

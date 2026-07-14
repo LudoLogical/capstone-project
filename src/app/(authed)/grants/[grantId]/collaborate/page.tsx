@@ -99,7 +99,7 @@ export default function CollaboratePage() {
         🤝 Interested in co-applying
       </div>
       <h1 className="mb-2.5 font-serif text-3xl leading-tight font-medium">
-        Collaborators for {grant.purpose.split(".")[0]}
+        Collaborators for {grant.name}
       </h1>
       <p className="mb-5 text-sm leading-relaxed text-ink-muted">
         These are opted-in New Sun Rising clients discoverable for this grant.
