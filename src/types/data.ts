@@ -150,6 +150,11 @@ export type BaseInitiativeSource = {
  */
 export type ChatSource = BaseInitiativeSource & {
   /**
+   * A short AI-generated summary of the content of this ChatSource.
+   */
+  contentSummary: string;
+
+  /**
    * The unique ID of the GrantReportingConversation from which this
    * ChatSource originates.
    */

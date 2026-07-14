@@ -19,6 +19,8 @@ const SRC_CHAT_STUB: ChatSource = {
   folder: null,
   creator: USER_MAYA_ID,
   isDeleted: false,
+  contentSummary:
+    "You shared that 100% of people have Awesome Individual Syndrome.",
   conversationID: "conv-onboarding-1",
   messageIndex: 0,
 };
