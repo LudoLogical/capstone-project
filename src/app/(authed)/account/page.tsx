@@ -9,7 +9,12 @@ import {
   ACCOUNT_LOWEST_HINT,
 } from "@/data/seed";
 import { useAppStore } from "@/store/useAppStore";
-import { useAccountSectionsView } from "@/store/derived";
+import {
+  useAccountSectionsView,
+  useAllGrantViews,
+  isSavedStage,
+} from "@/store/derived";
+import { formatDate } from "@/utils/format";
 
 function pctPillClass(pct: number): string {
   if (pct >= 90) return "bg-success-bg text-success-ink";
@@ -29,8 +34,14 @@ export default function AccountProfilePage() {
   const accountExpanded = useAppStore((s) => s.accountExpanded);
   const toggleAccountSection = useAppStore((s) => s.toggleAccountSection);
   const setAccountEdit = useAppStore((s) => s.setAccountEdit);
+  const restartOnboarding = useAppStore((s) => s.restartOnboarding);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
+
+  const replayTour = () => {
+    restartOnboarding();
+    router.push("/");
+  };
 
   const startEdit = (factId: string, body: string) => {
     setEditingId(factId);
@@ -44,12 +55,20 @@ export default function AccountProfilePage() {
 
   return (
     <div className="animate-nc-rise mx-auto max-w-4xl px-8 pt-7 pb-20">
-      <button
-        onClick={() => router.push("/dashboard")}
-        className="mb-4 inline-block text-sm font-semibold text-ink-muted hover:text-ink"
-      >
-        ← Back to dashboard
-      </button>
+      <div className="mb-4 flex items-center justify-between gap-4">
+        <button
+          onClick={() => router.push("/")}
+          className="inline-block text-sm font-semibold text-ink-muted hover:text-ink"
+        >
+          ← Back to dashboard
+        </button>
+        <button
+          onClick={replayTour}
+          className="inline-flex items-center gap-2 rounded-lg border border-border-strong bg-white px-3 py-1.5 text-xs font-semibold text-ink-secondary transition duration-150 hover:border-accent"
+        >
+          ↺ Replay welcome tour
+        </button>
+      </div>
       <h1 className="mb-2.5 font-serif text-3xl leading-tight font-medium">
         {ACCOUNT_ORG_NAME}
       </h1>
@@ -89,6 +108,8 @@ export default function AccountProfilePage() {
           ))}
         </div>
       </div>
+
+      <SavedGrantsSection />
 
       {sections.map((sec) => (
         <div
@@ -198,6 +219,94 @@ export default function AccountProfilePage() {
           )}
         </div>
       ))}
+    </div>
+  );
+}
+
+/**
+ * Manage saved grants and collaboration together. The two are separate flags
+ * connected through prompts, so a grant can be saved without collaborating (or
+ * the reverse). Each toggle opens the shared coupling prompt, which offers to
+ * also do the coupled action. The list is the union of saved and discoverable
+ * grants so a divergent one still appears.
+ */
+function SavedGrantsSection() {
+  const views = useAllGrantViews();
+  const discoverable = useAppStore((s) => s.discoverable);
+  const openCouplingModal = useAppStore((s) => s.openCouplingModal);
+
+  const rows = views.filter(
+    (v) => isSavedStage(v.stage) || discoverable[v.grant.id],
+  );
+
+  return (
+    <div className="mb-5 rounded-2xl border border-border bg-surface p-6">
+      <div className="mb-1 text-base font-bold">
+        Saved grants &amp; collaboration
+      </div>
+      <p className="mb-4 text-sm leading-normal text-ink-muted">
+        Saving a grant and listing yourself as open to collaborate are separate
+        — toggling one offers to update the other.
+      </p>
+
+      {rows.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-border-strong px-4 py-6 text-center text-sm text-ink-faint">
+          You have no saved grants yet. Save a grant from Explore to start
+          collaborating.
+        </div>
+      ) : (
+        <div className="flex flex-col gap-2.5">
+          {rows.map((v) => {
+            const saved = isSavedStage(v.stage);
+            const collab = !!discoverable[v.grant.id];
+            return (
+              <div
+                key={v.grant.id}
+                className="flex flex-wrap items-center gap-3 rounded-xl border border-border-soft bg-surface-alt-2 px-4 py-3"
+              >
+                <div className="min-w-48 flex-1">
+                  <div className="text-sm font-bold">
+                    {v.grant.purpose.split(".")[0]}
+                  </div>
+                  <div className="text-xs text-ink-muted">
+                    {v.grant.grantor} · Closes{" "}
+                    {formatDate(v.grant.timeline.applicationWindowEnd)}
+                  </div>
+                </div>
+                <button
+                  onClick={() =>
+                    openCouplingModal(saved ? "unsave" : "save", v.grant.id)
+                  }
+                  aria-pressed={saved}
+                  className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-semibold transition duration-150 ${
+                    saved
+                      ? "border-accent bg-accent-tint text-accent-ink"
+                      : "border-border-strong bg-white text-ink hover:border-accent"
+                  }`}
+                >
+                  {saved ? "★ Saved" : "☆ Not saved"}
+                </button>
+                <button
+                  onClick={() =>
+                    openCouplingModal(
+                      collab ? "uncollab" : "discover",
+                      v.grant.id,
+                    )
+                  }
+                  aria-pressed={collab}
+                  className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-semibold transition duration-150 ${
+                    collab
+                      ? "border-accent bg-accent-tint text-accent-ink"
+                      : "border-border-strong bg-white text-ink hover:border-accent"
+                  }`}
+                >
+                  {collab ? "🤝 Collaborating" : "🤝 Not listed"}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

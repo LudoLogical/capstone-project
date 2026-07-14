@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ISSUES, type Issue } from "@/types/constants";
+import { ISSUES } from "@/types/constants";
 import { useAppStore } from "@/store/useAppStore";
 import { useAllGrantViews } from "@/store/derived";
 import {
@@ -12,16 +13,17 @@ import {
   type SortOption,
 } from "@/data/selectors";
 import CheckboxRow from "@/components/CheckboxRow";
+import RadioRow from "@/components/RadioRow";
 import GrantCard from "@/components/GrantCard";
 import EmptyState from "@/components/EmptyState";
-import JargonTerm from "@/components/JargonTerm";
 
 const SORTS: { key: SortOption; label: string }[] = [
   { key: "relevance", label: "Relevance" },
-  { key: "fit", label: "Best fit for you" },
   { key: "deadline", label: "Deadline" },
   { key: "amount", label: "Funding amount" },
 ];
+
+const PRESET_ISSUES: readonly string[] = ISSUES;
 
 export default function SearchPage() {
   const router = useRouter();
@@ -32,19 +34,27 @@ export default function SearchPage() {
   const clearFilters = useAppStore((s) => s.clearFilters);
   const sortBy = useAppStore((s) => s.sortBy);
   const setSortBy = useAppStore((s) => s.setSortBy);
-  const relevanceMode = useAppStore((s) => s.relevanceMode);
-  const setRelevanceMode = useAppStore((s) => s.setRelevanceMode);
   const addToast = useAppStore((s) => s.addToast);
+
+  const [issueInput, setIssueInput] = useState("");
+  const [locationInput, setLocationInput] = useState("");
 
   const views = useAllGrantViews();
   const filtered = filterGrants(
     views.map((v) => v.grant),
     appliedFilters,
   );
-  const sorted = sortGrants(filtered, relevanceMode ? "fit" : sortBy);
+  const sorted = sortGrants(filtered, sortBy);
   const viewById = new Map(views.map((v) => [v.grant.id, v]));
 
-  const toggleIssue = (issue: Issue) => {
+  const customIssues = draftFilters.issues.filter(
+    (i) => !PRESET_ISSUES.includes(i),
+  );
+  const customLocations = draftFilters.locations.filter(
+    (l) => !LOCATION_OPTIONS.includes(l),
+  );
+
+  const toggleIssue = (issue: string) => {
     const has = draftFilters.issues.includes(issue);
     const next = has
       ? draftFilters.issues.filter((i) => i !== issue)
@@ -53,12 +63,16 @@ export default function SearchPage() {
     applyFilters();
   };
 
-  const toggleOrgType = (id: string) => {
-    const has = draftFilters.orgTypes.includes(id);
-    const next = has
-      ? draftFilters.orgTypes.filter((t) => t !== id)
-      : [...draftFilters.orgTypes, id];
-    setDraftFilters({ orgTypes: next });
+  const addIssue = () => {
+    const value = issueInput.trim();
+    setIssueInput("");
+    if (!value || draftFilters.issues.includes(value)) return;
+    setDraftFilters({ issues: [...draftFilters.issues, value] });
+    applyFilters();
+  };
+
+  const selectOrgType = (id: string) => {
+    setDraftFilters({ orgTypes: id ? [id] : [] });
     applyFilters();
   };
 
@@ -71,20 +85,25 @@ export default function SearchPage() {
     applyFilters();
   };
 
+  const addLocation = () => {
+    const value = locationInput.trim();
+    setLocationInput("");
+    if (!value || draftFilters.locations.includes(value)) return;
+    setDraftFilters({ locations: [...draftFilters.locations, value] });
+    applyFilters();
+  };
+
   const applyRange = () => {
     applyFilters();
     addToast("Filters applied.");
   };
 
-  const findRelevant = () => {
-    setRelevanceMode(true);
-    addToast("Ranking grants by fit with your initiative profile.");
-  };
+  const selectedOrgType = draftFilters.orgTypes[0] ?? "";
 
   return (
-    <div className="mx-auto max-w-6xl px-8 pt-7 pb-20 animate-nc-rise">
+    <div className="animate-nc-rise mx-auto max-w-6xl px-8 pt-7 pb-20">
       <button
-        onClick={() => router.push("/dashboard")}
+        onClick={() => router.push("/")}
         className="mb-4 inline-block text-sm font-semibold text-ink-muted hover:text-ink"
       >
         ← Back to dashboard
@@ -104,8 +123,8 @@ export default function SearchPage() {
           <div className="mb-2.5 text-xs font-bold tracking-wider text-ink-muted uppercase">
             Issue tags
           </div>
-          <div className="mb-5 flex flex-wrap gap-2">
-            {ISSUES.map((issue) => {
+          <div className="mb-2.5 flex flex-wrap gap-2">
+            {PRESET_ISSUES.map((issue) => {
               const active = draftFilters.issues.includes(issue);
               return (
                 <button
@@ -121,6 +140,31 @@ export default function SearchPage() {
                 </button>
               );
             })}
+            {customIssues.map((issue) => (
+              <button
+                key={issue}
+                onClick={() => toggleIssue(issue)}
+                className="inline-flex items-center gap-1 rounded-full border border-ink bg-ink px-3 py-1 text-xs font-bold text-white"
+              >
+                {issue} ✕
+              </button>
+            ))}
+          </div>
+          <div className="mb-5 flex gap-2">
+            <input
+              value={issueInput}
+              onChange={(e) => setIssueInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && addIssue()}
+              placeholder="Add your own tag"
+              aria-label="Add a custom issue tag"
+              className="min-w-0 flex-1 rounded-lg border border-border-strong bg-white px-3 py-2 text-xs text-ink outline-none focus:border-accent"
+            />
+            <button
+              onClick={addIssue}
+              className="rounded-lg border border-border-strong bg-white px-3 py-2 text-xs font-semibold text-ink transition duration-150 enabled:hover:border-accent"
+            >
+              Add
+            </button>
           </div>
 
           <div className="mb-1 text-xs font-bold tracking-wider text-ink-muted uppercase">
@@ -130,11 +174,16 @@ export default function SearchPage() {
             Show grants open to your kind of organization.
           </div>
           <div className="mb-5 flex flex-col gap-2">
+            <RadioRow
+              checked={selectedOrgType === ""}
+              onSelect={() => selectOrgType("")}
+              label="Any organization type"
+            />
             {ORG_TYPE_OPTIONS.map((t) => (
-              <CheckboxRow
+              <RadioRow
                 key={t.id}
-                checked={draftFilters.orgTypes.includes(t.id)}
-                onToggle={() => toggleOrgType(t.id)}
+                checked={selectedOrgType === t.id}
+                onSelect={() => selectOrgType(t.id)}
                 label={t.label}
                 hint={t.hint}
               />
@@ -147,7 +196,7 @@ export default function SearchPage() {
           <div className="mb-2.5 text-xs text-ink-muted">
             Where the grant&apos;s funding must be spent.
           </div>
-          <div className="mb-5 flex flex-col gap-2">
+          <div className="mb-2.5 flex flex-col gap-2">
             {LOCATION_OPTIONS.map((loc) => (
               <CheckboxRow
                 key={loc}
@@ -156,6 +205,30 @@ export default function SearchPage() {
                 label={loc}
               />
             ))}
+            {customLocations.map((loc) => (
+              <CheckboxRow
+                key={loc}
+                checked
+                onToggle={() => toggleLocation(loc)}
+                label={loc}
+              />
+            ))}
+          </div>
+          <div className="mb-5 flex gap-2">
+            <input
+              value={locationInput}
+              onChange={(e) => setLocationInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && addLocation()}
+              placeholder="Add your own location"
+              aria-label="Add a custom target location"
+              className="min-w-0 flex-1 rounded-lg border border-border-strong bg-white px-3 py-2 text-xs text-ink outline-none focus:border-accent"
+            />
+            <button
+              onClick={addLocation}
+              className="rounded-lg border border-border-strong bg-white px-3 py-2 text-xs font-semibold text-ink transition duration-150 enabled:hover:border-accent"
+            >
+              Add
+            </button>
           </div>
 
           <div className="mb-2.5 text-xs font-bold tracking-wider text-ink-muted uppercase">
@@ -233,16 +306,9 @@ export default function SearchPage() {
             />
             <button
               onClick={applyFilters}
-              className="inline-flex items-center gap-2 rounded-xl border border-border-strong bg-white px-5 py-3 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 enabled:hover:border-accent disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-xl bg-accent px-6 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Search
-            </button>
-            <button
-              onClick={findRelevant}
-              className="inline-flex items-center gap-2 rounded-xl bg-accent px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              ✦ Rank by my{" "}
-              <JargonTerm termKey="profile">initiative profile</JargonTerm>
             </button>
           </div>
 
@@ -254,12 +320,9 @@ export default function SearchPage() {
               {SORTS.map((s) => (
                 <button
                   key={s.key}
-                  onClick={() => {
-                    setSortBy(s.key);
-                    setRelevanceMode(false);
-                  }}
+                  onClick={() => setSortBy(s.key)}
                   className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold ${
-                    sortBy === s.key && !relevanceMode
+                    sortBy === s.key
                       ? "border border-ink bg-ink text-white"
                       : "border border-border-strong bg-surface-alt text-ink-secondary"
                   }`}

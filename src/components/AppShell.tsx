@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import AppHeader from "./AppHeader";
 import PrivacyModal from "./PrivacyModal";
+import CouplingModals from "./CouplingModals";
 import ToastHost from "./ToastHost";
 
 /**
@@ -25,6 +26,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
         {children}
       </main>
       <PrivacyModal />
+      <CouplingModals />
       <ToastHost />
     </>
   );

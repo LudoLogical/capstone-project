@@ -15,18 +15,11 @@ export default function GrantCard({
   stage: GrantLifecycleStage;
 }) {
   const router = useRouter();
-  const setStage = useAppStore((s) => s.setStage);
-  const addToast = useAppStore((s) => s.addToast);
+  const openCouplingModal = useAppStore((s) => s.openCouplingModal);
   const saved = isSavedStage(stage);
 
   const toggleSave = () => {
-    if (saved) {
-      setStage(grant.id, GrantLifecycleStage.Unsaved);
-      addToast("Removed from saved grants.");
-    } else {
-      setStage(grant.id, GrantLifecycleStage.Saved);
-      addToast("Saved to your dashboard.");
-    }
+    openCouplingModal(saved ? "unsave" : "save", grant.id);
   };
 
   return (

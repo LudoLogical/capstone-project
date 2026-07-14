@@ -1,8 +1,17 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { GrantLifecycleStage } from "@/types/grantRecord";
+import type { Issue } from "@/types/constants";
 import type { SearchFilters, SortOption } from "@/data/selectors";
 import { DEFAULT_FILTERS } from "@/data/selectors";
+
+export type OnboardOrg = {
+  name: string;
+  issues: Issue[];
+  areas: string[];
+};
+
+const emptyOnboardOrg = (): OnboardOrg => ({ name: "", issues: [], areas: [] });
 
 export type ChatMessage = { from: "user" | "ai"; text: string };
 
@@ -12,8 +21,15 @@ export type ReportChatState = {
   picks: Record<string, boolean>;
 };
 
+// Per-step completion, keyed by step number (1-7). A step is only ever
+// "complete" when the user explicitly marks it so; navigating to a step (via
+// Next/Back/sidebar) marks it "in-progress", never complete. Absent = not
+// started. The whole report can only be finished once every step is complete.
+export type StepStatus = "in-progress" | "complete";
+
 export type ReportState = {
   step: number;
+  stepStatus: Record<number, StepStatus>;
   share: { surveys: boolean; budget: boolean; orgAssess: boolean };
   uploads: string[];
   chat: {
@@ -54,6 +70,7 @@ export function makeWizardState(): WizardState {
 export function makeReportState(): ReportState {
   return {
     step: 1,
+    stepStatus: { 1: "in-progress" },
     share: { surveys: true, budget: true, orgAssess: false },
     uploads: [],
     chat: {
@@ -70,9 +87,25 @@ export function makeReportState(): ReportState {
 
 export type Toast = { id: number; text: string };
 
+// The save/collaborate coupling is surfaced through confirmation prompts
+// rather than being locked together: saving offers to also list you as a
+// collaborator, unsaving offers to also stop, and each collaborate toggle
+// offers the reverse. `couplingModal` names which prompt is open (transient;
+// not persisted). See CouplingModals for the UI.
+export type CouplingModal = {
+  type: "save" | "unsave" | "discover" | "uncollab";
+  grantId: string;
+} | null;
+
 type AppState = {
   signedIn: boolean;
   privacyAcked: boolean;
+
+  // First-run onboarding: a signed-in user who has not finished onboarding is
+  // shown the welcome + org-details flow before the dashboard.
+  onboarded: boolean;
+  onboardStep: number;
+  onboardOrg: OnboardOrg;
 
   // Grant lifecycle overrides layered on top of the seed catalog. Only
   // grants the user has explicitly acted on (saved, unsaved, applied, ...)
@@ -95,13 +128,42 @@ type AppState = {
   accountEdits: Record<string, string>;
   accountExpanded: Record<string, boolean>;
 
+  // Vibrancy Portal data forms the user has filled out, keyed by data-detail
+  // key (e.g. "orgAssess"). Presence of an entry means the form is completed;
+  // the map holds the submitted field values so the summary view can show them.
+  // Submitted from a separate browser tab, so this is synced across tabs via
+  // the storage event in StoreHydrator.
+  dataForms: Record<string, Record<string, string>>;
+
+  couplingModal: CouplingModal;
+
   toasts: Toast[];
 
   // actions
   signIn: () => void;
   ackPrivacy: () => void;
+
+  setOnboardStep: (step: number) => void;
+  patchOnboardOrg: (patch: Partial<OnboardOrg>) => void;
+  toggleOnboardIssue: (issue: Issue) => void;
+  toggleOnboardArea: (area: string) => void;
+  completeOnboarding: () => void;
+  restartOnboarding: () => void;
   setStage: (grantId: string, stage: GrantLifecycleStage) => void;
   toggleDiscoverable: (grantId: string) => void;
+  setDiscoverable: (grantId: string, on: boolean) => void;
+
+  // Save/collaborate coupling — surfaced through prompts, not locked. Opening
+  // a modal is what a Save/Unsave/collaborate control does; the confirm*
+  // actions apply the choice (optionally doing the coupled action too, per the
+  // checkbox the prompt offers). Saving and collaborating can therefore
+  // diverge if the user opts out.
+  openCouplingModal: (type: NonNullable<CouplingModal>["type"], grantId: string) => void;
+  closeCouplingModal: () => void;
+  confirmSave: (grantId: string, alsoDiscover: boolean) => void;
+  confirmUnsave: (grantId: string, alsoStopDiscover: boolean) => void;
+  confirmDiscover: (grantId: string, alsoSave: boolean) => void;
+  confirmUncollab: (grantId: string, alsoUnsave: boolean) => void;
 
   setDraftFilters: (filters: Partial<SearchFilters>) => void;
   applyFilters: () => void;
@@ -133,6 +195,8 @@ type AppState = {
   setAccountEdit: (factId: string, body: string | null) => void;
   toggleAccountSection: (sectionId: string) => void;
 
+  submitDataForm: (key: string, values: Record<string, string>) => void;
+
   addToast: (text: string) => void;
   removeToast: (id: number) => void;
 };
@@ -144,6 +208,9 @@ export const useAppStore = create<AppState>()(
     (set, get) => ({
       signedIn: false,
       privacyAcked: false,
+      onboarded: false,
+      onboardStep: 0,
+      onboardOrg: emptyOnboardOrg(),
       stageOverrides: {},
       discoverable: {},
 
@@ -162,10 +229,44 @@ export const useAppStore = create<AppState>()(
       accountEdits: {},
       accountExpanded: {},
 
+      dataForms: {},
+
+      couplingModal: null,
+
       toasts: [],
 
       signIn: () => set({ signedIn: true }),
       ackPrivacy: () => set({ privacyAcked: true }),
+
+      setOnboardStep: (step) => set({ onboardStep: step }),
+      patchOnboardOrg: (patch) =>
+        set((state) => ({ onboardOrg: { ...state.onboardOrg, ...patch } })),
+      toggleOnboardIssue: (issue) =>
+        set((state) => {
+          const has = state.onboardOrg.issues.includes(issue);
+          return {
+            onboardOrg: {
+              ...state.onboardOrg,
+              issues: has
+                ? state.onboardOrg.issues.filter((i) => i !== issue)
+                : [...state.onboardOrg.issues, issue],
+            },
+          };
+        }),
+      toggleOnboardArea: (area) =>
+        set((state) => {
+          const has = state.onboardOrg.areas.includes(area);
+          return {
+            onboardOrg: {
+              ...state.onboardOrg,
+              areas: has
+                ? state.onboardOrg.areas.filter((a) => a !== area)
+                : [...state.onboardOrg.areas, area],
+            },
+          };
+        }),
+      completeOnboarding: () => set({ onboarded: true, onboardStep: 0 }),
+      restartOnboarding: () => set({ onboarded: false, onboardStep: 0 }),
 
       setStage: (grantId, stage) =>
         set((state) => ({
@@ -178,6 +279,56 @@ export const useAppStore = create<AppState>()(
             ...state.discoverable,
             [grantId]: !state.discoverable[grantId],
           },
+        })),
+      setDiscoverable: (grantId, on) =>
+        set((state) => ({
+          discoverable: { ...state.discoverable, [grantId]: on },
+        })),
+
+      openCouplingModal: (type, grantId) =>
+        set({ couplingModal: { type, grantId } }),
+      closeCouplingModal: () => set({ couplingModal: null }),
+
+      confirmSave: (grantId, alsoDiscover) =>
+        set((state) => ({
+          stageOverrides: {
+            ...state.stageOverrides,
+            [grantId]: GrantLifecycleStage.Saved,
+          },
+          discoverable: alsoDiscover
+            ? { ...state.discoverable, [grantId]: true }
+            : state.discoverable,
+          couplingModal: null,
+        })),
+      confirmUnsave: (grantId, alsoStopDiscover) =>
+        set((state) => ({
+          stageOverrides: {
+            ...state.stageOverrides,
+            [grantId]: GrantLifecycleStage.Unsaved,
+          },
+          discoverable: alsoStopDiscover
+            ? { ...state.discoverable, [grantId]: false }
+            : state.discoverable,
+          couplingModal: null,
+        })),
+      confirmDiscover: (grantId, alsoSave) =>
+        set((state) => ({
+          discoverable: { ...state.discoverable, [grantId]: true },
+          stageOverrides: alsoSave
+            ? { ...state.stageOverrides, [grantId]: GrantLifecycleStage.Saved }
+            : state.stageOverrides,
+          couplingModal: null,
+        })),
+      confirmUncollab: (grantId, alsoUnsave) =>
+        set((state) => ({
+          discoverable: { ...state.discoverable, [grantId]: false },
+          stageOverrides: alsoUnsave
+            ? {
+                ...state.stageOverrides,
+                [grantId]: GrantLifecycleStage.Unsaved,
+              }
+            : state.stageOverrides,
+          couplingModal: null,
         })),
 
       setDraftFilters: (filters) =>
@@ -259,6 +410,11 @@ export const useAppStore = create<AppState>()(
           },
         })),
 
+      submitDataForm: (key, values) =>
+        set((state) => ({
+          dataForms: { ...state.dataForms, [key]: values },
+        })),
+
       addToast: (text) => {
         const id = ++toastCounter;
         set((state) => ({ toasts: [...state.toasts, { id, text }] }));
@@ -281,6 +437,9 @@ export const useAppStore = create<AppState>()(
       partialize: (state) => ({
         signedIn: state.signedIn,
         privacyAcked: state.privacyAcked,
+        onboarded: state.onboarded,
+        onboardStep: state.onboardStep,
+        onboardOrg: state.onboardOrg,
         stageOverrides: state.stageOverrides,
         discoverable: state.discoverable,
         wizard: state.wizard,
@@ -291,6 +450,7 @@ export const useAppStore = create<AppState>()(
         contactRequested: state.contactRequested,
         accountEdits: state.accountEdits,
         accountExpanded: state.accountExpanded,
+        dataForms: state.dataForms,
       }),
     },
   ),

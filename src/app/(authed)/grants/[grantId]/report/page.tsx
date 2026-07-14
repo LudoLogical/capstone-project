@@ -25,6 +25,10 @@ const STEP_NAV = [
   { n: 7, label: "Analysis" },
 ];
 
+// Every step before the final Analysis step must be marked complete before the
+// report can be saved to the grant.
+const REQUIRED_STEPS = [1, 2, 3, 4, 5, 6];
+
 const SUPPORTING_YOUR_DATA = ["ruea-served", "ruea-retention"];
 const SUPPORTING_VP_DATA = ["ruea-cvd", "ruea-produce"];
 
@@ -43,6 +47,7 @@ export default function ReportFlowPage() {
   const view = useGrantView(grantId);
   const report = useAppStore((s) => s.getReport(grantId));
   const updateReport = useAppStore((s) => s.updateReport);
+  const dataForms = useAppStore((s) => s.dataForms);
   const addToast = useAppStore((s) => s.addToast);
   const [urlDraft, setUrlDraft] = useState("");
   const [dataModalKey, setDataModalKey] = useState<string | null>(null);
@@ -50,8 +55,29 @@ export default function ReportFlowPage() {
   if (!view) return null;
   const { grant } = view;
 
+  const isComplete = (n: number) => report.stepStatus[n] === "complete";
+
+  // Navigating to a step marks it in-progress — never complete. A step only
+  // becomes complete when the user explicitly marks it so (below).
   const setStep = (step: number) =>
-    updateReport(grantId, (r) => ({ ...r, step }));
+    updateReport(grantId, (r) => ({
+      ...r,
+      step,
+      stepStatus:
+        r.stepStatus[step] === "complete"
+          ? r.stepStatus
+          : { ...r.stepStatus, [step]: "in-progress" },
+    }));
+
+  const toggleStepComplete = (n: number) =>
+    updateReport(grantId, (r) => ({
+      ...r,
+      stepStatus: {
+        ...r.stepStatus,
+        [n]: r.stepStatus[n] === "complete" ? "in-progress" : "complete",
+      },
+    }));
+
   const toggleShare = (key: keyof ReportState["share"]) =>
     updateReport(grantId, (r) => ({
       ...r,
@@ -84,6 +110,16 @@ export default function ReportFlowPage() {
 
   const questionStepId = QUESTION_STEP_ID_BY_INDEX[report.step];
   const dataModal = dataModalKey ? DATA_DETAILS[dataModalKey] : null;
+  // A data form completed from the new-tab form has no seed summary; fall back
+  // to showing the values the user submitted.
+  const dataModalSummary =
+    dataModal?.summary ??
+    (dataModalKey && dataForms[dataModalKey]
+      ? Object.entries(dataForms[dataModalKey]).map(([question, answer]) => ({
+          question,
+          answer,
+        }))
+      : null);
 
   const selectedSupporting = RUEA_SECTIONS.filter(
     (s) => report.supportingPicks[s.id],
@@ -93,15 +129,23 @@ export default function ReportFlowPage() {
   const currentCard =
     analysisSections[report.analysisCardIndex % analysisSections.length];
 
+  const incompleteSteps = REQUIRED_STEPS.filter((n) => !isComplete(n));
+  const canSave = incompleteSteps.length === 0;
+
   const saveToGrant = () => {
+    if (!canSave) return;
+    updateReport(grantId, (r) => ({
+      ...r,
+      stepStatus: { ...r.stepStatus, 7: "complete" },
+    }));
     addToast("Report saved to grant.");
-    router.push("/dashboard");
+    router.push("/");
   };
 
   return (
     <div className="mx-auto max-w-6xl animate-nc-rise px-8 pt-7 pb-20">
       <button
-        onClick={() => router.push("/dashboard")}
+        onClick={() => router.push("/")}
         className="mb-4 inline-block text-sm font-semibold text-ink-muted hover:text-ink"
       >
         ← Back to dashboard
@@ -118,34 +162,42 @@ export default function ReportFlowPage() {
             Manage my Data
           </button>
           <div className="flex flex-col gap-0.5">
-            {STEP_NAV.map((s) => (
-              <button
-                key={s.n}
-                onClick={() => setStep(s.n)}
-                className="flex cursor-pointer items-center gap-2.5 px-1.5 py-2 text-left"
-              >
-                <div
-                  className={`flex h-5 w-5 flex-none items-center justify-center rounded-full text-xs font-bold ${
-                    report.step === s.n
-                      ? "bg-accent"
-                      : report.step > s.n
-                        ? "bg-success-ink-2"
-                        : "bg-divider-2"
-                  } ${report.step >= s.n ? "text-white" : "text-ink-muted"}`}
+            {STEP_NAV.map((s) => {
+              const complete = isComplete(s.n);
+              const current = report.step === s.n;
+              const inProgress =
+                !complete && report.stepStatus[s.n] === "in-progress";
+              return (
+                <button
+                  key={s.n}
+                  onClick={() => setStep(s.n)}
+                  className="flex cursor-pointer items-center gap-2.5 px-1.5 py-2 text-left"
                 >
-                  {report.step > s.n ? "✓" : s.n}
-                </div>
-                <span
-                  className={`text-sm ${
-                    report.step === s.n
-                      ? "font-bold text-ink"
-                      : "font-medium text-ink-muted"
-                  }`}
-                >
-                  {s.label}
-                </span>
-              </button>
-            ))}
+                  <div
+                    className={`flex h-5 w-5 flex-none items-center justify-center rounded-full text-xs font-bold ${
+                      complete
+                        ? "bg-success-ink-2 text-white"
+                        : current
+                          ? "bg-accent text-white"
+                          : inProgress
+                            ? "bg-readiness-warn text-white"
+                            : "bg-divider-2 text-ink-muted"
+                    }`}
+                  >
+                    {complete ? "✓" : s.n}
+                  </div>
+                  <span
+                    className={`text-sm ${
+                      current
+                        ? "font-bold text-ink"
+                        : "font-medium text-ink-muted"
+                    }`}
+                  >
+                    {s.label}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </aside>
 
@@ -162,6 +214,7 @@ export default function ReportFlowPage() {
               <div className="mb-5 flex flex-col gap-3.5 rounded-2xl border border-border bg-surface p-6">
                 {(["surveys", "budget", "orgAssess"] as const).map((key) => {
                   const d = DATA_DETAILS[key];
+                  const completed = d.completed || !!dataForms[key];
                   return (
                     <div
                       key={key}
@@ -171,13 +224,21 @@ export default function ReportFlowPage() {
                         checked={report.share[key]}
                         onToggle={() => toggleShare(key)}
                         label={d.label}
-                        hint={d.meta}
+                        hint={completed ? "Completed" : d.meta}
                       />
                       <button
-                        onClick={() => setDataModalKey(key)}
+                        onClick={() =>
+                          completed
+                            ? setDataModalKey(key)
+                            : window.open(
+                                `/data/${key}`,
+                                "_blank",
+                                "noopener,noreferrer",
+                              )
+                        }
                         className="inline-flex items-center gap-2 rounded-lg border border-border-strong bg-white px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 enabled:hover:border-accent disabled:cursor-not-allowed disabled:opacity-50"
                       >
-                        {d.completed ? "View summary" : "Open form"}
+                        {completed ? "View summary" : "Open form ↗"}
                       </button>
                     </div>
                   );
@@ -216,12 +277,18 @@ export default function ReportFlowPage() {
                   </div>
                 )}
               </div>
-              <button
-                onClick={() => setStep(2)}
-                className="inline-flex items-center gap-2 rounded-xl bg-accent px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Next →
-              </button>
+              <div className="flex gap-2.5">
+                <MarkCompleteButton
+                  complete={isComplete(1)}
+                  onClick={() => toggleStepComplete(1)}
+                />
+                <button
+                  onClick={() => setStep(2)}
+                  className="inline-flex items-center gap-2 rounded-xl bg-accent px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Next →
+                </button>
+              </div>
             </div>
           )}
 
@@ -236,6 +303,7 @@ export default function ReportFlowPage() {
                   <ReportQuestionStep
                     stepDef={stepDef}
                     chat={chat}
+                    marked={isComplete(report.step)}
                     onTogglePick={(itemId) =>
                       updateReport(grantId, (r) => ({
                         ...r,
@@ -270,18 +338,7 @@ export default function ReportFlowPage() {
                         },
                       }))
                     }
-                    onMarkComplete={() =>
-                      updateReport(grantId, (r) => ({
-                        ...r,
-                        chat: {
-                          ...r.chat,
-                          [questionStepId]: {
-                            ...r.chat[questionStepId],
-                            marked: !r.chat[questionStepId].marked,
-                          },
-                        },
-                      }))
-                    }
+                    onMarkComplete={() => toggleStepComplete(report.step)}
                   />
                   <div className="mt-5 flex gap-2.5">
                     <button
@@ -358,6 +415,10 @@ export default function ReportFlowPage() {
                 >
                   Back
                 </button>
+                <MarkCompleteButton
+                  complete={isComplete(6)}
+                  onClick={() => toggleStepComplete(6)}
+                />
                 <button
                   onClick={() => setStep(7)}
                   className="inline-flex items-center gap-2 rounded-xl bg-accent px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
@@ -430,6 +491,21 @@ export default function ReportFlowPage() {
                 </ul>
               </div>
 
+              {!canSave && (
+                <div className="mb-4 rounded-2xl border border-warning-border bg-warning-bg px-5 py-4">
+                  <div className="mb-1 text-sm font-bold text-warning-ink">
+                    Finish every step before saving
+                  </div>
+                  <p className="text-sm leading-normal text-warning-ink">
+                    Mark these as complete first:{" "}
+                    {incompleteSteps
+                      .map((n) => STEP_NAV.find((s) => s.n === n)?.label)
+                      .join(", ")}
+                    .
+                  </p>
+                </div>
+              )}
+
               <div className="flex gap-2.5">
                 <button
                   onClick={() => setStep(6)}
@@ -439,6 +515,7 @@ export default function ReportFlowPage() {
                 </button>
                 <button
                   onClick={saveToGrant}
+                  disabled={!canSave}
                   className="inline-flex items-center gap-2 rounded-xl bg-accent px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Save to grant →
@@ -455,9 +532,9 @@ export default function ReportFlowPage() {
           onClose={() => setDataModalKey(null)}
           title={dataModal.label}
         >
-          {dataModal.summary ? (
+          {dataModalSummary ? (
             <div className="flex flex-col gap-3">
-              {dataModal.summary.map((row) => (
+              {dataModalSummary.map((row) => (
                 <div key={row.question}>
                   <div className="mb-0.5 text-xs text-ink-muted">
                     {row.question}
@@ -482,6 +559,28 @@ export default function ReportFlowPage() {
         </Modal>
       )}
     </div>
+  );
+}
+
+/** Toggle a report step's completion. Only this marks a step complete. */
+function MarkCompleteButton({
+  complete,
+  onClick,
+}: {
+  complete: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`inline-flex items-center gap-2 rounded-xl border px-5 py-3 text-sm font-semibold whitespace-nowrap transition duration-150 ${
+        complete
+          ? "border-success-border bg-success-bg text-success-ink"
+          : "border-border-strong bg-white text-ink enabled:hover:border-accent"
+      }`}
+    >
+      {complete ? "✓ Marked as complete" : "Mark as complete"}
+    </button>
   );
 }
 

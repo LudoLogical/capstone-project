@@ -1,7 +1,6 @@
 import type Grant from "@/types/grant";
 import type Initiative from "@/types/initiative";
 import GrantRecord, { GrantLifecycleStage } from "@/types/grantRecord";
-import type { Issue } from "@/types/constants";
 
 export function getGrantRecord(
   initiative: Initiative,
@@ -20,7 +19,11 @@ export function isSaved(record: GrantRecord | undefined): boolean {
 
 export type SearchFilters = {
   query: string;
-  issues: Issue[];
+  // Issue tags and locations are free-form: the presets are suggestions, but
+  // the user can type their own, so these are plain strings rather than the
+  // canonical `Issue` union.
+  issues: string[];
+  // At most one organization type (radio, single-select). Empty = any.
   orgTypes: string[];
   locations: string[];
   deadlineFrom: string;
@@ -50,7 +53,7 @@ export function filterGrants(grants: Grant[], filters: SearchFilters): Grant[] {
     }
     if (
       filters.issues.length > 0 &&
-      !filters.issues.some((i) => grant.issues.includes(i))
+      !filters.issues.some((i) => (grant.issues as string[]).includes(i))
     ) {
       return false;
     }
