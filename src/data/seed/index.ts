@@ -10,6 +10,7 @@ export * from "./jargon";
 export * from "./provenance";
 export * from "./orgProfiles";
 export * from "./accountFacts";
+export * from "./repository";
 export * from "./rueaContent";
 export * from "./dataDetails";
 export * from "./reportQuestions";
