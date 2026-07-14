@@ -7,9 +7,9 @@ import Grant from "@/types/grant";
 import Initiative from "@/types/initiative";
 
 /**
- * TODO
+ * Defines the tasks that this tool performs using artificial intelligence.
  */
-export enum InstructionSet {
+export enum AIIntegration {
   GrantIngestion = "grantIngestion",
   ReportSuggestions = "reportSuggestions",
   ReportConversation = "reportConversation",
@@ -18,11 +18,11 @@ export enum InstructionSet {
 const AI_DIR = path.join(process.cwd(), "src", "ai");
 const INSTRUCTIONS = new Map<string, { prompt: string; schema: unknown }>();
 
-for (const instructionSet in InstructionSet) {
-  INSTRUCTIONS.set(instructionSet, {
-    prompt: readFileSync(path.join(AI_DIR, instructionSet + ".md"), "utf-8"),
+for (const integration in AIIntegration) {
+  INSTRUCTIONS.set(integration, {
+    prompt: readFileSync(path.join(AI_DIR, integration + ".md"), "utf-8"),
     schema: JSON.parse(
-      readFileSync(path.join(AI_DIR, instructionSet + ".json"), "utf-8"),
+      readFileSync(path.join(AI_DIR, integration + ".json"), "utf-8"),
     ),
   });
 }
@@ -31,9 +31,6 @@ function getAI() {
   return new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 }
 
-/**
- * TODO
- */
 export type GrantIngestionResponse = {
   details?: {
     name: string;
@@ -60,13 +57,22 @@ export type GrantIngestionResponse = {
 };
 
 /**
- * TODO
- * @param url
- * @returns
+ * Determines whether the specified URL is a listing for a single, specific
+ * grant opportunity, and, if so, extracts a set of details about it from the
+ * content of that listing and any relevant webpages linked within it.
+ *
+ * **This function leverages artificial intelligence.**
+ *
+ * @param url the URL of the potential grant opportunity
+ * @returns the extracted details if the URL is in fact a listing for a
+ * single, specific grant opportunity; an empty object otherwise
+ * @see {@link GrantIngestionResponse}
  */
-export async function ingestGrant(url: string) {
+export async function ingestGrant(
+  url: string,
+): Promise<GrantIngestionResponse> {
   const ai = getAI();
-  const instructions = INSTRUCTIONS.get(InstructionSet.GrantIngestion);
+  const instructions = INSTRUCTIONS.get(AIIntegration.GrantIngestion);
   const response = await ai.models.generateContent({
     model: "gemini-3.5-flash",
     contents: instructions!.prompt.replace(/<0>/gi, url),
@@ -84,16 +90,13 @@ export async function ingestGrant(url: string) {
   return JSON.parse(response.text ?? "{}") as GrantIngestionResponse;
 }
 
-/**
- * TODO
- */
 export type InitialReportSuggestionsResponse = {
   suggestions: number[];
 };
 
 /**
  * TODO
- * @param grant
+ * @param grant the Grant
  * @param initiative
  * @param questionIndex
  * @returns
@@ -104,11 +107,11 @@ export async function generateInitialReportSuggestions(
   questionIndex: number,
 ) {
   const ai = getAI();
-  const instructions = INSTRUCTIONS.get(InstructionSet.ReportSuggestions);
+  const instructions = INSTRUCTIONS.get(AIIntegration.ReportSuggestions);
   const response = await ai.models.generateContent({
     model: "gemini-3.5-flash",
     contents: instructions!.prompt
-      .replace(/<0>/gi, grant.requirements.reporting.asQuestions[questionIndex])
+      .replace(/<0>/gi, grant.requirements.reporting[questionIndex].question)
       .replace(/<1>/gi, "") // TODO: Inject grant details
       .replace(/<2>/gi, ""), // TODO: Inject all global data and Initiative-specific data
     config: {
@@ -124,9 +127,6 @@ export async function generateInitialReportSuggestions(
   return JSON.parse(response.text ?? "{}") as InitialReportSuggestionsResponse;
 }
 
-/**
- * TODO
- */
 export type ReportConversationResponse = {
   message: string;
   suggestions: number[];
@@ -146,11 +146,11 @@ export async function generateReportConversationTurn(
   questionIndex: number,
 ) {
   const ai = getAI();
-  const instructions = INSTRUCTIONS.get(InstructionSet.ReportConversation);
+  const instructions = INSTRUCTIONS.get(AIIntegration.ReportConversation);
   const response = await ai.models.generateContent({
     model: "gemini-3.5-flash",
     contents: instructions!.prompt
-      .replace(/<0>/gi, grant.requirements.reporting.asQuestions[questionIndex])
+      .replace(/<0>/gi, grant.requirements.reporting[questionIndex].question)
       .replace(/<1>/gi, "") // TODO: Inject grant details
       .replace(/<2>/gi, ""), // TODO: Inject all global data and Initiative-specific data
     config: {

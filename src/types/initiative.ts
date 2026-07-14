@@ -54,6 +54,11 @@ type Initiative = {
   contactEmail: string;
 
   /**
+   * The InitiativeType that best describes this Initiative.
+   */
+  type: InitiativeType;
+
+  /**
    * The mission at the heart of this Initiative.
    */
   mission: string;
