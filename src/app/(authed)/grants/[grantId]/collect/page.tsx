@@ -17,9 +17,13 @@ export default function DataCollectionWizardPage() {
   const view = useGrantView(grantId);
   const wizard = useAppStore((s) => s.getWizard(grantId));
   const updateWizard = useAppStore((s) => s.updateWizard);
+  const dataForms = useAppStore((s) => s.dataForms);
   const addToast = useAppStore((s) => s.addToast);
   const [urlDraft, setUrlDraft] = useState("");
   const [dataModalKey, setDataModalKey] = useState<string | null>(null);
+  // Set once a data point is added, to show a success confirmation instead of
+  // silently bouncing back to the dashboard.
+  const [addedItem, setAddedItem] = useState<string | null>(null);
 
   if (!view) return null;
   const { grant } = view;
@@ -54,13 +58,23 @@ export default function DataCollectionWizardPage() {
       rueaExpanded: { ...w.rueaExpanded, [id]: !w.rueaExpanded[id] },
     }));
 
-  const finish = () => {
+  const finish = (label: string) => {
     addToast("Supporting data added to your grant.");
-    router.push("/dashboard");
+    setAddedItem(label);
   };
 
   const foundSections = RUEA_SECTIONS.filter((s) => wizard.found[s.id]);
   const dataModal = dataModalKey ? DATA_DETAILS[dataModalKey] : null;
+  // A form completed in the new tab has no seed summary; fall back to the
+  // values the user submitted.
+  const dataModalSummary =
+    dataModal?.summary ??
+    (dataModalKey && dataForms[dataModalKey]
+      ? Object.entries(dataForms[dataModalKey]).map(([question, answer]) => ({
+          question,
+          answer,
+        }))
+      : null);
 
   return (
     <div className="mx-auto max-w-3xl animate-nc-rise px-8 pt-7 pb-20">
@@ -110,6 +124,7 @@ export default function DataCollectionWizardPage() {
           <div className="mb-5 flex flex-col gap-3.5 rounded-2xl border border-border bg-surface p-6">
             {(["surveys", "budget", "orgAssess"] as const).map((key) => {
               const d = DATA_DETAILS[key];
+              const completed = d.completed || !!dataForms[key];
               return (
                 <div
                   key={key}
@@ -119,13 +134,21 @@ export default function DataCollectionWizardPage() {
                     checked={wizard.share[key]}
                     onToggle={() => toggleShare(key)}
                     label={d.label}
-                    hint={d.meta}
+                    hint={completed ? "Completed" : d.meta}
                   />
                   <button
-                    onClick={() => setDataModalKey(key)}
+                    onClick={() =>
+                      completed
+                        ? setDataModalKey(key)
+                        : window.open(
+                            `/data/${key}`,
+                            "_blank",
+                            "noopener,noreferrer",
+                          )
+                    }
                     className="inline-flex items-center gap-2 rounded-lg border border-border-strong bg-white px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 enabled:hover:border-accent disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    {d.completed ? "View summary" : "Open form"}
+                    {completed ? "View summary" : "Open form ↗"}
                   </button>
                 </div>
               );
@@ -259,7 +282,7 @@ export default function DataCollectionWizardPage() {
                   section={s}
                   expanded={!!wizard.rueaExpanded[s.id]}
                   onToggle={() => toggleRuea(s.id)}
-                  onAdd={finish}
+                  onAdd={() => finish(s.analysis.datum.content)}
                 />
               ))
             )}
@@ -273,15 +296,58 @@ export default function DataCollectionWizardPage() {
         </div>
       )}
 
+      {addedItem && (
+        <Modal
+          open
+          onClose={() => setAddedItem(null)}
+          title="Added to your grant"
+        >
+          <div className="mb-4 flex items-start gap-3">
+            <div className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-success-bg text-lg text-success-ink">
+              ✓
+            </div>
+            <div>
+              <p className="text-sm leading-normal text-ink-body">
+                <span className="font-semibold">{addedItem}</span> is now part of
+                your supporting data for this application.
+              </p>
+              <p className="mt-1.5 text-sm leading-normal text-ink-muted">
+                Add more evidence, or head back when you&apos;re ready.
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-wrap justify-end gap-2.5">
+            <button
+              onClick={() => setAddedItem(null)}
+              className="rounded-lg border border-border-strong bg-white px-4 py-2.5 text-sm font-semibold text-ink transition duration-150 enabled:hover:border-accent"
+            >
+              Add more data
+            </button>
+            <button
+              onClick={() => router.push(`/grants/${grant.id}`)}
+              className="rounded-lg border border-border-strong bg-white px-4 py-2.5 text-sm font-semibold text-ink transition duration-150 enabled:hover:border-accent"
+            >
+              View grant
+            </button>
+            <button
+              onClick={() => router.push("/")}
+              className="rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-white shadow-cta transition duration-150 enabled:hover:brightness-105"
+            >
+              Back to dashboard
+            </button>
+          </div>
+        </Modal>
+      )}
+
       {dataModal && (
         <Modal
           open
           onClose={() => setDataModalKey(null)}
           title={dataModal.label}
         >
-          {dataModal.summary ? (
+          {dataModalSummary ? (
             <div className="flex flex-col gap-3">
-              {dataModal.summary.map((row) => (
+              {dataModalSummary.map((row) => (
                 <div key={row.question}>
                   <div className="mb-0.5 text-xs text-ink-muted">
                     {row.question}

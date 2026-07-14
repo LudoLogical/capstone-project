@@ -3,7 +3,6 @@
 import { useParams, useRouter } from "next/navigation";
 import { useAppStore } from "@/store/useAppStore";
 import { useGrantView, isSavedStage } from "@/store/derived";
-import { GrantLifecycleStage } from "@/types/grantRecord";
 import { formatCurrencyFull, formatDate } from "@/utils/format";
 import JargonTerm from "@/components/JargonTerm";
 
@@ -11,10 +10,9 @@ export default function GrantDetailPage() {
   const { grantId = "" } = useParams<{ grantId: string }>();
   const router = useRouter();
   const view = useGrantView(grantId);
-  const setStage = useAppStore((s) => s.setStage);
-  const addToast = useAppStore((s) => s.addToast);
+  const openCouplingModal = useAppStore((s) => s.openCouplingModal);
   const discoverable = useAppStore((s) => s.discoverable[grantId]);
-  const toggleDiscoverable = useAppStore((s) => s.toggleDiscoverable);
+  const addToast = useAppStore((s) => s.addToast);
 
   if (!view) {
     return (
@@ -28,13 +26,7 @@ export default function GrantDetailPage() {
   const saved = isSavedStage(stage);
 
   const toggleSave = () => {
-    if (saved) {
-      setStage(grant.id, GrantLifecycleStage.Unsaved);
-      addToast("Removed from saved grants.");
-    } else {
-      setStage(grant.id, GrantLifecycleStage.Saved);
-      addToast("Saved to your dashboard.");
-    }
+    openCouplingModal(saved ? "unsave" : "save", grant.id);
   };
 
   const shareGrant = () => {
@@ -126,19 +118,46 @@ export default function GrantDetailPage() {
           </button>
         </div>
 
-        {saved && (
-          <div className="mt-5 border-t border-divider-2 pt-5">
-            <CheckboxLine
-              checked={!!discoverable}
-              onToggle={() => {
-                toggleDiscoverable(grant.id);
-                addToast(
-                  discoverable
-                    ? "No longer discoverable to other applicants."
-                    : "You're now discoverable to other applicants.",
-                );
-              }}
-            />
+        {discoverable && (
+          <div className="mt-5 flex items-start gap-2.5 border-t border-divider-2 pt-5">
+            <div className="flex h-5 w-5 flex-none items-center justify-center rounded-sm border-2 border-accent bg-accent text-xs font-extrabold text-white">
+              ✓
+            </div>
+            <div className="text-sm leading-normal text-ink-muted">
+              Other organizations applying to this grant can find you as a
+              potential{" "}
+              <JargonTerm termKey="discoverable">collaborator</JargonTerm>.
+              Manage this anytime from your{" "}
+              <button
+                onClick={() => router.push("/account")}
+                className="font-semibold text-accent underline"
+              >
+                profile
+              </button>
+              , or{" "}
+              <button
+                onClick={() => openCouplingModal("uncollab", grant.id)}
+                className="font-semibold text-accent underline"
+              >
+                stop collaborating
+              </button>
+              .
+            </div>
+          </div>
+        )}
+        {saved && !discoverable && (
+          <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-divider-2 pt-5">
+            <div className="text-sm leading-normal text-ink-muted">
+              Working on this too? Let other organizations applying to this
+              grant find you as a{" "}
+              <JargonTerm termKey="discoverable">collaborator</JargonTerm>.
+            </div>
+            <button
+              onClick={() => openCouplingModal("discover", grant.id)}
+              className="inline-flex items-center gap-2 rounded-lg border border-border-strong bg-white px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 enabled:hover:border-accent"
+            >
+              🤝 List us as open to collaborate
+            </button>
           </div>
         )}
       </div>
@@ -179,39 +198,6 @@ export default function GrantDetailPage() {
             ✦ Start collecting supporting data
           </button>
         </div>
-      </div>
-    </div>
-  );
-}
-
-function CheckboxLine({
-  checked,
-  onToggle,
-}: {
-  checked: boolean;
-  onToggle: () => void;
-}) {
-  return (
-    <div
-      onClick={onToggle}
-      role="checkbox"
-      tabIndex={0}
-      aria-checked={checked}
-      className="flex cursor-pointer items-start gap-2.5"
-    >
-      <div
-        className={`flex h-5 w-5 flex-none items-center justify-center rounded-sm border-2 text-xs font-extrabold text-white ${
-          checked ? "border-accent bg-accent" : "border-checkbox"
-        }`}
-      >
-        {checked ? "✓" : ""}
-      </div>
-      <div className="text-sm leading-normal">
-        Let other organizations applying to this grant find you as a potential
-        collaborator.{" "}
-        <JargonTerm termKey="discoverable">
-          What does discoverable mean?
-        </JargonTerm>
       </div>
     </div>
   );

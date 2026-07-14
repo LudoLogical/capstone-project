@@ -7,6 +7,7 @@ import type { ReportChatState } from "@/store/useAppStore";
 type Props = {
   stepDef: ReportQuestionStep;
   chat: ReportChatState;
+  marked: boolean;
   onTogglePick: (itemId: string) => void;
   onSend: (text: string) => void;
   onMarkComplete: () => void;
@@ -15,6 +16,7 @@ type Props = {
 export default function ReportQuestionStep({
   stepDef,
   chat,
+  marked,
   onTogglePick,
   onSend,
   onMarkComplete,
@@ -102,12 +104,12 @@ export default function ReportQuestionStep({
       <button
         onClick={onMarkComplete}
         className={`inline-flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-semibold whitespace-nowrap transition duration-150 disabled:cursor-not-allowed disabled:opacity-50 ${
-          chat.marked
+          marked
             ? "border-success-border bg-success-bg text-success-ink"
             : "border-border-strong bg-white text-ink"
         }`}
       >
-        {chat.marked ? "✓ Marked as complete" : "Mark as complete"}
+        {marked ? "✓ Marked as complete" : "Mark as complete"}
       </button>
     </div>
   );

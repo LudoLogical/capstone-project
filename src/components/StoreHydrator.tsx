@@ -14,6 +14,15 @@ import { useAppStore } from "@/store/useAppStore";
 export default function StoreHydrator() {
   useEffect(() => {
     void useAppStore.persist.rehydrate();
+
+    // Forms opened in a second tab write to the same localStorage key; re-read
+    // on the cross-tab storage event so this tab picks the change up live.
+    const storageKey = useAppStore.persist.getOptions().name;
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === storageKey) void useAppStore.persist.rehydrate();
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
   }, []);
 
   return null;

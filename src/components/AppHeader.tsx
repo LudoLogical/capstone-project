@@ -3,11 +3,18 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAppStore } from "@/store/useAppStore";
+import { useHydrated } from "@/store/useHydrated";
 import { SESSION_USER } from "@/data/seed";
 
 export default function AppHeader() {
   const router = useRouter();
+  const hydrated = useHydrated();
   const signedIn = useAppStore((s) => s.signedIn);
+  const onboarded = useAppStore((s) => s.onboarded);
+  const signIn = useAppStore((s) => s.signIn);
+
+  // Onboarding takes over the full screen; hide the app chrome to match.
+  if (hydrated && signedIn && !onboarded) return null;
 
   return (
     <header className="sticky top-0 z-40 flex items-center gap-6 border-b border-border-soft bg-header-bg px-8 py-3.5 backdrop-blur-sm">
@@ -30,7 +37,7 @@ export default function AppHeader() {
       {signedIn && (
         <nav className="ml-2 flex gap-1">
           <Link
-            href="/dashboard"
+            href="/"
             className="rounded-lg px-3 py-2 text-sm font-medium text-ink-muted hover:text-ink"
           >
             Dashboard
@@ -39,7 +46,13 @@ export default function AppHeader() {
             href="/search"
             className="rounded-lg px-3 py-2 text-sm font-medium text-ink-muted hover:text-ink"
           >
-            Find Grants
+            Explore
+          </Link>
+          <Link
+            href="/account"
+            className="rounded-lg px-3 py-2 text-sm font-medium text-ink-muted hover:text-ink"
+          >
+            Profile
           </Link>
         </nav>
       )}
@@ -59,7 +72,7 @@ export default function AppHeader() {
         </div>
       ) : (
         <button
-          onClick={() => router.push("/")}
+          onClick={() => signIn()}
           className="px-2.5 py-2 text-sm font-medium text-ink-muted enabled:hover:text-ink"
         >
           Sign in

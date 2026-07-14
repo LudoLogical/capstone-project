@@ -8,6 +8,7 @@ import {
   GRANT_HEALTHY_NEIGHBORHOODS,
   GRANT_FOOD_ACCESS,
   GRANT_GREEN_SPACES,
+  GRANT_YOUTH_DIGITAL_WELLNESS,
 } from "./grants";
 import { REGION_PITTSBURGH, LOC_HILLTOP } from "./geo";
 import {
@@ -33,6 +34,25 @@ export const RECORD_HEALTHY_NEIGHBORHOODS: GrantRecord = {
     "Strong fit: Hilltop Wellness Collective's service area and health-equity focus line up directly with this grant's eligibility and target region.",
   stage: GrantLifecycleStage.Saved,
   writingAnalyses: [healthyNeighborhoodsWritingAnalysis],
+  reportingAnalyses: [],
+};
+
+// ---- In progress: Youth Digital Wellness Grant ------------------------------
+// Saved + a draft underway (a second application in the "Applications" column).
+
+const youthDigitalWellnessWritingAnalysis: GrantWritingAnalysis = {
+  locations: [LOC_HILLTOP],
+  regions: [REGION_PITTSBURGH],
+  data: [ANALYSIS_RESIDENTS_REACHED],
+};
+
+export const RECORD_YOUTH_DIGITAL_WELLNESS: GrantRecord = {
+  id: "gr-youth-digital-wellness",
+  grant: GRANT_YOUTH_DIGITAL_WELLNESS,
+  alignmentAnalysis:
+    "Emerging fit: Hilltop Wellness Collective's youth programming overlaps with this grant's digital-literacy focus — a draft is underway to test the angle.",
+  stage: GrantLifecycleStage.Saved,
+  writingAnalyses: [youthDigitalWellnessWritingAnalysis],
   reportingAnalyses: [],
 };
 
@@ -81,6 +101,10 @@ INITIATIVE_HILLTOP_WELLNESS.grantRecords.set(
   RECORD_HEALTHY_NEIGHBORHOODS,
 );
 INITIATIVE_HILLTOP_WELLNESS.grantRecords.set(
+  GRANT_YOUTH_DIGITAL_WELLNESS.id,
+  RECORD_YOUTH_DIGITAL_WELLNESS,
+);
+INITIATIVE_HILLTOP_WELLNESS.grantRecords.set(
   GRANT_FOOD_ACCESS.id,
   RECORD_FOOD_ACCESS,
 );
@@ -88,7 +112,3 @@ INITIATIVE_HILLTOP_WELLNESS.grantRecords.set(
   GRANT_GREEN_SPACES.id,
   RECORD_GREEN_SPACES,
 );
-
-// GRANT_YOUTH_DIGITAL_WELLNESS is intentionally left out of the Map — it
-// represents a grant the Initiative hasn't engaged with yet, browsable only
-// through Search.
