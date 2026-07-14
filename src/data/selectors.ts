@@ -134,4 +134,13 @@ export const LOCATION_OPTIONS = [
   "City of Pittsburgh",
   "Allegheny County",
   "Westmoreland County",
+  "Beaver County",
+  "Butler County",
+  "Washington County",
+  "Armstrong County",
+  "Fayette County",
+  "Hill District",
+  "East Liberty",
+  "Homestead",
+  "McKeesport",
 ];

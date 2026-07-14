@@ -32,7 +32,7 @@ export default function GrantCard({
             tabIndex={0}
             className="mb-1 cursor-pointer font-serif text-xl"
           >
-            {grant.purpose.split(".")[0]}
+            {grant.name}
           </div>
           <div className="mb-2.5 text-sm text-ink-muted">
             {grant.grantor} ·{" "}
