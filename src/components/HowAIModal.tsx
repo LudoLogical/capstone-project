@@ -16,7 +16,7 @@ const TIERS = [
     label: "AI SUGGESTS",
     color: "text-info-ink",
     bg: "bg-info-bg",
-    body: "The AI surfaces options — like a possible collaborator — but a human always takes the next step. It never reaches out on your behalf.",
+    body: "The AI surfaces options - like a possible collaborator - but a human always takes the next step. It never reaches out on your behalf.",
   },
   {
     icon: "🔒",

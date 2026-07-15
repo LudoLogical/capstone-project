@@ -1,10 +1,55 @@
 "use client";
 
+import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAppStore } from "@/store/useAppStore";
 import { useGrantView, isSavedStage } from "@/store/derived";
+import { GrantLifecycleStage } from "@/types/grantRecord";
 import { formatCurrencyFull, formatDate } from "@/utils/format";
-import JargonTerm from "@/components/JargonTerm";
+import { INTERESTED_BY_GRANT, ORG_PROFILES } from "@/data/seed";
+import ShareModal from "@/components/ShareModal";
+import BackButton from "@/components/BackButton";
+
+/** Initials for an org avatar chip, e.g. "Hilltop Harvest" → "HH". */
+function initialsOf(name: string): string {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() ?? "")
+    .join("");
+}
+
+// "How your work lines up" - the fit read, expressed as sourced observations
+// rather than a single score (see items 2 & 9). Each line traces back to your
+// living profile or the funder's stated priorities.
+type AlignmentPoint = { text: string; source: string };
+
+const STRENGTHS: AlignmentPoint[] = [
+  {
+    text: "You work in the neighborhoods this funder targets.",
+    source: "Your living profile · Who We Serve → Service area",
+  },
+  {
+    text: "Your requested range sits comfortably within this grant's award size.",
+    source: "Funder · stated award size",
+  },
+  {
+    text: "Your focus areas line up directly with this grant's priorities.",
+    source: "Your living profile · issue tags",
+  },
+];
+
+const GAPS: AlignmentPoint[] = [
+  {
+    text: "This funder has favored applicants with an existing relationship - consider requesting a warm introduction.",
+    source: "Funder · past awardee patterns",
+  },
+  {
+    text: "Your reporting history for a grant of this size is still thin - pair your application with strong baseline data.",
+    source: "Your records · reporting history",
+  },
+];
 
 function formatReportFrequency(months: number): string {
   if (months < 0) return "None required";
@@ -68,7 +113,12 @@ export default function GrantDetailPage() {
   const view = useGrantView(grantId);
   const openCouplingModal = useAppStore((s) => s.openCouplingModal);
   const discoverable = useAppStore((s) => s.discoverable[grantId]);
+  const startApplication = useAppStore((s) => s.startApplication);
+  const awardedMark = useAppStore((s) => s.awardedGrants[grantId]);
+  const setAwarded = useAppStore((s) => s.setAwarded);
   const addToast = useAppStore((s) => s.addToast);
+  const [shareOpen, setShareOpen] = useState(false);
+  const [shareOrgId, setShareOrgId] = useState<string | null>(null);
 
   if (!view) {
     return (
@@ -78,33 +128,58 @@ export default function GrantDetailPage() {
     );
   }
 
-  const { grant, stage } = view;
+  const { grant, stage, seedStage } = view;
   const saved = isSavedStage(stage);
+  const isAwarded =
+    seedStage === GrantLifecycleStage.Awarded ||
+    seedStage === GrantLifecycleStage.Reported ||
+    !!awardedMark;
 
   const toggleSave = () => {
     openCouplingModal(saved ? "unsave" : "save", grant.id);
   };
-
-  const shareGrant = () => {
-    navigator.clipboard?.writeText(window.location.href).catch(() => {});
-    addToast("Link copied.");
+  const toggleCollaborate = () => {
+    openCouplingModal(discoverable ? "uncollab" : "discover", grant.id);
   };
 
+  // Grey when off, orange (accent) when on - see items 6 & 8.
+  const toggleClass = (on: boolean) =>
+    `inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold whitespace-nowrap transition duration-150 ${
+      on
+        ? "bg-accent text-white shadow-cta hover:brightness-105"
+        : "border border-border-strong bg-white text-ink hover:border-accent"
+    }`;
+
+  const collabOrgs = (INTERESTED_BY_GRANT[grant.id] ?? [])
+    .map((id) => ORG_PROFILES[id])
+    .filter(Boolean);
+
   return (
-    <div className="mx-auto max-w-3xl px-8 pt-7 pb-20 animate-nc-rise">
-      <button
-        onClick={() => router.push("/search")}
-        className="mb-4 inline-block text-sm font-semibold text-ink-muted hover:text-ink"
-      >
-        ← Back to search
-      </button>
+    <div className="mx-auto w-full px-8 pt-7 pb-20 animate-nc-rise">
+      <BackButton fallback="/search" />
 
       <div className="mb-5 rounded-2xl border border-border bg-surface p-8">
-        <div className="mb-2 font-serif text-3xl">
-          {grant.name}
-        </div>
-        <div className="mb-4 text-sm text-ink-muted">
-          {grant.grantor} · {grant.targetRegions.map((r) => r.name).join(", ")}
+        <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
+          <div className="min-w-0">
+            <div className="mb-2 font-serif text-3xl">{grant.name}</div>
+            <div className="text-sm text-ink-muted">
+              {grant.grantor} ·{" "}
+              {grant.targetRegions.map((r) => r.name).join(", ")}
+            </div>
+          </div>
+          <div className="flex flex-none flex-wrap gap-2.5">
+            <button onClick={toggleSave} className={toggleClass(saved)}>
+              {saved ? "★ Saved for Later" : "☆ Save for Later"}
+            </button>
+            <button
+              onClick={toggleCollaborate}
+              className={toggleClass(!!discoverable)}
+            >
+              {discoverable
+                ? "🤝 Open to Collaborate"
+                : "🤝 List as Open to Collaborate"}
+            </button>
+          </div>
         </div>
         <a
           href={grant.link}
@@ -170,83 +245,27 @@ export default function GrantDetailPage() {
 
         <div className="flex flex-wrap gap-2.5">
           <button
-            onClick={toggleSave}
-            className="inline-flex items-center gap-2 rounded-lg border border-border-strong bg-white px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 enabled:hover:border-accent disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {saved ? "★ Saved" : "☆ Save"}
-          </button>
-          <button
-            onClick={() => router.push(`/grants/${grant.id}/collaborate`)}
-            className="inline-flex items-center gap-2 rounded-lg border border-border-strong bg-white px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 enabled:hover:border-accent disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            🤝 Find Collaborators for this Grant
-          </button>
-          <button
-            onClick={shareGrant}
+            onClick={() => setShareOpen(true)}
             className="inline-flex items-center gap-2 rounded-lg border border-border-strong bg-white px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 enabled:hover:border-accent disabled:cursor-not-allowed disabled:opacity-50"
           >
             Share link
           </button>
         </div>
-
-        {discoverable && (
-          <div className="mt-5 flex items-start gap-2.5 border-t border-divider-2 pt-5">
-            <div className="flex h-5 w-5 flex-none items-center justify-center rounded-sm border-2 border-accent bg-accent text-xs font-extrabold text-white">
-              ✓
-            </div>
-            <div className="text-sm leading-normal text-ink-muted">
-              Other organizations applying to this grant can find you as a
-              potential{" "}
-              <JargonTerm termKey="discoverable">collaborator</JargonTerm>.
-              Manage this anytime from your{" "}
-              <button
-                onClick={() => router.push("/account")}
-                className="font-semibold text-accent underline"
-              >
-                profile
-              </button>
-              , or{" "}
-              <button
-                onClick={() => openCouplingModal("uncollab", grant.id)}
-                className="font-semibold text-accent underline"
-              >
-                stop collaborating
-              </button>
-              .
-            </div>
-          </div>
-        )}
-        {saved && !discoverable && (
-          <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-divider-2 pt-5">
-            <div className="text-sm leading-normal text-ink-muted">
-              Working on this too? Let other organizations applying to this
-              grant find you as a{" "}
-              <JargonTerm termKey="discoverable">collaborator</JargonTerm>.
-            </div>
-            <button
-              onClick={() => openCouplingModal("discover", grant.id)}
-              className="inline-flex items-center gap-2 rounded-lg border border-border-strong bg-white px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 enabled:hover:border-accent"
-            >
-              🤝 List us as open to collaborate
-            </button>
-          </div>
-        )}
       </div>
 
-      {grant.award.benefits.length > 0 && (
-        <DetailCard title="What's included beyond the funding">
-          <BulletList items={grant.award.benefits} />
-        </DetailCard>
-      )}
-
       {grant.requirements.eligibility.length > 0 && (
-        <DetailCard title="Who's eligible">
+        <DetailCard title="Eligibility">
           <BulletList items={grant.requirements.eligibility} />
         </DetailCard>
       )}
 
       {grant.requirements.application.length > 0 && (
-        <DetailCard title="How to apply">
+        <DetailCard title="Requirement checklist">
+          <p className="mb-3.5 text-xs leading-relaxed text-ink-muted">
+            Built from this funder&apos;s past requirements - a starting point
+            for where to begin, not the official list. Always check it against{" "}
+            {grant.grantor}&apos;s own guidelines.
+          </p>
           <BulletList items={grant.requirements.application} ordered />
         </DetailCard>
       )}
@@ -257,86 +276,190 @@ export default function GrantDetailPage() {
         </DetailCard>
       )}
 
-      {grant.requirements.reporting.length > 0 && (
-        <DetailCard title="Reporting requirements">
-          <div className="flex flex-col gap-3.5">
-            {grant.requirements.reporting.map((r) => (
-              <div key={r.shortName}>
-                <div className="text-sm font-bold text-ink">{r.shortName}</div>
-                <div className="text-sm leading-relaxed text-ink-body">
-                  {r.statement}
+      {/* How your work lines up - the fit read, no score (items 2 & 9) */}
+      <div className="mb-3.5 rounded-2xl border border-border bg-surface p-6">
+        <div className="mb-1 inline-flex items-center gap-1 rounded-full border border-accent-tint-border bg-accent-tint px-3 py-1 text-xs font-bold text-accent-ink">
+          ✦ AI-ASSISTED
+        </div>
+        <div className="mt-2.5 text-base font-bold">How your work lines up</div>
+        <p className="mt-1.5 text-xs leading-relaxed text-ink-muted">
+          Traced to your records and this funder&apos;s stated priorities.
+          It&apos;s input for your call, not a yes/no.
+        </p>
+
+        <div className="mt-4 text-xs font-bold tracking-wider text-success-ink uppercase">
+          Working in your favor
+        </div>
+        <div className="mt-2.5 flex flex-col gap-2.5">
+          {STRENGTHS.map((s) => (
+            <div
+              key={s.text}
+              className="rounded-xl border border-success-border-2 bg-success-bg-2 px-4 py-3"
+            >
+              <div className="text-sm leading-relaxed text-ink-body">
+                {s.text}
+              </div>
+              <div className="mt-1 text-xs text-ink-muted">{s.source}</div>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-4 text-xs font-bold tracking-wider text-warning-ink uppercase">
+          Where to strengthen
+        </div>
+        <div className="mt-2.5 flex flex-col gap-2.5">
+          {GAPS.map((g) => (
+            <div
+              key={g.text}
+              className="rounded-xl border border-warning-border-2 bg-warning-bg-2 px-4 py-3"
+            >
+              <div className="text-sm leading-relaxed text-ink-body">
+                {g.text}
+              </div>
+              <div className="mt-1 text-xs text-ink-muted">{g.source}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Organizations open to collaborating on this grant (item 2) */}
+      <div className="mb-3.5 rounded-2xl border border-border bg-surface p-6">
+        <div className="text-base font-bold">
+          Organizations open to collaborating on this
+        </div>
+        <p className="mt-1.5 text-xs leading-relaxed text-ink-muted">
+          New Sun Rising members who opted in for this grant. Every introduction
+          is one human reaching out to another - you write it, you send it, you
+          decide.
+        </p>
+        {collabOrgs.length === 0 ? (
+          <p className="mt-4 text-sm leading-relaxed text-ink-muted">
+            No organizations are open to collaborating on this grant yet.
+          </p>
+        ) : (
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            {collabOrgs.slice(0, 4).map((org) => (
+              <div
+                key={org.initiativeId}
+                className="flex items-start gap-3 rounded-xl border border-border bg-surface-alt px-4 py-3"
+              >
+                <div className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-radial from-accent-warm to-accent to-70% text-xs font-bold text-white">
+                  {initialsOf(org.name)}
                 </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm leading-tight font-bold">
+                    {org.name}
+                  </div>
+                  <div className="mt-0.5 text-xs text-ink-muted">
+                    Serves {org.place}
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShareOrgId(org.initiativeId)}
+                  aria-label={`Share ${org.name}`}
+                  className="flex-none rounded-lg border border-border-strong bg-white px-2.5 py-1.5 text-xs font-semibold whitespace-nowrap text-ink transition duration-150 hover:border-accent"
+                >
+                  ↗ Share
+                </button>
               </div>
             ))}
           </div>
-        </DetailCard>
-      )}
+        )}
+        <button
+          onClick={() => router.push(`/grants/${grant.id}/collaborate`)}
+          className="mt-4 inline-flex items-center gap-2 rounded-lg border border-border-strong bg-white px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 hover:border-accent"
+        >
+          See detail →
+        </button>
+      </div>
 
       <div className="flex flex-col flex-wrap gap-3.5">
-        {(grant.guidance.application.length > 0 ||
-          grant.guidance.reporting.length > 0) && (
+        {isAwarded ? (
+          <div className="rounded-2xl border border-success-border bg-success-bg px-6 py-5">
+            <div className="mb-1.5 text-base font-bold text-success-ink">
+              🏆 You&apos;ve won this grant
+            </div>
+            <p className="mb-3.5 text-sm leading-relaxed text-ink-body">
+              It now lives under Report for Awarded Grants on your dashboard.
+              Turn your records into an outcome report when you&apos;re ready.
+            </p>
+            <button
+              onClick={() => router.push(`/grants/${grant.id}/report`)}
+              className="inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:brightness-105"
+            >
+              Go to outcome report →
+            </button>
+          </div>
+        ) : (
           <div className="rounded-2xl border border-accent-tint-border bg-linear-to-br from-accent-tint-soft to-accent-tint px-6 py-5">
             <div className="mb-2.5 inline-flex items-center gap-1 rounded-full border border-accent-tint-border bg-accent-tint px-3 py-1 text-xs font-bold text-accent-ink">
               ✦ AI-ASSISTED
             </div>
-            <div className="mb-3 text-base font-bold">
-              How to make your submission stronger
-            </div>
-            {grant.guidance.application.length > 0 && (
-              <div className="mb-3.5">
-                <div className="mb-1.5 text-xs font-bold tracking-wider text-ink-muted uppercase">
-                  For your application
-                </div>
-                <BulletList items={grant.guidance.application} />
-              </div>
-            )}
-            {grant.guidance.reporting.length > 0 && (
-              <div>
-                <div className="mb-1.5 text-xs font-bold tracking-wider text-ink-muted uppercase">
-                  For your reports
-                </div>
-                <BulletList items={grant.guidance.reporting} />
-              </div>
-            )}
+            <div className="mb-1.5 text-base font-bold">Ready to apply?</div>
+            <p className="mb-3.5 text-sm leading-relaxed text-ink-muted">
+              We&apos;ll help you gather your context and supporting data first -
+              you choose what to share. This adds the grant to Data for Grant
+              Applications on your dashboard.
+            </p>
+            <button
+              onClick={() => {
+                startApplication(grant.id);
+                router.push(`/grants/${grant.id}/collect`);
+              }}
+              className="inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              ✦ Start Gathering Data for Application
+            </button>
           </div>
         )}
-
-        <div className="rounded-2xl border border-accent-tint-border bg-linear-to-br from-accent-tint-soft to-accent-tint px-6 py-5">
-          <div className="mb-2.5 inline-flex items-center gap-1 rounded-full border border-accent-tint-border bg-accent-tint px-3 py-1 text-xs font-bold text-accent-ink">
-            ✦ AI-ASSISTED
-          </div>
-          <div className="mb-1.5 text-base font-bold">
-            See how well this fits you
-          </div>
-          <p className="mb-3.5 text-sm leading-relaxed text-ink-muted">
-            An estimated fit score based on your profile and past funded
-            applications, with clear reasoning you can check.
-          </p>
-          <button
-            onClick={() => router.push(`/grants/${grant.id}/fit`)}
-            className="inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            See fit analysis →
-          </button>
-        </div>
-        <div className="rounded-2xl border border-accent-tint-border bg-linear-to-br from-accent-tint-soft to-accent-tint px-6 py-5">
-          <div className="mb-2.5 inline-flex items-center gap-1 rounded-full border border-accent-tint-border bg-accent-tint px-3 py-1 text-xs font-bold text-accent-ink">
-            ✦ AI-ASSISTED
-          </div>
-          <div className="mb-1.5 text-base font-bold">
-            Start collecting your data
-          </div>
-          <p className="mb-3.5 text-sm leading-relaxed text-ink-muted">
-            Turn what you already have into grant-ready, cited evidence.
-          </p>
-          <button
-            onClick={() => router.push(`/grants/${grant.id}/collect`)}
-            className="inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            ✦ Start collecting supporting data
-          </button>
-        </div>
       </div>
+
+      {!isAwarded && (
+        <div className="mt-3.5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-surface px-6 py-5">
+          <div className="min-w-56 flex-1">
+            <div className="mb-1 text-base font-bold">
+              Already won this grant?
+            </div>
+            <p className="text-sm leading-relaxed text-ink-muted">
+              Mark it as awarded to move it into Report for Awarded Grants and
+              start your outcome report.
+            </p>
+          </div>
+          <button
+            onClick={() => {
+              setAwarded(grant.id, true);
+              addToast("Marked as awarded. Find it under your reports.");
+            }}
+            className="inline-flex items-center gap-2 rounded-lg border border-border-strong bg-white px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 enabled:hover:border-accent"
+          >
+            🏆 Mark as awarded
+          </button>
+        </div>
+      )}
+
+      {shareOpen && (
+        <ShareModal
+          name={grant.name}
+          link={typeof window !== "undefined" ? window.location.href : grant.link}
+          onClose={() => setShareOpen(false)}
+        />
+      )}
+
+      {shareOrgId &&
+        (() => {
+          const org = ORG_PROFILES[shareOrgId];
+          if (!org) return null;
+          const base =
+            typeof window !== "undefined" ? window.location.origin : "";
+          return (
+            <ShareModal
+              title="Share this organization"
+              name={`${org.name} · Serves ${org.place}`}
+              link={`${base}/grants/${grant.id}/collaborate/${org.initiativeId}`}
+              onClose={() => setShareOrgId(null)}
+            />
+          );
+        })()}
     </div>
   );
 }

@@ -11,7 +11,7 @@ import { useHydrated } from "@/store/useHydrated";
  *
  * Auth here is mocked exactly as it was in the Vite app: `signedIn` is a plain
  * boolean the landing page flips by calling `signIn()`. There is no credential,
- * no cookie, and deliberately no middleware guard — the flag lives in
+ * no cookie, and deliberately no middleware guard - the flag lives in
  * localStorage, which middleware cannot read.
  *
  * The one thing this cannot do is decide before the store has rehydrated.

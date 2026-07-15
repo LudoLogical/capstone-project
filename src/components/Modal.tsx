@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 
 type ModalProps = {
   open: boolean;
@@ -13,6 +14,12 @@ type ModalProps = {
    * pass anything.
    */
   maxWidth?: string;
+  /**
+   * Bare mode: render the dialog surface with no padding, no title row, and no
+   * built-in close button, so the caller fully controls the layout (e.g. a
+   * full-bleed colored header with its own close control).
+   */
+  bare?: boolean;
 };
 
 export default function Modal({
@@ -21,6 +28,7 @@ export default function Modal({
   title,
   children,
   maxWidth = "max-w-md",
+  bare = false,
 }: ModalProps) {
   useEffect(() => {
     if (!open) return;
@@ -31,9 +39,12 @@ export default function Modal({
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
-  if (!open) return null;
+  if (!open || typeof document === "undefined") return null;
 
-  return (
+  // Render into <body> via a portal so the fixed overlay is measured against the
+  // viewport, not an ancestor with a transform (the page containers animate with
+  // a transform, which would otherwise offset the modal and force scrolling).
+  return createPortal(
     <div
       role="presentation"
       onClick={onClose}
@@ -44,24 +55,33 @@ export default function Modal({
         aria-modal="true"
         aria-label={title}
         onClick={(e) => e.stopPropagation()}
-        className={`max-h-full w-full ${maxWidth} overflow-y-auto rounded-2xl bg-white p-7`}
+        className={`max-h-full w-full ${maxWidth} overflow-y-auto rounded-2xl bg-white ${
+          bare ? "" : "p-7"
+        }`}
       >
-        <div className="flex items-start justify-between gap-4">
-          {title && (
-            <h2 className="font-serif text-xl leading-tight font-medium">
-              {title}
-            </h2>
-          )}
-          <button
-            onClick={onClose}
-            aria-label="Close"
-            className="p-1 text-lg leading-none text-ink-muted enabled:hover:text-ink"
-          >
-            ✕
-          </button>
-        </div>
-        <div className={title ? "mt-4" : ""}>{children}</div>
+        {bare ? (
+          children
+        ) : (
+          <>
+            <div className="flex items-start justify-between gap-4">
+              {title && (
+                <h2 className="font-serif text-xl leading-tight font-medium">
+                  {title}
+                </h2>
+              )}
+              <button
+                onClick={onClose}
+                aria-label="Close"
+                className="p-1 text-lg leading-none text-ink-muted enabled:hover:text-ink"
+              >
+                ✕
+              </button>
+            </div>
+            <div className={title ? "mt-4" : ""}>{children}</div>
+          </>
+        )}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

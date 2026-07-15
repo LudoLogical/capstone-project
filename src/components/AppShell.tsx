@@ -1,16 +1,14 @@
 import type { ReactNode } from "react";
 import AppHeader from "./AppHeader";
-import PrivacyModal from "./PrivacyModal";
 import CouplingModals from "./CouplingModals";
 import ToastHost from "./ToastHost";
 
 /**
  * The persistent chrome that used to live in App.tsx, around <Routes/>.
  *
- * Note the order: PrivacyModal renders *before* ToastHost. In the original CSS
- * the modal sat at z-index 100 and toasts at 200, but Tailwind's baseline scale
- * tops out at z-50, so both land on the same layer and paint order decides.
- * Rendering toasts last preserves toasts-above-modals.
+ * Toasts render last so they paint above the coupling modals: Tailwind's
+ * baseline z-scale tops out at z-50, so both land on the same layer and paint
+ * order decides.
  */
 export default function AppShell({ children }: { children: ReactNode }) {
   return (
@@ -22,10 +20,9 @@ export default function AppShell({ children }: { children: ReactNode }) {
         Skip to main content
       </a>
       <AppHeader />
-      <main id="nc-main" className="flex-1">
+      <main id="nc-main" className="flex-1 px-4 pb-8 sm:px-8">
         {children}
       </main>
-      <PrivacyModal />
       <CouplingModals />
       <ToastHost />
     </>

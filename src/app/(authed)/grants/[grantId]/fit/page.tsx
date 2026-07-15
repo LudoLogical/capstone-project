@@ -5,6 +5,7 @@ import { useGrantView } from "@/store/derived";
 import { ACCOUNT_ORG_NAME } from "@/data/seed";
 import CiteButton from "@/components/CiteButton";
 import JargonTerm from "@/components/JargonTerm";
+import BackButton from "@/components/BackButton";
 
 const PROS = [
   "You work in the exact neighborhoods this funder targets.",
@@ -13,8 +14,8 @@ const PROS = [
 ];
 
 const CONS = [
-  "This funder has historically favored applicants with an existing relationship — consider requesting a warm introduction.",
-  "Your reporting history for a grant of this size is still thin — pair your application with strong baseline data.",
+  "This funder has historically favored applicants with an existing relationship - consider requesting a warm introduction.",
+  "Your reporting history for a grant of this size is still thin - pair your application with strong baseline data.",
 ];
 
 export default function FitAnalysisPage() {
@@ -26,13 +27,8 @@ export default function FitAnalysisPage() {
   const { grant } = view;
 
   return (
-    <div className="mx-auto max-w-3xl px-8 pt-7 pb-20 animate-nc-rise">
-      <button
-        onClick={() => router.push(`/grants/${grant.id}`)}
-        className="mb-4 inline-block text-sm font-semibold text-ink-muted hover:text-ink"
-      >
-        ← Back
-      </button>
+    <div className="mx-auto w-full px-8 pt-7 pb-20 animate-nc-rise">
+      <BackButton fallback={`/grants/${grant.id}`} />
 
       <div className="mb-3 inline-flex items-center gap-1 rounded-full border border-accent-tint-border bg-accent-tint px-3 py-1 text-xs font-bold text-accent-ink">
         ✦ AI-ASSISTED
@@ -56,12 +52,8 @@ export default function FitAnalysisPage() {
         </div>
         <div className="mb-2.5 flex items-center gap-2.5">
           <span className="inline-flex items-center gap-1 rounded-full border border-success-border bg-success-bg px-3 py-1 text-xs font-bold text-success-ink">
-            Strong
+            Strong alignment
           </span>
-          <span className="text-sm text-ink-muted">82% estimated fit</span>
-        </div>
-        <div className="mb-3 h-2 overflow-hidden rounded-full bg-divider-2">
-          <div className="h-full w-4/5 rounded-full bg-linear-to-r from-accent-warm to-accent" />
         </div>
         <p className="text-sm leading-normal text-ink-muted">
           Your service area, focus, and requested funding range all line up

@@ -21,6 +21,8 @@ export type OrgProfileContent = {
   mission: string;
   about: string;
   focus: string[];
+  /** Public contact inbox, used to address warm-introduction emails. */
+  email: string;
   contactConsent: boolean;
   contactName?: string;
   contactPhone?: string;
@@ -40,6 +42,7 @@ export const ORG_PROFILES: Record<string, OrgProfileContent> = {
     about:
       "Hilltop Harvest Collective operates three community gardens and a weekly mobile produce stand, focused on closing the fresh-food gap identified in the Vibrancy Index's food access layer.",
     focus: ["Food Security", "Community", "Youth"],
+    email: "hello@hilltopharvest.org",
     contactConsent: true,
     contactName: "Renata Alvarez",
     contactPhone: "(412) 555-0148",
@@ -60,6 +63,7 @@ export const ORG_PROFILES: Record<string, OrgProfileContent> = {
     about:
       "Riverside Youth Studio runs after-school and summer coding, video, and podcasting programs for teens ages 12-18, with a focus on digital literacy paired with healthy technology habits.",
     focus: ["Youth", "Technology"],
+    email: "team@riversideyouthstudio.org",
     contactConsent: false,
     signals: [
       { label: "Shares a funder with you", source: "Both organizations have applied to Grable Foundation in the past two years." },
@@ -77,6 +81,7 @@ export const ORG_PROFILES: Record<string, OrgProfileContent> = {
     about:
       "Allegheny Commons Alliance designs and stewards pocket parks and rain gardens, with technical landscape-planning expertise that many smaller community groups don't have in-house.",
     focus: ["Environment", "Community"],
+    email: "hello@alleghenycommons.org",
     contactConsent: true,
     contactName: "Theo Marsh",
     contactPhone: "(412) 555-0172",

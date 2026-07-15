@@ -36,7 +36,7 @@ export const RUEA_SECTIONS: RueaSection[] = [
       { label: "County max", value: 21.6, unit: "%", role: "max" },
     ],
     evalNote:
-      "36% below the county average — a sign prevention work is paying off.",
+      "36% below the county average - a sign prevention work is paying off.",
   },
   {
     id: "ruea-produce",

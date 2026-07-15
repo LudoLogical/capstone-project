@@ -6,7 +6,7 @@ import {
 } from "./geo";
 
 // Grant.collabOpportunitySubscribers is marked @deprecated / "under review" on
-// the type itself (see types/grant.ts) — left empty here rather than wiring
+// the type itself (see types/grant.ts) - left empty here rather than wiring
 // up a circular Grant <-> Initiative reference for a field that isn't
 // currently exercised by any UI.
 const NO_COLLAB_SUBSCRIBERS: Grant["collabOpportunitySubscribers"] = [];

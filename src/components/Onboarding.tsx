@@ -1,24 +1,13 @@
 "use client";
 
-import { ISSUES, type Issue } from "@/types/constants";
 import { useAppStore } from "@/store/useAppStore";
-
-const SERVICE_AREAS = [
-  "Hilltop",
-  "Beltzhoover",
-  "Homewood",
-  "East Liberty",
-  "Northview Heights",
-  "City of Pittsburgh",
-  "Allegheny County",
-  "Westmoreland County",
-];
+import { ISSUE_TAGS, LOCATION_OPTIONS } from "@/data/selectors";
 
 const FEATURES = [
   {
     icon: "🔎",
     title: "Find Matching Grants",
-    body: "Describe your work in plain language and let AI rank grants by how well they fit — no more scrolling directories sorted by deadline.",
+    body: "Describe your work in plain language and let AI rank grants by how well they fit - no more scrolling directories sorted by deadline.",
   },
   {
     icon: "📊",
@@ -28,7 +17,7 @@ const FEATURES = [
   {
     icon: "🤝",
     title: "Find Grant Collaborators",
-    body: "See other New Sun Rising organizations open to teaming up — then ask NSR for a warm introduction. You always decide who to reach.",
+    body: "See other New Sun Rising organizations open to teaming up - then ask NSR for a warm introduction. You always decide who to reach.",
   },
 ];
 
@@ -89,11 +78,8 @@ export default function Onboarding() {
           {/* ── Step 0: welcome + feature rundown ── */}
           {step === 0 && (
             <div>
-              <div className="mb-2.5 text-xs font-bold tracking-wider text-accent-ink-2 uppercase">
-                Welcome
-              </div>
               <h1 className="mb-2 font-serif text-3xl leading-tight font-medium">
-                Everything you need to win funding, in one place.
+                Everything you need to find and win grants, in one place
               </h1>
               <p className="mb-6 text-sm leading-relaxed text-ink-muted">
                 The Vibrancy Portal helps your organization find the right
@@ -129,9 +115,17 @@ export default function Onboarding() {
                 Tell us about your organization
               </h1>
               <p className="mb-6 text-sm leading-relaxed text-ink-muted">
-                Just the basics — you can change any of this later. It&apos;s
+                Just the basics - you can change any of this later. It&apos;s
                 what lets us find grants that fit.
               </p>
+
+              <label className="mb-2 block text-sm font-bold">Your name</label>
+              <input
+                value={org.person}
+                onChange={(e) => patchOrg({ person: e.target.value })}
+                placeholder="e.g. Maya Torres"
+                className="mb-5 w-full rounded-xl border border-border-strong bg-white px-4 py-3 text-sm text-ink outline-none focus:border-accent"
+              />
 
               <label className="mb-2 block text-sm font-bold">
                 Organization name
@@ -150,12 +144,12 @@ export default function Onboarding() {
                 </span>
               </div>
               <div className="mb-5 flex flex-wrap gap-2">
-                {ISSUES.map((issue) => (
+                {ISSUE_TAGS.map((issue) => (
                   <button
                     key={issue}
                     type="button"
-                    onClick={() => toggleIssue(issue as Issue)}
-                    className={chip(org.issues.includes(issue as Issue))}
+                    onClick={() => toggleIssue(issue)}
+                    className={chip(org.issues.includes(issue))}
                   >
                     {issue}
                   </button>
@@ -169,7 +163,7 @@ export default function Onboarding() {
                 </span>
               </div>
               <div className="flex flex-wrap gap-2">
-                {SERVICE_AREAS.map((area) => (
+                {LOCATION_OPTIONS.map((area) => (
                   <button
                     key={area}
                     type="button"
@@ -186,7 +180,7 @@ export default function Onboarding() {
                   <span className="text-base">✦</span>
                   <p className="text-sm leading-normal text-warning-ink">
                     <strong>{matchCount} grants</strong> in the New Sun Rising
-                    network already look relevant — we&apos;ll have them ready on
+                    network already look relevant - we&apos;ll have them ready on
                     your dashboard.
                   </p>
                 </div>
