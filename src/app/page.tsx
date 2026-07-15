@@ -209,7 +209,7 @@ export default function HomePage() {
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && goSearch()}
             aria-label="Search for grants by keyword"
-            placeholder="Find a grant - e.g. health programs in Pittsburgh"
+            placeholder="Search grants..."
             className="w-full min-w-72 flex-1 rounded-xl border border-border-strong bg-white px-4 py-3 text-sm text-ink outline-none focus:border-accent"
           />
           <button
