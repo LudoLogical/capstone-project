@@ -32,11 +32,14 @@ function GrantMiniCard({
   dueLabel,
   primary,
   secondary,
+  remove,
 }: {
   view: GrantView;
   dueLabel: string;
   primary?: { label: string; to?: string; onClick?: () => void };
-  secondary: { label: string; to?: string; onClick?: () => void };
+  secondary?: { label: string; to?: string; onClick?: () => void };
+  /** Renders a trash icon in the card's upper right. */
+  remove?: { label: string; onClick: () => void };
 }) {
   const router = useRouter();
   const go = (to?: string, onClick?: () => void) => () => {
@@ -45,10 +48,22 @@ function GrantMiniCard({
   };
 
   return (
-    <div className="rounded-xl border border-border bg-surface p-4">
+    <div className="relative rounded-xl border border-border bg-surface p-4">
+      {remove && (
+        <button
+          onClick={remove.onClick}
+          aria-label={remove.label}
+          title={remove.label}
+          className="absolute top-3 right-3 flex h-7 w-7 items-center justify-center rounded-lg text-sm text-ink-faint transition duration-150 hover:bg-accent-tint hover:text-accent-ink"
+        >
+          <span aria-hidden>🗑</span>
+        </button>
+      )}
       <button
         onClick={() => router.push(`/grants/${view.grant.id}`)}
-        className="mb-1 line-clamp-2 block text-left font-serif text-base leading-snug transition duration-150 hover:text-accent"
+        className={`mb-1 line-clamp-2 block text-left font-serif text-base leading-snug transition duration-150 hover:text-accent ${
+          remove ? "pr-8" : ""
+        }`}
       >
         {view.grant.name}
       </button>
@@ -70,12 +85,14 @@ function GrantMiniCard({
             {primary.label}
           </button>
         )}
-        <button
-          onClick={go(secondary.to, secondary.onClick)}
-          className="inline-flex items-center justify-center gap-2 rounded-lg border border-border-strong bg-white px-3.5 py-2 text-xs font-semibold whitespace-nowrap text-ink transition duration-150 enabled:hover:border-accent"
-        >
-          {secondary.label}
-        </button>
+        {secondary && (
+          <button
+            onClick={go(secondary.to, secondary.onClick)}
+            className="inline-flex items-center justify-center gap-2 rounded-lg border border-border-strong bg-white px-3.5 py-2 text-xs font-semibold whitespace-nowrap text-ink transition duration-150 enabled:hover:border-accent"
+          >
+            {secondary.label}
+          </button>
+        )}
       </div>
     </div>
   );
@@ -222,7 +239,7 @@ export default function HomePage() {
                   view={v}
                   dueLabel={`Apply by ${formatDate(v.grant.timeline.applicationWindowEnd)}`}
                   primary={{
-                    label: "✦ Continue Writing",
+                    label: "✦ Continue Application",
                     to: `/grants/${v.grant.id}/collect`,
                   }}
                   secondary={{
@@ -246,7 +263,7 @@ export default function HomePage() {
                   view={v}
                   dueLabel={`Report due ${formatDate(v.grant.timeline.firstReportDeadline)}`}
                   primary={{
-                    label: "🔒 Continue Report",
+                    label: "✦ Continue Report",
                     to: `/grants/${v.grant.id}/report`,
                   }}
                   secondary={{
@@ -270,10 +287,10 @@ export default function HomePage() {
                   view={v}
                   dueLabel={`Closes ${formatDate(v.grant.timeline.applicationWindowEnd)}`}
                   primary={{
-                    label: "View Grant",
+                    label: "Grant Details",
                     to: `/grants/${v.grant.id}`,
                   }}
-                  secondary={{
+                  remove={{
                     label: "Remove from Saved Grants",
                     onClick: () => openCouplingModal("unsave", v.grant.id),
                   }}
@@ -294,10 +311,10 @@ export default function HomePage() {
                   view={v}
                   dueLabel={`Closes ${formatDate(v.grant.timeline.applicationWindowEnd)}`}
                   primary={{
-                    label: "View Grant",
+                    label: "Grant Details",
                     to: `/grants/${v.grant.id}`,
                   }}
-                  secondary={{
+                  remove={{
                     label: "Remove from Collaborate",
                     onClick: () => openCouplingModal("uncollab", v.grant.id),
                   }}
