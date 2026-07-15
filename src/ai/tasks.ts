@@ -38,6 +38,8 @@ for (const integration in AIIntegration) {
 /**
  * A set of details concerning a single, specific Grant that were extracted
  * by a single invocation of ingestGrant().
+ *
+ * @see {@link Grant}
  */
 export type GrantIngestionDetails = {
   name: string;
