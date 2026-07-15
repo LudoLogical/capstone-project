@@ -50,6 +50,7 @@ export type BaseDatum = {
 export type AuthoritativeDatum = BaseDatum & {
   /**
    * The Location that is the subject of this AuthoritativeDatum.
+   * TODO: Location *or Region*? Seek team alignment on this.
    */
   location: Location;
 

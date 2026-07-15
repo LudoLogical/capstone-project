@@ -62,6 +62,8 @@ export enum GrantLifecycleStage {
  * A record of a single instance in which one Initiative contacted
  * another Initiative to express interest in collaborating with them
  * on a specific Grant.
+ *
+ * TODO: Re-align on whether this is necessary
  */
 export type CollabContactRecord = {
   /**
@@ -94,6 +96,11 @@ type GrantRecord = {
   /**
    * An AI-generated analysis of the alignment between the User and Grant
    * associated with this GrantRecord.
+   *
+   * @deprecated
+   * Needs to be split into three properties: estimated fit (percentage w/
+   * semantic cutoffs? ask for alignment on this), reasons why it's a good
+   * fit, and concerns worth considering (see feedback figjam)
    */
   alignmentAnalysis: string;
 

@@ -161,6 +161,7 @@ type Grant = {
    *
    * Does not include any document requirements that appear in or were
    * extracted directly from the original listing for this Grant.
+   *
    * @see {@link Grant.requirements}
    */
   guidance: {
@@ -170,6 +171,7 @@ type Grant = {
      *
      * Does not include any application requirements that appear in or were
      * extracted directly from the original listing for this Grant.
+     *
      * @see {@link Grant.requirements}
      */
     application: string[];
@@ -180,6 +182,7 @@ type Grant = {
      *
      * Does not include any reporting requirements that appear in or were
      * extracted directly from the original listing for this Grant.
+     *
      * @see {@link Grant.requirements}
      */
     reporting: string[];
@@ -236,7 +239,8 @@ type Grant = {
    * appear in this list.
    *
    * @deprecated
-   * *The feature associated with this property is currently under review.*
+   * This property needs review following the decision to keep
+   * save and collaborate functionality separate.
    */
   collabOpportunitySubscribers: Initiative[];
 

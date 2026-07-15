@@ -99,8 +99,16 @@ export type GrantReportingConversation = {
    *    AI-generated response, or `null` instead of a set if the AI system
    *    found the Datum instances available to it at the time the response was
    *    generated to be insufficient to address the question being discussed).
+   *
+   * @deprecated
+   * Needs a rewrite following Priyal's system prompt adjustments.
    */
   content: ContentListUnion;
+
+  /**
+   * TODO
+   */
+  // markedComplete: boolean;
 };
 
 /**
@@ -112,6 +120,10 @@ export type GrantReportingAnalysis = BaseGrantAnalysis & {
   /**
    * The Initiative-AI conversations that comprise the data gathering workflow
    * for this GrantReportingAnalysis.
+   *
+   * @deprecated
+   * Needs a stipulation that we track how many questions have been
+   * progressively disclosed by checking the length of the array
    */
   conversations: GrantReportingConversation[];
 };
