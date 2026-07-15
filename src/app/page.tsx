@@ -5,40 +5,17 @@ import { useRouter } from "next/navigation";
 import { STORIES, SESSION_USER } from "@/data/seed";
 import { useAppStore } from "@/store/useAppStore";
 import { useHydrated } from "@/store/useHydrated";
-import {
-  useDashboardGroups,
-  type GrantView,
-  type Progress,
-} from "@/store/derived";
+import { useDashboardGroups, type GrantView } from "@/store/derived";
 import { formatCurrency, formatDate } from "@/utils/format";
 import Onboarding from "@/components/Onboarding";
 
 type Tone = "accent" | "success" | "neutral";
 
-const TONE: Record<
-  Tone,
-  { tile: string; bar: string; label: string }
-> = {
-  accent: {
-    tile: "bg-accent-tint text-accent-ink",
-    bar: "bg-accent",
-    label: "text-accent-ink",
-  },
-  success: {
-    tile: "bg-success-bg text-success-ink",
-    bar: "bg-success-ink-2",
-    label: "text-success-ink",
-  },
-  neutral: {
-    tile: "bg-surface-alt text-ink-secondary",
-    bar: "bg-border-strong",
-    label: "text-ink-secondary",
-  },
+const TONE: Record<Tone, { tile: string }> = {
+  accent: { tile: "bg-accent-tint text-accent-ink" },
+  success: { tile: "bg-success-bg text-success-ink" },
+  neutral: { tile: "bg-surface-alt text-ink-secondary" },
 };
-
-function pct(p: Progress): number {
-  return p.total > 0 ? Math.round((p.done / p.total) * 100) : 0;
-}
 
 /** Small uppercase eyebrow used to label a dashboard section. */
 function SectionLabel({ children }: { children: React.ReactNode }) {
@@ -49,26 +26,19 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-/** One grant inside a board column: name, funder, due date, progress, actions. */
+/** One grant inside a board column: name, funder, due date, actions. */
 function GrantMiniCard({
   view,
-  tone,
   dueLabel,
-  progress,
-  progressCaption,
   primary,
   secondary,
 }: {
   view: GrantView;
-  tone: Tone;
   dueLabel: string;
-  progress?: Progress;
-  progressCaption?: string;
   primary?: { label: string; to?: string; onClick?: () => void };
   secondary: { label: string; to?: string; onClick?: () => void };
 }) {
   const router = useRouter();
-  const t = TONE[tone];
   const go = (to?: string, onClick?: () => void) => () => {
     if (onClick) onClick();
     else if (to) router.push(to);
@@ -90,23 +60,6 @@ function GrantMiniCard({
         <span aria-hidden>🗓</span>
         {dueLabel}
       </div>
-
-      {progress && (
-        <div className="mb-3.5">
-          <div className="mb-1 flex items-center justify-between text-xs">
-            <span className="text-ink-muted">{progressCaption}</span>
-            <span className={`font-bold ${t.label}`}>
-              {progress.done}/{progress.total}
-            </span>
-          </div>
-          <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface-alt">
-            <div
-              className={`h-full rounded-full ${t.bar}`}
-              style={{ width: `${pct(progress)}%` }}
-            />
-          </div>
-        </div>
-      )}
 
       <div className="flex flex-col gap-2">
         {primary && (
@@ -258,7 +211,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <BoardColumn
               icon="📝"
-              title="Data for Grant Applications"
+              title="Grant Applications"
               tone="accent"
               count={inProgress.length}
               empty="No applications yet. Open a saved grant and start an application."
@@ -267,10 +220,7 @@ export default function HomePage() {
                 <GrantMiniCard
                   key={v.grant.id}
                   view={v}
-                  tone="accent"
                   dueLabel={`Apply by ${formatDate(v.grant.timeline.applicationWindowEnd)}`}
-                  progress={v.writingProgress}
-                  progressCaption="Steps"
                   primary={{
                     label: "✦ Continue Writing",
                     to: `/grants/${v.grant.id}/collect`,
@@ -285,7 +235,7 @@ export default function HomePage() {
 
             <BoardColumn
               icon="🏆"
-              title="Data for Grant Reports"
+              title="Awarded Grant Reports"
               tone="success"
               count={awarded.length}
               empty="No awarded grants yet. Reports appear here once you win funding."
@@ -294,10 +244,7 @@ export default function HomePage() {
                 <GrantMiniCard
                   key={v.grant.id}
                   view={v}
-                  tone="success"
                   dueLabel={`Report due ${formatDate(v.grant.timeline.firstReportDeadline)}`}
-                  progress={v.reportProgress}
-                  progressCaption="Report steps"
                   primary={{
                     label: "🔒 Continue Report",
                     to: `/grants/${v.grant.id}/report`,
@@ -321,8 +268,11 @@ export default function HomePage() {
                 <GrantMiniCard
                   key={v.grant.id}
                   view={v}
-                  tone="neutral"
                   dueLabel={`Closes ${formatDate(v.grant.timeline.applicationWindowEnd)}`}
+                  primary={{
+                    label: "View Grant",
+                    to: `/grants/${v.grant.id}`,
+                  }}
                   secondary={{
                     label: "Remove from Saved Grants",
                     onClick: () => openCouplingModal("unsave", v.grant.id),
@@ -342,8 +292,11 @@ export default function HomePage() {
                 <GrantMiniCard
                   key={v.grant.id}
                   view={v}
-                  tone="accent"
                   dueLabel={`Closes ${formatDate(v.grant.timeline.applicationWindowEnd)}`}
+                  primary={{
+                    label: "View Grant",
+                    to: `/grants/${v.grant.id}`,
+                  }}
                   secondary={{
                     label: "Remove from Collaborate",
                     onClick: () => openCouplingModal("uncollab", v.grant.id),

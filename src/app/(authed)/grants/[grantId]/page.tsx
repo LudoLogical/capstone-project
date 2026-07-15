@@ -398,7 +398,7 @@ export default function GrantDetailPage() {
             <div className="mb-1.5 text-base font-bold">Ready to apply?</div>
             <p className="mb-3.5 text-sm leading-relaxed text-ink-muted">
               We&apos;ll help you gather your context and supporting data first -
-              you choose what to share. This adds the grant to Data for Grant
+              you choose what to share. This adds the grant to Grant
               Applications on your dashboard.
             </p>
             <button
