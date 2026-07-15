@@ -50,7 +50,7 @@ export const RECORD_YOUTH_DIGITAL_WELLNESS: GrantRecord = {
   id: "gr-youth-digital-wellness",
   grant: GRANT_YOUTH_DIGITAL_WELLNESS,
   alignmentAnalysis:
-    "Emerging fit: Hilltop Wellness Collective's youth programming overlaps with this grant's digital-literacy focus — a draft is underway to test the angle.",
+    "Emerging fit: Hilltop Wellness Collective's youth programming overlaps with this grant's digital-literacy focus - a draft is underway to test the angle.",
   stage: GrantLifecycleStage.Saved,
   writingAnalyses: [youthDigitalWellnessWritingAnalysis],
   reportingAnalyses: [],
@@ -90,7 +90,7 @@ export const RECORD_GREEN_SPACES: GrantRecord = {
   id: "gr-green-spaces",
   grant: GRANT_GREEN_SPACES,
   alignmentAnalysis:
-    "Possible fit: eligible region and issue area, but no site plan on file yet — worth a closer look before applying.",
+    "Possible fit: eligible region and issue area, but no site plan on file yet - worth a closer look before applying.",
   stage: GrantLifecycleStage.Saved,
   writingAnalyses: [],
   reportingAnalyses: [],

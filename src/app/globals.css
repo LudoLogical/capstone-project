@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* ---------------------------------------------------------------------------
- * Design tokens — ported from vite/src/styles/tokens.css.
+ * Design tokens - ported from vite/src/styles/tokens.css.
  *
  * Declaring them in @theme (rather than as plain CSS custom properties) makes
  * them first-class Tailwind utilities: `bg-accent`, `text-ink-muted`,
@@ -9,11 +9,11 @@
  * palette on a coherent design system without ever reaching for an arbitrary
  * value.
  *
- * Radii and spacing are deliberately NOT tokenised — they snap to Tailwind's
+ * Radii and spacing are deliberately NOT tokenised - they snap to Tailwind's
  * baseline scale instead (11px -> rounded-xl, 18px -> p-4, ...).
  * ------------------------------------------------------------------------ */
 @theme {
-  /* Fonts — wired to the next/font/google variables set in layout.tsx */
+  /* Fonts - wired to the next/font/google variables set in layout.tsx */
   --font-ui: var(--font-hanken-grotesk), sans-serif;
   --font-serif: var(--font-source-serif), serif;
 
@@ -31,7 +31,7 @@
   --color-divider: #f3eae0;
   --color-divider-2: #efe6dc;
 
-  /* Text ("ink" — the vocabulary the accent tokens already use) */
+  /* Text ("ink" - the vocabulary the accent tokens already use) */
   --color-ink: #2b2422;
   --color-ink-body: #3d342e;
   --color-ink-secondary: #5c5048;
@@ -121,7 +121,7 @@
 }
 
 /* ---------------------------------------------------------------------------
- * Base layer — global rules with no utility equivalent, because they target
+ * Base layer - global rules with no utility equivalent, because they target
  * pseudo-elements, a pseudo-class on *every* element, or a media query. All of
  * it is load-bearing accessibility behaviour carried over verbatim from
  * vite/src/styles/global.css. Everything else in that file is either handled
@@ -149,20 +149,20 @@
     background: var(--color-selection);
   }
 
-  /* WCAG 1.4.3 — placeholder text contrast */
+  /* WCAG 1.4.3 - placeholder text contrast */
   ::placeholder {
     color: var(--color-ink-muted);
     opacity: 1;
   }
 
-  /* WCAG 2.4.7 — always-visible keyboard focus */
+  /* WCAG 2.4.7 - always-visible keyboard focus */
   :focus-visible {
     outline: 3px solid var(--color-focus);
     outline-offset: 2px;
     border-radius: 4px;
   }
 
-  /* WCAG 2.3.3 — respect reduced-motion */
+  /* WCAG 2.3.3 - respect reduced-motion */
   @media (prefers-reduced-motion: reduce) {
     * {
       animation-duration: 0.001ms !important;

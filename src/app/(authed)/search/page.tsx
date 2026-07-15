@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useAppStore } from "@/store/useAppStore";
 import { useAllGrantViews } from "@/store/derived";
 import {
   ORG_TYPE_OPTIONS,
   LOCATION_OPTIONS,
+  ISSUE_TAGS,
   DEFAULT_FILTERS,
   filterGrants,
   sortGrants,
@@ -17,6 +17,7 @@ import RadioRow from "@/components/RadioRow";
 import RangeHistogram from "@/components/RangeHistogram";
 import GrantCard from "@/components/GrantCard";
 import EmptyState from "@/components/EmptyState";
+import BackButton from "@/components/BackButton";
 
 const SORTS: { key: SortOption; label: string }[] = [
   { key: "relevance", label: "Relevance" },
@@ -24,36 +25,7 @@ const SORTS: { key: SortOption; label: string }[] = [
   { key: "amount", label: "Funding amount" },
 ];
 
-// Issue tags shown in the search filter. These are broader than the canonical
-// `ISSUES` used on grant data, so selecting them is a UI-only refinement (they
-// don't narrow results) — the full list is scrollable once expanded.
-const ISSUE_TAGS: readonly string[] = [
-  "Arts",
-  "Black-Led",
-  "Community Development",
-  "Disabilities",
-  "Education",
-  "Environment/EJ",
-  "Faith-Based",
-  "Food",
-  "Health/Wellness",
-  "Housing",
-  "Innovation",
-  "Justice/Equality",
-  "Literary",
-  "Mothers",
-  "Queer Led/Serving",
-  "Recreation",
-  "Social Services",
-  "Sustainability",
-  "Technology",
-  "Water",
-  "Women-Led",
-  "Workforce Development",
-  "Youth",
-];
-
-// Funding-slider domain — kept in sync with the filter defaults so a full-range
+// Funding-slider domain - kept in sync with the filter defaults so a full-range
 // selection reads as "no min / no max".
 const FUND_MIN = DEFAULT_FILTERS.fundMin;
 const FUND_MAX = DEFAULT_FILTERS.fundMax;
@@ -81,7 +53,6 @@ function ShowMoreButton({
 }
 
 export default function SearchPage() {
-  const router = useRouter();
   const draftFilters = useAppStore((s) => s.draftFilters);
   const appliedFilters = useAppStore((s) => s.appliedFilters);
   const setDraftFilters = useAppStore((s) => s.setDraftFilters);
@@ -152,13 +123,16 @@ export default function SearchPage() {
     draftFilters.fundMax !== DEFAULT_FILTERS.fundMax;
 
   return (
-    <div className="animate-nc-rise mx-auto max-w-6xl px-8 pt-7 pb-20">
-      <button
-        onClick={() => router.push("/")}
-        className="mb-4 inline-block text-sm font-semibold text-ink-muted hover:text-ink"
-      >
-        ← Back to dashboard
-      </button>
+    <div className="animate-nc-rise mx-auto w-full px-8 pt-7 pb-20">
+      <BackButton fallback="/" />
+      <div className="mb-6">
+        <h1 className="font-serif text-3xl leading-tight font-medium">
+          Find a grant that fits your work
+        </h1>
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-muted">
+          Results draw on what you told us and your living profile.
+        </p>
+      </div>
       <div className="flex items-start gap-7">
         <aside className="sticky top-22 w-80 flex-none rounded-2xl border border-border bg-surface p-5">
           <div className="mb-4 flex items-center justify-between">
@@ -377,7 +351,7 @@ export default function SearchPage() {
                 <GrantCard
                   key={grant.id}
                   grant={grant}
-                  stage={viewById.get(grant.id)!.stage}
+                  saved={viewById.get(grant.id)!.isSaved}
                 />
               ))}
             </div>

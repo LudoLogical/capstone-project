@@ -1,190 +1,123 @@
 "use client";
 
+import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useAppStore } from "@/store/useAppStore";
 import { useGrantView } from "@/store/derived";
-import { INTERESTED_BY_GRANT, ORG_PROFILES } from "@/data/seed";
+import {
+  INTERESTED_BY_GRANT,
+  ORG_PROFILES,
+  type OrgProfileContent,
+} from "@/data/seed";
+import WarmIntroModal from "@/components/WarmIntroModal";
+import ShareModal from "@/components/ShareModal";
+import BackButton from "@/components/BackButton";
 
-const COLLAB_CAP = 3;
+/** Initials for the avatar chip, e.g. "Hilltop Harvest Collective" → "HH". */
+function initialsOf(name: string): string {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() ?? "")
+    .join("");
+}
 
 export default function CollaboratePage() {
   const { grantId = "" } = useParams<{ grantId: string }>();
   const router = useRouter();
   const view = useGrantView(grantId);
-  const collabPicks = useAppStore((s) => s.collabPicks[grantId]) ?? [];
-  const collabSent = useAppStore((s) => s.collabSent[grantId]);
-  const collabSorted = useAppStore((s) => s.collabSorted[grantId]);
-  const toggleCollabPick = useAppStore((s) => s.toggleCollabPick);
-  const toggleCollabSort = useAppStore((s) => s.toggleCollabSort);
-  const sendCollabRequest = useAppStore((s) => s.sendCollabRequest);
-  const addToast = useAppStore((s) => s.addToast);
+  const [emailOrg, setEmailOrg] = useState<OrgProfileContent | null>(null);
+  const [shareOrg, setShareOrg] = useState<OrgProfileContent | null>(null);
+  const [sentOrgs, setSentOrgs] = useState<Record<string, boolean>>({});
 
   if (!view) return null;
   const { grant } = view;
 
   const orgIds = INTERESTED_BY_GRANT[grant.id] ?? [];
-  let orgs = orgIds.map((id) => ORG_PROFILES[id]).filter(Boolean);
-  if (collabSorted) {
-    orgs = [...orgs].sort((a, b) => b.signals.length - a.signals.length);
-  }
-
-  const toggleSort = () => {
-    toggleCollabSort(grant.id);
-    addToast(
-      "Sorting by overlap. Your judgment still decides who to reach out to.",
-    );
-  };
-
-  const togglePick = (initiativeId: string) => {
-    if (
-      !collabPicks.includes(initiativeId) &&
-      collabPicks.length >= COLLAB_CAP
-    ) {
-      addToast(`You can select up to ${COLLAB_CAP} organizations at a time.`);
-      return;
-    }
-    toggleCollabPick(grant.id, initiativeId, COLLAB_CAP);
-  };
-
-  const send = () => {
-    sendCollabRequest(grant.id);
-  };
-
-  if (collabSent) {
-    return (
-      <div className="mx-auto max-w-3xl animate-nc-rise px-8 pt-7 pb-20">
-        <div className="rounded-2xl border border-border bg-surface p-10 text-center">
-          <div className="mb-3 text-3xl">✓</div>
-          <h1 className="mb-2.5 font-serif text-xl leading-tight font-medium">
-            Sent to New Sun Rising
-          </h1>
-          <p className="mb-5 text-sm leading-relaxed text-ink-muted">
-            Your introduction request is reviewed only where it looks like a fit
-            — no automated emails go out.
-          </p>
-          <div className="mb-5 flex flex-col gap-2">
-            {collabPicks.map((id) => (
-              <div
-                key={id}
-                className="flex justify-between rounded-lg border border-border-soft px-3.5 py-2.5 text-sm"
-              >
-                <span>{ORG_PROFILES[id]?.name}</span>
-                <span className="inline-flex items-center gap-1 rounded-full border border-warning-border bg-warning-bg px-3 py-1 text-xs font-bold text-warning-ink">
-                  Pending review
-                </span>
-              </div>
-            ))}
-          </div>
-          <button
-            onClick={() => router.push("/")}
-            className="inline-flex items-center gap-2 rounded-xl bg-accent px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            Back to dashboard
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const orgs = orgIds.map((id) => ORG_PROFILES[id]).filter(Boolean);
 
   return (
-    <div className="mx-auto max-w-3xl animate-nc-rise px-8 pt-7 pb-30">
-      <button
-        onClick={() => router.push(`/grants/${grant.id}`)}
-        className="mb-4 inline-block text-sm font-semibold text-ink-muted hover:text-ink"
-      >
-        ← Back
-      </button>
+    <div className="mx-auto w-full animate-nc-rise px-8 pt-7 pb-20">
+      <BackButton fallback={`/grants/${grant.id}`} />
 
-      <div className="mb-3 inline-flex items-center gap-1 rounded-full bg-accent-tint-2 px-3 py-1 text-xs font-bold text-accent-ink-2">
-        🤝 Interested in co-applying
+      <div className="flex items-center gap-3">
+        <div className="flex h-11 w-11 flex-none items-center justify-center rounded-xl bg-accent-tint-2 text-xl">
+          🤝
+        </div>
+        <h1 className="font-serif text-3xl leading-tight font-medium">
+          Who&apos;s open to collaborating
+        </h1>
       </div>
-      <h1 className="mb-2.5 font-serif text-3xl leading-tight font-medium">
-        Collaborators for {grant.purpose.split(".")[0]}
-      </h1>
-      <p className="mb-5 text-sm leading-relaxed text-ink-muted">
-        These are opted-in New Sun Rising clients discoverable for this grant.
-        The list is plain and unranked — you decide.
+      <p className="mt-3 mb-6 max-w-2xl text-sm leading-relaxed text-ink-muted">
+        New Sun Rising members who opted in for{" "}
+        <strong className="text-ink">{grant.name}</strong>. Every introduction
+        is one human reaching out to another -{" "}
+        <strong className="text-ink">
+          you write it, you send it, you decide.
+        </strong>
       </p>
-
-      <button
-        onClick={toggleSort}
-        className="mb-5 inline-flex items-center gap-2 rounded-lg border border-border-strong bg-white px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 enabled:hover:border-accent disabled:cursor-not-allowed disabled:opacity-50"
-      >
-        ✦ Sort by overlap with us
-      </button>
 
       {orgs.length === 0 ? (
         <div className="rounded-2xl border border-border bg-surface p-9 text-center">
           <p className="text-sm leading-relaxed text-ink-muted">
-            No organizations are currently discoverable for this grant.
+            No organizations are currently open to collaborating on this grant.
           </p>
         </div>
       ) : (
-        <div className="mb-6 flex flex-col gap-3.5">
+        <div className="grid gap-3.5 sm:grid-cols-2">
           {orgs.map((org) => {
-            const picked = collabPicks.includes(org.initiativeId);
+            const sent = !!sentOrgs[org.initiativeId];
             return (
               <div
                 key={org.initiativeId}
-                className="rounded-2xl border border-border bg-surface p-6"
+                className="flex flex-col rounded-2xl border border-border bg-surface p-5"
               >
-                <div className="flex flex-wrap justify-between gap-4">
-                  <div className="min-w-56 flex-1">
-                    <div className="mb-1 flex items-center gap-2">
-                      <div className="text-base font-bold">{org.name}</div>
-                      <span className="inline-flex items-center gap-1 rounded-full bg-accent-tint-2 px-3 py-1 text-xs font-bold text-accent-ink-2">
-                        Portal client
-                      </span>
-                    </div>
-                    <div className="mb-2.5 text-sm text-ink-muted">
-                      {org.place}
-                    </div>
-                    {collabSorted ? (
-                      <div className="flex flex-wrap gap-2">
-                        {org.signals.map((sig) => (
-                          <span
-                            key={sig.label}
-                            className="inline-flex items-center gap-1 rounded-full border border-info-border bg-info-bg px-3 py-1 text-xs font-bold text-info-ink"
-                          >
-                            ◷ {sig.label}
-                          </span>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="flex flex-wrap gap-2">
-                        {org.focus.map((f) => (
-                          <span
-                            key={f}
-                            className="inline-flex items-center gap-1 rounded-full border border-border-strong bg-surface-alt px-3 py-1 text-xs font-bold text-ink-secondary"
-                          >
-                            {f}
-                          </span>
-                        ))}
-                      </div>
-                    )}
+                <div className="flex items-start gap-3">
+                  <div className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-radial from-accent-warm to-accent to-70% text-sm font-bold text-white">
+                    {initialsOf(org.name)}
                   </div>
-                  <div className="flex shrink-0 flex-col gap-2">
-                    <button
-                      onClick={() =>
-                        router.push(
-                          `/grants/${grant.id}/collaborate/${org.initiativeId}`,
-                        )
-                      }
-                      className="inline-flex items-center gap-2 rounded-lg border border-border-strong bg-white px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 enabled:hover:border-accent disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      See profile
-                    </button>
-                    <button
-                      onClick={() => togglePick(org.initiativeId)}
-                      className={`inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold whitespace-nowrap transition duration-150 disabled:cursor-not-allowed disabled:opacity-50 ${
-                        picked
-                          ? "bg-ink text-white"
-                          : "border border-border-strong bg-white"
-                      }`}
-                    >
-                      {picked ? "✓ Selected" : "Select"}
-                    </button>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm leading-tight font-bold">
+                      {org.name}
+                    </div>
+                    <div className="mt-0.5 text-xs text-ink-muted">
+                      Serves {org.place}
+                    </div>
                   </div>
+                </div>
+
+                <p className="mt-3 text-sm leading-relaxed text-ink-muted">
+                  {org.mission}
+                </p>
+
+                <div className="mt-auto flex gap-2 pt-4">
+                  <button
+                    onClick={() =>
+                      router.push(
+                        `/grants/${grant.id}/collaborate/${org.initiativeId}`,
+                      )
+                    }
+                    className="flex-1 rounded-lg border border-border-strong bg-white px-3 py-2 text-sm font-semibold text-ink transition duration-150 hover:border-accent"
+                  >
+                    View profile
+                  </button>
+                  <button
+                    onClick={() => setEmailOrg(org)}
+                    className={`flex-none rounded-lg px-3 py-2 text-sm font-semibold transition duration-150 ${
+                      sent
+                        ? "border border-success-border bg-success-bg text-success-ink"
+                        : "bg-accent text-white shadow-cta hover:brightness-105"
+                    }`}
+                  >
+                    {sent ? "✓ Introduced" : "✉ Email"}
+                  </button>
+                  <button
+                    onClick={() => setShareOrg(org)}
+                    aria-label={`Share ${org.name}`}
+                    className="flex-none rounded-lg border border-border-strong bg-white px-3 py-2 text-sm font-semibold text-ink transition duration-150 hover:border-accent"
+                  >
+                    ↗ Share
+                  </button>
                 </div>
               </div>
             );
@@ -192,18 +125,28 @@ export default function CollaboratePage() {
         </div>
       )}
 
-      <div className="fixed right-0 bottom-0 left-0 flex items-center justify-center gap-4 border-t border-border-soft bg-white px-8 py-4 shadow-float">
-        <div className="text-sm font-semibold">
-          {collabPicks.length} selected
-        </div>
-        <button
-          onClick={send}
-          disabled={collabPicks.length === 0}
-          className="inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          Send introduction requests →
-        </button>
-      </div>
+      {emailOrg && (
+        <WarmIntroModal
+          org={emailOrg}
+          onClose={() => setEmailOrg(null)}
+          onSent={(org) =>
+            setSentOrgs((prev) => ({ ...prev, [org.initiativeId]: true }))
+          }
+        />
+      )}
+
+      {shareOrg && (
+        <ShareModal
+          title="Share this organization"
+          name={`${shareOrg.name} · Serves ${shareOrg.place}`}
+          link={
+            typeof window !== "undefined"
+              ? `${window.location.origin}/grants/${grant.id}/collaborate/${shareOrg.initiativeId}`
+              : `/grants/${grant.id}/collaborate/${shareOrg.initiativeId}`
+          }
+          onClose={() => setShareOrg(null)}
+        />
+      )}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-// "Grant-readiness" content for the Account Profile screen — org facts
+// "Grant-readiness" content for the Account Profile screen - org facts
 // grouped by the questions every funder asks (the Vibrant Communities
 // Framework), not by record type. This is page content, not part of the
 // shared domain model in `types/`.

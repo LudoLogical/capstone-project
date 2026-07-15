@@ -16,7 +16,7 @@ export const SRC_ANNUAL_IMPACT_SURVEY: DocumentSource = {
   isDeleted: false,
   file: new File(
     [
-      "Hilltop Wellness Collective — 2025 Annual Impact Survey (seed placeholder)",
+      "Hilltop Wellness Collective - 2025 Annual Impact Survey (seed placeholder)",
     ],
     "hilltop-wellness-2025-annual-impact-survey.pdf",
     { type: "application/pdf" },
@@ -30,7 +30,7 @@ export const SRC_BUDGET_RECORDS: DocumentSource = {
   creator: USER_MAYA_ID,
   isDeleted: false,
   file: new File(
-    ["Hilltop Wellness Collective — FY2025 Budget Summary (seed placeholder)"],
+    ["Hilltop Wellness Collective - FY2025 Budget Summary (seed placeholder)"],
     "hilltop-wellness-fy2025-budget-summary.xlsx",
     {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -167,7 +167,7 @@ export const ANALYSIS_PHYSICAL_ACTIVITY: DatumAnalysis = {
       "71% of Hilltop adults meet the CDC's physical activity guideline, above the county average of 58%.",
     ],
     apply: [
-      "A strong candidate for your 'why here' section — this community is already primed to engage with wellness programming.",
+      "A strong candidate for your 'why here' section - this community is already primed to engage with wellness programming.",
     ],
   },
 };
@@ -192,7 +192,7 @@ export const ANALYSIS_PROGRAM_RETENTION: DatumAnalysis = {
       "68% of participants who finished one season came back for a second.",
     ],
     apply: [
-      "Retention is a strong signal of program quality — lead with it when a funder asks about outcomes, not just outputs.",
+      "Retention is a strong signal of program quality - lead with it when a funder asks about outcomes, not just outputs.",
     ],
   },
 };

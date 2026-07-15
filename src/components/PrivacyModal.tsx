@@ -30,7 +30,7 @@ export default function PrivacyModal() {
         onClick={ackPrivacy}
         className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-accent px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        Got it — enter the portal
+        Got it - enter the portal
       </button>
     </Modal>
   );

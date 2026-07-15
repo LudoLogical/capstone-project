@@ -4,7 +4,7 @@ export const JARGON: Record<string, JargonEntry> = {
   censusTract: {
     term: "Census tract",
     definition:
-      "A small, relatively permanent area the US Census Bureau uses to report statistics — usually a few thousand residents. It's the smallest area most funder-cited data is available for.",
+      "A small, relatively permanent area the US Census Bureau uses to report statistics - usually a few thousand residents. It's the smallest area most funder-cited data is available for.",
   },
   countyAvg: {
     term: "County average",
@@ -39,7 +39,7 @@ export const JARGON: Record<string, JargonEntry> = {
   profile: {
     term: "Initiative profile",
     definition:
-      "The issues you work on, the regions you serve, and other org-level facts stored in your Account Profile. AI ranking uses this profile — never external data about you — to suggest grants.",
+      "The issues you work on, the regions you serve, and other org-level facts stored in your Account Profile. AI ranking uses this profile - never external data about you - to suggest grants.",
   },
   fit: {
     term: "Estimated fit",

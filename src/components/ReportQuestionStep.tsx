@@ -7,19 +7,15 @@ import type { ReportChatState } from "@/store/useAppStore";
 type Props = {
   stepDef: ReportQuestionStep;
   chat: ReportChatState;
-  marked: boolean;
   onTogglePick: (itemId: string) => void;
   onSend: (text: string) => void;
-  onMarkComplete: () => void;
 };
 
 export default function ReportQuestionStep({
   stepDef,
   chat,
-  marked,
   onTogglePick,
   onSend,
-  onMarkComplete,
 }: Props) {
   const [draft, setDraft] = useState("");
 
@@ -64,11 +60,42 @@ export default function ReportQuestionStep({
               </button>
             );
           })}
+          {(chat.custom ?? []).map((text, i) => {
+            const id = `custom-${i}`;
+            const picked = !!chat.picks[id];
+            return (
+              <button
+                key={id}
+                onClick={() => onTogglePick(id)}
+                aria-pressed={picked}
+                className={`flex items-center justify-between gap-2.5 rounded-xl border px-3.5 py-3 text-left ${
+                  picked
+                    ? "border-accent bg-accent-tint"
+                    : "border-border-strong bg-white"
+                }`}
+              >
+                <div>
+                  <div className="text-sm font-semibold">{text}</div>
+                  <div className="text-xs text-ink-muted">Added by you</div>
+                </div>
+                <div className="text-base">{picked ? "✓" : "+"}</div>
+              </button>
+            );
+          })}
         </div>
       </div>
 
+      <div className="mb-2 text-xs font-bold tracking-wider text-ink-muted uppercase">
+        Chat with the reporting assistant
+      </div>
       {chat.messages.length > 0 && (
-        <div className="mb-3.5 flex flex-col gap-2.5">
+        <div
+          className={`mb-3.5 flex flex-col gap-2.5 ${
+            chat.messages.length > 3
+              ? "max-h-72 overflow-y-auto rounded-xl border border-border bg-surface-alt/40 p-3"
+              : ""
+          }`}
+        >
           {chat.messages.map((m, i) => (
             <div
               key={i}
@@ -81,6 +108,17 @@ export default function ReportQuestionStep({
               {m.text}
             </div>
           ))}
+          {/* The assistant "types" between the user's message landing and its
+              reply arriving, giving the exchange a live feel. */}
+          {chat.messages[chat.messages.length - 1]?.from === "user" && (
+            <div className="max-w-4/5 self-start rounded-xl bg-surface-alt px-3.5 py-2.5 text-sm text-ink-muted">
+              <span className="inline-flex gap-1">
+                <span className="animate-pulse">●</span>
+                <span className="animate-pulse [animation-delay:0.15s]">●</span>
+                <span className="animate-pulse [animation-delay:0.3s]">●</span>
+              </span>
+            </div>
+          )}
         </div>
       )}
 
@@ -89,28 +127,17 @@ export default function ReportQuestionStep({
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && send()}
-          placeholder="Add anything in your own words..."
+          placeholder="Tell the assistant anything in your own words..."
           aria-label={`Response to: ${stepDef.question}`}
-          className="w-full rounded-xl border border-border-strong bg-white px-4 py-3 text-sm text-ink outline-none"
+          className="w-full rounded-xl border border-border-strong bg-white px-4 py-3 text-sm text-ink outline-none focus:border-accent"
         />
         <button
           onClick={send}
-          className="inline-flex items-center gap-2 rounded-xl border border-border-strong bg-white px-5 py-3 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 enabled:hover:border-accent disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex items-center gap-2 rounded-xl bg-accent px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
         >
           Send
         </button>
       </div>
-
-      <button
-        onClick={onMarkComplete}
-        className={`inline-flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-semibold whitespace-nowrap transition duration-150 disabled:cursor-not-allowed disabled:opacity-50 ${
-          marked
-            ? "border-success-border bg-success-bg text-success-ink"
-            : "border-border-strong bg-white text-ink"
-        }`}
-      >
-        {marked ? "✓ Marked as complete" : "Mark as complete"}
-      </button>
     </div>
   );
 }

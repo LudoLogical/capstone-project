@@ -10,7 +10,7 @@ export default function StoryDetailPage() {
 
   if (!story) {
     return (
-      <div className="animate-nc-rise mx-auto max-w-3xl px-8 pt-7 pb-20">
+      <div className="animate-nc-rise mx-auto w-full px-8 pt-7 pb-20">
         <p className="leading-relaxed">Story not found.</p>
         <button
           onClick={() => router.push("/")}
@@ -23,14 +23,18 @@ export default function StoryDetailPage() {
   }
 
   return (
-    <div className="animate-nc-rise mx-auto max-w-3xl px-8 pt-7 pb-20">
+    <div className="animate-nc-rise mx-auto w-full px-8 pt-7 pb-20">
       <button
         onClick={() => router.push("/")}
         className="mb-4 inline-block text-sm font-semibold text-ink-muted hover:text-ink"
       >
         ← Back to stories
       </button>
-      <div className="rounded-2xl border border-border bg-surface p-8">
+      <div className="overflow-hidden rounded-2xl border border-border bg-surface">
+        <div className="flex h-48 items-center justify-center bg-radial from-accent-warm to-accent to-80% text-7xl">
+          <span aria-hidden>{story.emoji}</span>
+        </div>
+        <div className="p-8">
         <div className="mb-3.5 inline-flex items-center gap-1 rounded-full bg-accent-tint-2 px-3 py-1 text-xs font-bold text-accent-ink-2">
           {story.tag}
         </div>
@@ -68,6 +72,7 @@ export default function StoryDetailPage() {
           >
             Back to stories
           </button>
+        </div>
         </div>
       </div>
     </div>

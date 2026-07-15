@@ -44,7 +44,7 @@ function CoupledCheckbox({
 
 /**
  * The body of one coupling prompt. Rendered with a key of type+grantId so each
- * time a prompt opens it remounts with the checkbox freshly pre-checked — no
+ * time a prompt opens it remounts with the checkbox freshly pre-checked - no
  * effect needed to reset it.
  */
 function CouplingPrompt({ modal }: { modal: NonNullable<CouplingModal> }) {
@@ -63,7 +63,7 @@ function CouplingPrompt({ modal }: { modal: NonNullable<CouplingModal> }) {
 
   if (!view) return null;
   const saved = isSavedStage(view.stage);
-  const grantName = view.grant.purpose.split(".")[0];
+  const grantName = view.grant.name;
 
   // ── Save: offer to also list as a collaborator ─────────────────
   if (modal.type === "save") {
@@ -76,8 +76,9 @@ function CouplingPrompt({ modal }: { modal: NonNullable<CouplingModal> }) {
         <p className="mt-3 text-sm leading-normal text-ink-muted">
           Want other organizations applying to this grant to find you as a
           potential{" "}
-          <JargonTerm termKey="discoverable">collaborator</JargonTerm>? You can
-          change this anytime from your profile.
+          <JargonTerm termKey="discoverable">collaborator</JargonTerm>? This
+          makes your contact details available to other NSR Clients interested
+          in collaborating. You can change this anytime from your profile.
         </p>
         <div className="mt-5 flex justify-end gap-2.5">
           <button
@@ -158,6 +159,11 @@ function CouplingPrompt({ modal }: { modal: NonNullable<CouplingModal> }) {
           <span className="font-semibold">{grantName}</span> will be able to
           find you and reach out. You can stop listing anytime from your
           profile.
+        </p>
+        <p className="mt-3 text-sm leading-normal text-ink-muted">
+          Listing yourself as open to collaborate makes your contact details
+          available to other NSR Clients who are interested in collaborating on
+          this grant.
         </p>
         {!saved && (
           <CoupledCheckbox

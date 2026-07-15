@@ -59,7 +59,7 @@ export function filterGrants(grants: Grant[], filters: SearchFilters): Grant[] {
     }
     // Org-type eligibility isn't a discrete field on Grant (it lives inside
     // free-text `requirements.eligibility`), so this filter is UI-only for
-    // now and doesn't narrow results — every seed grant accepts the org
+    // now and doesn't narrow results - every seed grant accepts the org
     // types offered in the sidebar.
     if (filters.locations.length > 0) {
       const grantRegionNames = grant.targetRegions.map((r) => r.name);
@@ -143,4 +143,32 @@ export const LOCATION_OPTIONS = [
   "East Liberty",
   "Homestead",
   "McKeesport",
+];
+
+// Broad issue tags surfaced in the Explore search filter and onboarding. Shared
+// so the two stay in sync.
+export const ISSUE_TAGS: readonly string[] = [
+  "Arts",
+  "Black-Led",
+  "Community Development",
+  "Disabilities",
+  "Education",
+  "Environment/EJ",
+  "Faith-Based",
+  "Food",
+  "Health/Wellness",
+  "Housing",
+  "Innovation",
+  "Justice/Equality",
+  "Literary",
+  "Mothers",
+  "Queer Led/Serving",
+  "Recreation",
+  "Social Services",
+  "Sustainability",
+  "Technology",
+  "Water",
+  "Women-Led",
+  "Workforce Development",
+  "Youth",
 ];

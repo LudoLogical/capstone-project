@@ -42,6 +42,10 @@ type RueaCardProps = {
   expanded: boolean;
   onToggle: () => void;
   onAdd?: () => void;
+  added?: boolean;
+  // Heading for the "how to use it" section. Defaults to the application-writing
+  // wording; the report flow passes "In your report".
+  applyLabel?: string;
 };
 
 export default function RueaCard({
@@ -49,9 +53,12 @@ export default function RueaCard({
   expanded,
   onToggle,
   onAdd,
+  added = false,
+  applyLabel = "In your application",
 }: RueaCardProps) {
   const { analysis } = section;
   const headline = analysis.datum.content;
+  const source = analysis.datum.citation;
 
   return (
     <div className="overflow-hidden rounded-2xl border border-border bg-surface">
@@ -64,6 +71,14 @@ export default function RueaCard({
             Remember
           </div>
           <div className="text-sm font-bold">{headline}</div>
+          {source && (
+            <div className="mt-1 flex items-start gap-1 text-xs text-ink-muted">
+              <span aria-hidden className="flex-none">
+                🔖
+              </span>
+              <span>Source: {source}</span>
+            </div>
+          )}
         </div>
         <div className="text-sm text-ink-muted">{expanded ? "▲" : "▼"}</div>
       </button>
@@ -95,7 +110,7 @@ export default function RueaCard({
 
           <div className="mb-4">
             <div className="mb-2 text-xs font-bold tracking-wider text-ink-muted uppercase">
-              In your application
+              {applyLabel}
             </div>
             <ul className="flex list-disc flex-col gap-1.5 pl-4">
               {analysis.result.apply.map((line, i) => (
@@ -111,9 +126,14 @@ export default function RueaCard({
             {onAdd && (
               <button
                 onClick={onAdd}
-                className="inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={added}
+                className={`inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold whitespace-nowrap transition duration-150 disabled:cursor-default ${
+                  added
+                    ? "border border-success-border bg-success-bg text-success-ink"
+                    : "bg-accent text-white shadow-cta enabled:hover:brightness-105"
+                }`}
               >
-                Add to my grant ✓
+                {added ? "Added to Data Analysis!" : "Add to Data Analysis ✓"}
               </button>
             )}
           </div>

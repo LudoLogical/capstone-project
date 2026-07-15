@@ -64,7 +64,7 @@ function GrantMiniCard({
   dueLabel: string;
   progress?: Progress;
   progressCaption?: string;
-  primary: { label: string; to?: string; onClick?: () => void };
+  primary?: { label: string; to?: string; onClick?: () => void };
   secondary: { label: string; to?: string; onClick?: () => void };
 }) {
   const router = useRouter();
@@ -76,9 +76,12 @@ function GrantMiniCard({
 
   return (
     <div className="rounded-xl border border-border bg-surface p-4">
-      <div className="mb-1 line-clamp-2 font-serif text-base leading-snug">
+      <button
+        onClick={() => router.push(`/grants/${view.grant.id}`)}
+        className="mb-1 line-clamp-2 block text-left font-serif text-base leading-snug transition duration-150 hover:text-accent"
+      >
         {view.grant.name}
-      </div>
+      </button>
       <div className="mb-2.5 text-xs text-ink-muted">
         {view.grant.grantor} · {formatCurrency(view.grant.award.totalAmount)}
       </div>
@@ -106,12 +109,14 @@ function GrantMiniCard({
       )}
 
       <div className="flex flex-col gap-2">
-        <button
-          onClick={go(primary.to, primary.onClick)}
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-accent px-3.5 py-2 text-xs font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:brightness-105"
-        >
-          {primary.label}
-        </button>
+        {primary && (
+          <button
+            onClick={go(primary.to, primary.onClick)}
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-accent px-3.5 py-2 text-xs font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:brightness-105"
+          >
+            {primary.label}
+          </button>
+        )}
         <button
           onClick={go(secondary.to, secondary.onClick)}
           className="inline-flex items-center justify-center gap-2 rounded-lg border border-border-strong bg-white px-3.5 py-2 text-xs font-semibold whitespace-nowrap text-ink transition duration-150 enabled:hover:border-accent"
@@ -141,8 +146,8 @@ function BoardColumn({
 }) {
   const t = TONE[tone];
   return (
-    <section className="flex flex-col rounded-2xl border border-border bg-surface-alt-2 p-3">
-      <div className="mb-3 flex items-center gap-2.5 px-1">
+    <section className="flex flex-col rounded-2xl border border-border bg-surface-alt-2 p-5">
+      <div className="mb-4 flex items-center gap-2.5 px-1">
         <div
           className={`flex h-8 w-8 flex-none items-center justify-center rounded-lg text-base ${t.tile}`}
         >
@@ -174,7 +179,8 @@ export default function HomePage() {
   const onboarded = useAppStore((s) => s.onboarded);
   const signIn = useAppStore((s) => s.signIn);
   const openCouplingModal = useAppStore((s) => s.openCouplingModal);
-  const { inProgress, awarded, saved } = useDashboardGroups();
+  const onboardOrg = useAppStore((s) => s.onboardOrg);
+  const { inProgress, awarded, saved, collaborating } = useDashboardGroups();
   const setDraftFilters = useAppStore((s) => s.setDraftFilters);
   const applyFilters = useAppStore((s) => s.applyFilters);
 
@@ -185,22 +191,44 @@ export default function HomePage() {
     router.push("/search");
   };
 
-  // First-run onboarding takes over the whole screen before the dashboard.
-  if (hydrated && signedIn && !onboarded) {
-    return <Onboarding />;
-  }
+  // Onboarding is the entry point: there's no separate landing page anymore.
+  // Render nothing until hydrated so the onboarding doesn't flash in after a
+  // blank/landing frame, then show onboarding until it's completed.
+  if (!hydrated) return null;
+  if (!onboarded) return <Onboarding />;
 
-  const showPersonal = hydrated && signedIn;
+  const showPersonal = true;
+  // Greet the user by the name they gave during onboarding, falling back to the
+  // seed session user before they've provided one.
+  const firstName =
+    onboardOrg.person.trim().split(/\s+/)[0] || SESSION_USER.firstName;
 
   return (
-    <div className="animate-nc-rise mx-auto max-w-6xl px-8 pt-8 pb-20">
+    <div className="animate-nc-rise mx-auto w-full px-8 pt-8 pb-20">
       <div className="mb-6">
-        <div className="mb-1.5 text-xs font-bold tracking-wider text-accent-ink-2 uppercase">
-          Vibrancy Portal
-        </div>
         <h1 className="font-serif text-3xl leading-tight font-medium">
-          {showPersonal ? `Welcome back, ${SESSION_USER.firstName}.` : "Welcome."}
+          {showPersonal
+            ? `Welcome to the Vibrancy Portal, ${firstName}.`
+            : "Welcome to the Vibrancy Portal."}
         </h1>
+        {showPersonal && onboardOrg.name.trim() && (
+          <div className="mt-2 flex flex-wrap items-baseline gap-x-1.5">
+            <span className="text-xl font-bold text-ink">
+              {onboardOrg.name.trim()}
+            </span>
+            {onboardOrg.areas.length > 0 && (
+              <span className="text-sm text-ink-muted">
+                - Serving {onboardOrg.areas.join(", ")}
+              </span>
+            )}
+          </div>
+        )}
+        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink-muted">
+          This is your home base for grant work. Effectively discover grants
+          that fit your work, find collaborators in the New Sun Rising network
+          to apply for grants together, and tell powerful stories proving your
+          impact with data.
+        </p>
       </div>
 
       {/* ── Compact search: always visible ───────────────────── */}
@@ -211,7 +239,7 @@ export default function HomePage() {
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && goSearch()}
             aria-label="Search for grants by keyword"
-            placeholder="Find a grant — e.g. health programs in Pittsburgh"
+            placeholder="Find a grant - e.g. health programs in Pittsburgh"
             className="w-full min-w-72 flex-1 rounded-xl border border-border-strong bg-white px-4 py-3 text-sm text-ink outline-none focus:border-accent"
           />
           <button
@@ -227,13 +255,13 @@ export default function HomePage() {
       {showPersonal && (
         <div className="mb-10">
           <SectionLabel>Your grants at a glance</SectionLabel>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <BoardColumn
               icon="📝"
-              title="Applications"
+              title="Data for Grant Applications"
               tone="accent"
               count={inProgress.length}
-              empty="No applications in progress. Find a grant and start a draft."
+              empty="No applications yet. Open a saved grant and start an application."
             >
               {inProgress.map((v) => (
                 <GrantMiniCard
@@ -242,7 +270,7 @@ export default function HomePage() {
                   tone="accent"
                   dueLabel={`Apply by ${formatDate(v.grant.timeline.applicationWindowEnd)}`}
                   progress={v.writingProgress}
-                  progressCaption="Supporting data"
+                  progressCaption="Steps"
                   primary={{
                     label: "✦ Continue Writing",
                     to: `/grants/${v.grant.id}/collect`,
@@ -257,7 +285,7 @@ export default function HomePage() {
 
             <BoardColumn
               icon="🏆"
-              title="Awarded reports"
+              title="Data for Grant Reports"
               tone="success"
               count={awarded.length}
               empty="No awarded grants yet. Reports appear here once you win funding."
@@ -269,7 +297,7 @@ export default function HomePage() {
                   tone="success"
                   dueLabel={`Report due ${formatDate(v.grant.timeline.firstReportDeadline)}`}
                   progress={v.reportProgress}
-                  progressCaption="Report answered"
+                  progressCaption="Report steps"
                   primary={{
                     label: "🔒 Continue Report",
                     to: `/grants/${v.grant.id}/report`,
@@ -284,7 +312,7 @@ export default function HomePage() {
 
             <BoardColumn
               icon="☆"
-              title="Saved grants"
+              title="Saved Grants"
               tone="neutral"
               count={saved.length}
               empty="No saved grants yet. Tap ☆ Save on any grant to keep it here."
@@ -295,13 +323,30 @@ export default function HomePage() {
                   view={v}
                   tone="neutral"
                   dueLabel={`Closes ${formatDate(v.grant.timeline.applicationWindowEnd)}`}
-                  primary={{
-                    label: "Grant Details",
-                    to: `/grants/${v.grant.id}`,
-                  }}
                   secondary={{
-                    label: "Remove",
+                    label: "Remove from Saved Grants",
                     onClick: () => openCouplingModal("unsave", v.grant.id),
+                  }}
+                />
+              ))}
+            </BoardColumn>
+
+            <BoardColumn
+              icon="🤝"
+              title="Open to Collaborate"
+              tone="accent"
+              count={collaborating.length}
+              empty="Not listed on any grants yet. Open a grant and list yourself as open to collaborate."
+            >
+              {collaborating.map((v) => (
+                <GrantMiniCard
+                  key={v.grant.id}
+                  view={v}
+                  tone="accent"
+                  dueLabel={`Closes ${formatDate(v.grant.timeline.applicationWindowEnd)}`}
+                  secondary={{
+                    label: "Remove from Collaborate",
+                    onClick: () => openCouplingModal("uncollab", v.grant.id),
                   }}
                 />
               ))}
@@ -319,7 +364,7 @@ export default function HomePage() {
             </div>
             <p className="text-sm leading-normal text-ink-muted">
               See the applications you&apos;re writing, your awarded grant
-              reports, and your saved grants — all in one place.
+              reports, and your saved grants - all in one place.
             </p>
           </div>
           <button
@@ -339,16 +384,19 @@ export default function HomePage() {
             <button
               key={st.id}
               onClick={() => router.push(`/stories/${st.id}`)}
-              className="cursor-pointer overflow-hidden rounded-2xl border border-border bg-surface-alt p-0 text-left transition duration-150 hover:border-accent hover:shadow-soft"
+              className="flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-border bg-surface-alt p-0 text-left transition duration-150 hover:border-accent hover:shadow-soft"
             >
-              <div className="p-5">
-                <div className="mb-3 inline-flex items-center gap-1 rounded-full bg-accent-tint-2 px-3 py-1 text-xs font-bold text-accent-ink-2">
+              <div className="flex h-32 flex-none items-center justify-center bg-radial from-accent-warm to-accent to-80% text-5xl">
+                <span aria-hidden>{st.emoji}</span>
+              </div>
+              <div className="flex flex-1 flex-col p-5">
+                <div className="mb-3 inline-flex self-start items-center gap-1 rounded-full bg-accent-tint-2 px-3 py-1 text-xs font-bold text-accent-ink-2">
                   {st.tag}
                 </div>
                 <p className="mb-3 text-sm leading-normal">
                   <strong>{st.who}</strong> {st.what}
                 </p>
-                <div className="text-sm font-bold text-accent">
+                <div className="mt-auto text-sm font-bold text-accent">
                   Read their story →
                 </div>
               </div>

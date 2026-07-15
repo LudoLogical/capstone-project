@@ -1,6 +1,6 @@
 // Content for the Profile screen, reimagined as a data repository. Three
-// collections — uploaded files, saved website links, and facts captured from
-// conversations — that the app pulls from when filling in applications and
+// collections - uploaded files, saved website links, and facts captured from
+// conversations - that the app pulls from when filling in applications and
 // reports. This is page content, not part of the shared domain model in
 // `types/`.
 export type RepositoryItem = {
