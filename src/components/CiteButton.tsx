@@ -31,8 +31,8 @@ export default function CiteButton({
               key={f.label}
               className="flex justify-between gap-3 border-b border-divider pb-2 text-sm"
             >
-              <span className="text-ink-muted">{f.label}</span>
-              <strong>{f.value}</strong>
+              <span className="flex-none text-ink-muted">{f.label}</span>
+              <strong className="text-right">{f.value}</strong>
             </div>
           ))}
         </div>

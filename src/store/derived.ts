@@ -41,7 +41,7 @@ export type GrantView = {
 
 // The application flow has 4 steps; the dashboard reports how many the user has
 // opened as n/WRITING_TARGET.
-const WRITING_TARGET = 4;
+const WRITING_TARGET = 3;
 
 function buildGrantView(
   grant: Grant,

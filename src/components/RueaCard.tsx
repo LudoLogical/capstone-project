@@ -43,6 +43,10 @@ type RueaCardProps = {
   onToggle: () => void;
   onAdd?: () => void;
   added?: boolean;
+  // When provided, a checkbox is shown on the left of the card header and its
+  // state is controlled by `selected` / `onSelectChange`.
+  selected?: boolean;
+  onSelectChange?: () => void;
   // Heading for the "how to use it" section. Defaults to the application-writing
   // wording; the report flow passes "In your report".
   applyLabel?: string;
@@ -54,6 +58,8 @@ export default function RueaCard({
   onToggle,
   onAdd,
   added = false,
+  selected,
+  onSelectChange,
   applyLabel = "In your application",
 }: RueaCardProps) {
   const { analysis } = section;
@@ -62,26 +68,39 @@ export default function RueaCard({
 
   return (
     <div className="overflow-hidden rounded-2xl border border-border bg-surface">
-      <button
-        onClick={onToggle}
-        className="flex w-full items-center gap-3.5 bg-white px-5 py-4 text-left"
-      >
-        <div className="min-w-0 flex-1">
-          <div className="mb-1 text-xs font-bold tracking-wider text-ink-muted uppercase">
-            Remember
+      <div className="flex items-stretch bg-white">
+        {onSelectChange && (
+          <button
+            onClick={onSelectChange}
+            aria-pressed={!!selected}
+            aria-label={selected ? "Deselect card" : "Select card"}
+            className="flex flex-none items-start py-4 pl-5"
+          >
+            <span
+              aria-hidden
+              className={`flex h-6 w-6 items-center justify-center rounded-md border-2 text-sm font-extrabold text-white ${
+                selected ? "border-accent bg-accent" : "border-checkbox"
+              }`}
+            >
+              {selected ? "✓" : ""}
+            </span>
+          </button>
+        )}
+        <button
+          onClick={onToggle}
+          className={`flex flex-1 items-center gap-3.5 py-4 pr-5 text-left ${
+            onSelectChange ? "pl-3" : "pl-5"
+          }`}
+        >
+          <div className="min-w-0 flex-1">
+            <div className="text-sm font-bold">{headline}</div>
+            {source && (
+              <div className="mt-1 text-xs text-ink-muted">Source: {source}</div>
+            )}
           </div>
-          <div className="text-sm font-bold">{headline}</div>
-          {source && (
-            <div className="mt-1 flex items-start gap-1 text-xs text-ink-muted">
-              <span aria-hidden className="flex-none">
-                🔖
-              </span>
-              <span>Source: {source}</span>
-            </div>
-          )}
-        </div>
-        <div className="text-sm text-ink-muted">{expanded ? "▲" : "▼"}</div>
-      </button>
+          <div className="text-sm text-ink-muted">{expanded ? "▲" : "▼"}</div>
+        </button>
+      </div>
 
       {expanded && (
         <div className="border-t border-divider px-5 pb-5">
@@ -133,7 +152,7 @@ export default function RueaCard({
                     : "bg-accent text-white shadow-cta enabled:hover:brightness-105"
                 }`}
               >
-                {added ? "Added to Data Analysis!" : "Add to Data Analysis ✓"}
+                {added ? "Added to Data Analysis!" : "Add to Data Analysis"}
               </button>
             )}
           </div>
