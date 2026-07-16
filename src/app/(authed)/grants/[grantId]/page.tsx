@@ -383,12 +383,25 @@ export default function GrantDetailPage() {
               It now lives under Report for Awarded Grants on your dashboard.
               Turn your records into an outcome report when you&apos;re ready.
             </p>
-            <button
-              onClick={() => router.push(`/grants/${grant.id}/report`)}
-              className="inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:brightness-105"
-            >
-              Go to outcome report →
-            </button>
+            <div className="flex flex-wrap items-center gap-4">
+              <button
+                onClick={() => router.push(`/grants/${grant.id}/report`)}
+                className="inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:brightness-105"
+              >
+                Go to outcome report →
+              </button>
+              {awardedMark && (
+                <button
+                  onClick={() => {
+                    setAwarded(grant.id, false);
+                    addToast("Reverted — no longer marked as awarded.");
+                  }}
+                  className="text-sm font-semibold text-ink-muted underline underline-offset-2 transition duration-150 hover:text-ink"
+                >
+                  Undo — I wasn&apos;t awarded this grant
+                </button>
+              )}
+            </div>
           </div>
         ) : (
           <div className="rounded-2xl border border-accent-tint-border bg-linear-to-br from-accent-tint-soft to-accent-tint px-6 py-5">
