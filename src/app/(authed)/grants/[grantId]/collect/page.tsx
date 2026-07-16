@@ -88,14 +88,13 @@ export default function DataCollectionWizardPage() {
       uploads: w.uploads.filter((_, i) => i !== index),
     }));
 
-  // Data points are selected by default: an unset entry counts as found, so the
-  // review step starts with everything checked and the user opts things out.
-  const isFound = (id: string) => wizard.found[id] ?? true;
+  // Data points start unchecked; the user opts them in on the review step.
+  const isFound = (id: string) => !!wizard.found[id];
 
   const toggleFound = (id: string) =>
     updateWizard(grantId, (w) => ({
       ...w,
-      found: { ...w.found, [id]: !(w.found[id] ?? true) },
+      found: { ...w.found, [id]: !w.found[id] },
     }));
 
   const allFound = RUEA_SECTIONS.every((s) => isFound(s.id));
@@ -128,10 +127,10 @@ export default function DataCollectionWizardPage() {
   // selection in the same map without colliding with section ids.
   const foundCustom = wizard.customFound.filter((t) => isFound(`custom:${t}`));
 
-  // Export selection on the Analyze step. Each card has a checkbox that starts
-  // checked, so an unset entry counts as selected. Reuses the persisted
-  // `analysisAdded` map (section id, or "custom:<text>").
-  const isExportSelected = (key: string) => wizard.analysisAdded[key] ?? true;
+  // Export selection on the Analyze step. Each card's checkbox starts unchecked;
+  // the user opts cards in. Reuses the persisted `analysisAdded` map (section
+  // id, or "custom:<text>").
+  const isExportSelected = (key: string) => !!wizard.analysisAdded[key];
   const setExportSelected = (key: string, value: boolean) => {
     if (!value) setExportMode("selected");
     updateWizard(grantId, (w) => ({

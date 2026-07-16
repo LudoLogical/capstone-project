@@ -6,7 +6,6 @@ import { useAppStore } from "@/store/useAppStore";
 import type { ReportState } from "@/store/useAppStore";
 import { useGrantView } from "@/store/derived";
 import {
-  ACCOUNT_ORG_NAME,
   DATA_DETAILS,
   REPORT_QUESTION_STEPS,
   RUEA_SECTIONS,
@@ -17,10 +16,7 @@ import RueaCard from "@/components/RueaCard";
 import Modal from "@/components/Modal";
 import BackButton from "@/components/BackButton";
 import DataUploadField from "@/components/DataUploadField";
-import AddDataChatBox from "@/components/AddDataChatBox";
-import DataPackExport, {
-  type DataPackItem,
-} from "@/components/DataPackExport";
+import DeleteDataConfirmModal from "@/components/DeleteDataConfirmModal";
 
 const STEP_NAV = [
   { n: 1, label: "Share your context" },
@@ -28,16 +24,13 @@ const STEP_NAV = [
   { n: 3, label: "Events run" },
   { n: 4, label: "Community served" },
   { n: 5, label: "Outcomes" },
-  { n: 6, label: "Supporting data" },
+  { n: 6, label: "Review" },
   { n: 7, label: "Analysis" },
 ];
 
 // Every step before the final Analysis step must be marked complete before the
 // report can be saved to the grant.
 const REQUIRED_STEPS = [1, 2, 3, 4, 5, 6];
-
-const SUPPORTING_YOUR_DATA = ["ruea-served", "ruea-retention"];
-const SUPPORTING_VP_DATA = ["ruea-cvd", "ruea-produce"];
 
 type QuestionStepId = keyof ReportState["chat"];
 
@@ -73,12 +66,22 @@ export default function ReportFlowPage() {
   const updateReport = useAppStore((s) => s.updateReport);
   const dataForms = useAppStore((s) => s.dataForms);
   const addToast = useAppStore((s) => s.addToast);
+  const dontAskDeleteFound = useAppStore((s) => s.dontAskDeleteFound);
+  const setDontAskDeleteFound = useAppStore((s) => s.setDontAskDeleteFound);
   const [dataModalKey, setDataModalKey] = useState<string | null>(null);
   const [usageKey, setUsageKey] = useState<string | null>(null);
   const [reqDraft, setReqDraft] = useState("");
   // Inline edit state for a user-added analysis on the Analysis step.
   const [editingCustom, setEditingCustom] = useState<number | null>(null);
   const [editDraft, setEditDraft] = useState("");
+  // The review data point awaiting delete confirmation on step 6.
+  const [pendingReviewDelete, setPendingReviewDelete] = useState<{
+    stepId: QuestionStepId;
+    itemId: string;
+  } | null>(null);
+  // Export controls on the Analysis step.
+  const [exportMode, setExportMode] = useState<"selected" | "all">("selected");
+  const [downloadOpen, setDownloadOpen] = useState(false);
 
   // Once a data form is completed, auto-check its "Share your context" box so
   // it's included by default. Tracked per key so a manual uncheck afterward
@@ -112,12 +115,17 @@ export default function ReportFlowPage() {
           : { ...r.stepStatus, [step]: "in-progress" },
     }));
 
-  const toggleStepComplete = (n: number) =>
+  // Non-review steps save silently: marking the step complete and advancing in
+  // one action, so completion isn't a separate button on every step.
+  const saveAndContinue = (n: number) =>
     updateReport(grantId, (r) => ({
       ...r,
+      step: n + 1,
       stepStatus: {
         ...r.stepStatus,
-        [n]: r.stepStatus[n] === "complete" ? "in-progress" : "complete",
+        [n]: "complete",
+        [n + 1]:
+          r.stepStatus[n + 1] === "complete" ? "complete" : "in-progress",
       },
     }));
 
@@ -135,28 +143,6 @@ export default function ReportFlowPage() {
     updateReport(grantId, (r) => ({
       ...r,
       uploads: r.uploads.filter((_, i) => i !== index),
-    }));
-  const toggleSupporting = (id: string) =>
-    updateReport(grantId, (r) => ({
-      ...r,
-      supportingPicks: {
-        ...r.supportingPicks,
-        [id]: !r.supportingPicks[id],
-      },
-    }));
-  const SUPPORTING_IDS = [...SUPPORTING_YOUR_DATA, ...SUPPORTING_VP_DATA];
-  const allSupporting = SUPPORTING_IDS.every((id) => report.supportingPicks[id]);
-  const toggleAllSupporting = () =>
-    updateReport(grantId, (r) => ({
-      ...r,
-      supportingPicks: Object.fromEntries(
-        SUPPORTING_IDS.map((id) => [id, !allSupporting]),
-      ),
-    }));
-  const addCustomSupporting = (text: string) =>
-    updateReport(grantId, (r) => ({
-      ...r,
-      customSupporting: [...r.customSupporting, text],
     }));
   // `current` is the card's effective open state (the first card defaults to
   // open even with no stored value), so the first click always flips what the
@@ -183,18 +169,10 @@ export default function ReportFlowPage() {
         }))
       : null);
 
-  const selectedSupporting = RUEA_SECTIONS.filter(
-    (s) => report.supportingPicks[s.id],
+  const analysisSections = RUEA_SECTIONS.filter(
+    (s) => !report.removedAnalyses[s.id],
   );
-  const analysisSections = (
-    selectedSupporting.length > 0 ? selectedSupporting : RUEA_SECTIONS
-  ).filter((s) => !report.removedAnalyses[s.id]);
 
-  const deleteAnalysis = (id: string) =>
-    updateReport(grantId, (r) => ({
-      ...r,
-      removedAnalyses: { ...r.removedAnalyses, [id]: true },
-    }));
   const editCustomSupporting = (index: number, text: string) =>
     updateReport(grantId, (r) => ({
       ...r,
@@ -208,23 +186,92 @@ export default function ReportFlowPage() {
       customSupporting: r.customSupporting.filter((_, i) => i !== index),
     }));
 
-  // The report data pack: selected supporting data with their analysis, plus
-  // anything the user added themselves.
-  const reportPackItems: DataPackItem[] = [
-    ...analysisSections.map((s) => ({
-      title: s.analysis.datum.content,
-      detail: s.analysis.datum.citation,
-      analysis: [
-        ...s.analysis.result.understand,
-        s.evalNote,
-        ...s.analysis.result.apply,
-      ],
-    })),
-    ...report.customSupporting.map((text) => ({
-      title: text,
-      detail: "Added by you",
-    })),
-  ];
+  // The consolidated review (step 6): every data point gathered across the four
+  // question sections, grouped by section. Removed items drop out. This is the
+  // single source of truth for what the report includes.
+  const reviewGroups = REPORT_QUESTION_STEPS.map((sd) => {
+    const chat = report.chat[sd.id];
+    // Selection is shared with the section page via `picks` (unset = unchecked),
+    // so checking here checks there and vice versa.
+    const items = [
+      ...sd.items
+        .filter((it) => !chat.removed?.[it.id])
+        .map((it) => ({
+          stepId: sd.id,
+          itemId: it.id,
+          label: it.label,
+          source: it.source,
+          picked: !!chat.picks[it.id],
+        })),
+      ...(chat.custom ?? [])
+        .map((text, i) => ({
+          stepId: sd.id,
+          itemId: `custom-${i}`,
+          label: text,
+          source: chat.customSources?.[i]
+            ? `From ${chat.customSources[i]}`
+            : "Added by you",
+          picked: !!chat.picks[`custom-${i}`],
+        }))
+        .filter((it) => !chat.removed?.[it.itemId]),
+    ].filter((it) => it.picked); // only checked items carry into the review
+    const label = STEP_NAV.find((s) => s.n === sd.index)?.label ?? sd.topic;
+    return { stepId: sd.id, label, items };
+  }).filter((g) => g.items.length > 0);
+
+  const toggleReviewItem = (stepId: QuestionStepId, itemId: string) =>
+    updateReport(grantId, (r) => ({
+      ...r,
+      chat: {
+        ...r.chat,
+        [stepId]: {
+          ...r.chat[stepId],
+          picks: {
+            ...r.chat[stepId].picks,
+            [itemId]: !r.chat[stepId].picks[itemId],
+          },
+        },
+      },
+    }));
+
+  const deleteReviewItem = (stepId: QuestionStepId, itemId: string) =>
+    updateReport(grantId, (r) => ({
+      ...r,
+      chat: {
+        ...r.chat,
+        [stepId]: {
+          ...r.chat[stepId],
+          removed: { ...(r.chat[stepId].removed ?? {}), [itemId]: true },
+          picks: { ...r.chat[stepId].picks, [itemId]: false },
+        },
+      },
+    }));
+
+  // Export selection on the Analysis step. Each card's checkbox starts
+  // unchecked; the user opts cards in. Reuses the now-free `supportingPicks`
+  // map, keyed by section id.
+  const isAnalysisSelected = (id: string) => !!report.supportingPicks[id];
+  const toggleAnalysisSelected = (id: string) => {
+    const next = !report.supportingPicks[id];
+    if (!next) setExportMode("selected");
+    updateReport(grantId, (r) => ({
+      ...r,
+      supportingPicks: { ...r.supportingPicks, [id]: next },
+    }));
+  };
+  const allAnalysisSelected =
+    analysisSections.length > 0 &&
+    analysisSections.every((s) => isAnalysisSelected(s.id));
+  const selectAllAnalysis = () => {
+    setExportMode("all");
+    updateReport(grantId, (r) => ({
+      ...r,
+      supportingPicks: {
+        ...r.supportingPicks,
+        ...Object.fromEntries(analysisSections.map((s) => [s.id, true])),
+      },
+    }));
+  };
 
   const submitRequirements = () =>
     updateReport(grantId, (r) => ({
@@ -304,39 +351,40 @@ export default function ReportFlowPage() {
           </button>
           <div className="flex flex-col gap-0.5">
             {STEP_NAV.map((s) => {
-              const complete = isComplete(s.n);
               const current = report.step === s.n;
-              const inProgress =
-                !complete && report.stepStatus[s.n] === "in-progress";
+              // The Analysis step stays locked until the Review is completed
+              // (via "Unlock your analysis").
+              const locked = s.n === 7 && !isComplete(6);
               return (
                 <button
                   key={s.n}
-                  onClick={() => setStep(s.n)}
+                  onClick={() => {
+                    if (!locked) setStep(s.n);
+                  }}
+                  disabled={locked}
                   aria-current={current ? "step" : undefined}
-                  className={`flex cursor-pointer items-center gap-2.5 rounded-lg border px-2 py-2 text-left transition duration-150 ${
+                  className={`flex items-center gap-2.5 rounded-lg border px-2 py-2 text-left transition duration-150 ${
                     current
                       ? "border-accent bg-accent-tint"
                       : "border-transparent hover:bg-surface-alt"
-                  }`}
+                  } ${locked ? "cursor-not-allowed" : "cursor-pointer"}`}
                 >
                   <div
                     className={`flex h-5 w-5 flex-none items-center justify-center rounded-full text-xs font-bold ${
-                      complete
-                        ? "bg-success-ink-2 text-white"
-                        : current
-                          ? "bg-accent text-white"
-                          : inProgress
-                            ? "bg-readiness-warn text-white"
-                            : "bg-divider-2 text-ink-muted"
+                      current
+                        ? "bg-accent text-white"
+                        : "bg-divider-2 text-ink-muted"
                     }`}
                   >
-                    {complete ? "✓" : s.n}
+                    {locked ? "🔒" : s.n}
                   </div>
                   <span
                     className={`text-sm ${
                       current
                         ? "font-bold text-ink"
-                        : "font-medium text-ink-muted"
+                        : locked
+                          ? "font-medium text-ink-faint"
+                          : "font-medium text-ink-muted"
                     }`}
                   >
                     {s.label}
@@ -440,18 +488,12 @@ export default function ReportFlowPage() {
               </div>
               <div className="flex items-center justify-between gap-2.5">
                 <div />
-                <div className="flex gap-2.5">
-                  <MarkCompleteButton
-                    complete={isComplete(1)}
-                    onClick={() => toggleStepComplete(1)}
-                  />
-                  <button
-                    onClick={() => setStep(2)}
-                    className="inline-flex items-center gap-2 rounded-xl bg-accent px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    Next →
-                  </button>
-                </div>
+                <button
+                  onClick={() => saveAndContinue(1)}
+                  className="inline-flex items-center gap-2 rounded-xl bg-accent px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Save and continue →
+                </button>
               </div>
             </div>
           )}
@@ -528,6 +570,83 @@ export default function ReportFlowPage() {
                         });
                       }, 600);
                     }}
+                    onAttach={(fileName) => {
+                      // Attaching a file drops it into the chat and surfaces a
+                      // fact from it into "Here's what I found" (pre-selected,
+                      // sourced to the file).
+                      updateReport(grantId, (r) => {
+                        const prev = r.chat[questionStepId];
+                        const custom = prev.custom ?? [];
+                        const newIndex = custom.length;
+                        const newId = `custom-${newIndex}`;
+                        return {
+                          ...r,
+                          chat: {
+                            ...r.chat,
+                            [questionStepId]: {
+                              ...prev,
+                              custom: [
+                                ...custom,
+                                `Key figures pulled from ${fileName}`,
+                              ],
+                              customSources: {
+                                ...(prev.customSources ?? {}),
+                                [newIndex]: fileName,
+                              },
+                              picks: { ...prev.picks, [newId]: true },
+                              messages: [
+                                ...prev.messages,
+                                { from: "user", text: `📎 ${fileName}` },
+                              ],
+                            },
+                          },
+                        };
+                      });
+                      setTimeout(() => {
+                        updateReport(grantId, (r) => {
+                          const prev = r.chat[questionStepId];
+                          return {
+                            ...r,
+                            chat: {
+                              ...r.chat,
+                              [questionStepId]: {
+                                ...prev,
+                                messages: [
+                                  ...prev.messages,
+                                  {
+                                    from: "ai",
+                                    text: `Thanks — I read “${fileName}” and pulled the key figures into "Here's what I found" below, tagged to the file so reviewers can trace them.`,
+                                  },
+                                ],
+                              },
+                            },
+                          };
+                        });
+                      }, 600);
+                    }}
+                    onDelete={(itemId) =>
+                      updateReport(grantId, (r) => ({
+                        ...r,
+                        chat: {
+                          ...r.chat,
+                          [questionStepId]: {
+                            ...r.chat[questionStepId],
+                            removed: {
+                              ...(r.chat[questionStepId].removed ?? {}),
+                              [itemId]: true,
+                            },
+                            // Drop it from the selection too, so it isn't carried
+                            // forward anywhere that reads picks.
+                            picks: {
+                              ...r.chat[questionStepId].picks,
+                              [itemId]: false,
+                            },
+                          },
+                        },
+                      }))
+                    }
+                    skipDeleteConfirm={dontAskDeleteFound}
+                    onSkipDeleteConfirm={setDontAskDeleteFound}
                   />
                   <div className="mt-5 flex items-center justify-between gap-2.5">
                     <button
@@ -536,18 +655,12 @@ export default function ReportFlowPage() {
                     >
                       Back
                     </button>
-                    <div className="flex gap-2.5">
-                      <MarkCompleteButton
-                        complete={isComplete(report.step)}
-                        onClick={() => toggleStepComplete(report.step)}
-                      />
-                      <button
-                        onClick={() => setStep(report.step + 1)}
-                        className="inline-flex items-center gap-2 rounded-xl bg-accent px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-                        Next →
-                      </button>
-                    </div>
+                    <button
+                      onClick={() => saveAndContinue(report.step)}
+                      className="inline-flex items-center gap-2 rounded-xl bg-accent px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      Save and continue →
+                    </button>
                   </div>
                 </div>
               );
@@ -556,87 +669,82 @@ export default function ReportFlowPage() {
           {report.step === 6 && (
             <div>
               <h1 className="mb-2 font-serif text-2xl leading-tight font-medium">
-                Data Overview
+                Review Your Data
               </h1>
-              <div className="mb-5 flex items-center justify-between gap-3">
-                <p className="text-sm leading-relaxed text-ink-muted">
-                  Select which data points to include as citable evidence in
-                  your report.
+              <p className="mb-5 text-sm leading-relaxed text-ink-muted">
+                Here&apos;s every data point we gathered across your report,
+                grouped by section. They&apos;re all included by default — remove
+                any you don&apos;t want to carry into your report.
+              </p>
+
+              {reviewGroups.length === 0 ? (
+                <p className="mb-5 rounded-2xl border border-dashed border-border-strong px-4 py-8 text-center text-sm text-ink-faint">
+                  No data points yet. Go back through the sections to gather some.
                 </p>
-                <button
-                  onClick={toggleAllSupporting}
-                  className="inline-flex flex-none items-center gap-2 rounded-lg border border-border-strong bg-white px-4 py-2 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 hover:border-accent"
-                >
-                  {allSupporting ? "✕ Remove all" : "✓ Add all"}
-                </button>
-              </div>
-
-              <div className="mb-2.5 text-xs font-bold tracking-wider text-ink-muted uppercase">
-                Your data
-              </div>
-              <div className="mb-5 flex flex-col gap-2.5">
-                {SUPPORTING_YOUR_DATA.map((id) => {
-                  const s = RUEA_SECTIONS.find((x) => x.id === id)!;
-                  return (
-                    <SupportingCard
-                      key={id}
-                      section={s}
-                      picked={!!report.supportingPicks[id]}
-                      onToggle={() => toggleSupporting(id)}
-                    />
-                  );
-                })}
-              </div>
-
-              <div className="mb-2.5 text-xs font-bold tracking-wider text-ink-muted uppercase">
-                Vibrancy Portal data
-              </div>
-              <div className="mb-5 flex flex-col gap-2.5">
-                {SUPPORTING_VP_DATA.map((id) => {
-                  const s = RUEA_SECTIONS.find((x) => x.id === id)!;
-                  return (
-                    <SupportingCard
-                      key={id}
-                      section={s}
-                      picked={!!report.supportingPicks[id]}
-                      onToggle={() => toggleSupporting(id)}
-                    />
-                  );
-                })}
-              </div>
-
-              {report.customSupporting.length > 0 && (
-                <div className="mb-5 flex flex-col gap-2.5">
-                  {report.customSupporting.map((text, i) => (
-                    <div
-                      key={`custom-${i}`}
-                      className="flex items-center gap-3.5 rounded-2xl border border-accent bg-surface p-4"
-                    >
-                      <div className="flex h-5 w-5 flex-none items-center justify-center rounded-full border-2 border-accent bg-accent text-xs text-white">
-                        ✓
-                      </div>
-                      <div className="flex-1">
-                        <div className="text-sm font-semibold">{text}</div>
-                        <div className="text-xs text-ink-faint">Added by you</div>
-                      </div>
+              ) : (
+                reviewGroups.map((group) => (
+                  <div key={group.stepId} className="mb-5">
+                    <div className="mb-2.5 text-xs font-bold tracking-wider text-ink-muted uppercase">
+                      {group.label}
                     </div>
-                  ))}
-                </div>
+                    <div className="flex flex-col gap-2.5">
+                      {group.items.map((it) => (
+                        <div
+                          key={it.itemId}
+                          className={`relative rounded-2xl border ${
+                            it.picked
+                              ? "border-accent bg-accent-tint"
+                              : "border-border-strong bg-white"
+                          }`}
+                        >
+                          <button
+                            onClick={() =>
+                              toggleReviewItem(group.stepId, it.itemId)
+                            }
+                            aria-pressed={it.picked}
+                            className="flex w-full items-start gap-3 px-4 py-4 pr-11 text-left"
+                          >
+                            <span
+                              aria-hidden
+                              className={`mt-0.5 flex h-6 w-6 flex-none items-center justify-center rounded-md border-2 text-sm font-extrabold text-white ${
+                                it.picked
+                                  ? "border-accent bg-accent"
+                                  : "border-checkbox"
+                              }`}
+                            >
+                              {it.picked ? "✓" : ""}
+                            </span>
+                            <div>
+                              <div className="text-sm font-semibold">
+                                {it.label}
+                              </div>
+                              <div className="text-xs text-ink-muted">
+                                {it.source}
+                              </div>
+                            </div>
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (dontAskDeleteFound)
+                                deleteReviewItem(group.stepId, it.itemId);
+                              else
+                                setPendingReviewDelete({
+                                  stepId: group.stepId,
+                                  itemId: it.itemId,
+                                });
+                            }}
+                            aria-label={`Delete ${it.label}`}
+                            title="Delete"
+                            className="absolute top-3 right-3 flex h-7 w-7 items-center justify-center rounded-lg text-base text-ink-faint transition duration-150 hover:bg-white hover:text-accent-ink"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))
               )}
-
-              <div className="mb-5">
-                <div className="mb-2 text-xs font-bold tracking-wider text-ink-muted uppercase">
-                  Add more data
-                </div>
-                <AddDataChatBox onAdd={addCustomSupporting} />
-              </div>
-
-              <div className="mb-5 text-sm text-ink-muted">
-                Surfaced indices:{" "}
-                {Object.values(report.supportingPicks).filter(Boolean).length +
-                  report.customSupporting.length}{" "}
-                included
-              </div>
 
               <div className="flex items-center justify-between gap-2.5">
                 <button
@@ -645,19 +753,35 @@ export default function ReportFlowPage() {
                 >
                   Back
                 </button>
-                <div className="flex gap-2.5">
-                  <MarkCompleteButton
-                    complete={isComplete(6)}
-                    onClick={() => toggleStepComplete(6)}
-                  />
-                  <button
-                    onClick={() => setStep(7)}
-                    className="inline-flex items-center gap-2 rounded-xl bg-accent px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    Next →
-                  </button>
-                </div>
+                <button
+                  onClick={() => saveAndContinue(6)}
+                  className="inline-flex items-center gap-2 rounded-xl bg-accent px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  🔓 Unlock your analysis →
+                </button>
               </div>
+
+              <DeleteDataConfirmModal
+                open={pendingReviewDelete !== null}
+                onClose={() => setPendingReviewDelete(null)}
+                onConfirm={() => {
+                  if (pendingReviewDelete)
+                    deleteReviewItem(
+                      pendingReviewDelete.stepId,
+                      pendingReviewDelete.itemId,
+                    );
+                  setPendingReviewDelete(null);
+                }}
+                onConfirmDontAsk={() => {
+                  setDontAskDeleteFound();
+                  if (pendingReviewDelete)
+                    deleteReviewItem(
+                      pendingReviewDelete.stepId,
+                      pendingReviewDelete.itemId,
+                    );
+                  setPendingReviewDelete(null);
+                }}
+              />
             </div>
           )}
 
@@ -676,26 +800,20 @@ export default function ReportFlowPage() {
 
               <div className="mb-6 flex flex-col gap-3">
                 {analysisSections.map((s, i) => {
-                  // The topmost card starts open so it's clear what these cards
-                  // are; once a user toggles a card, their choice wins.
-                  const expanded = report.analysisExpanded[s.id] ?? i === 0;
+                  // The topmost card is always expanded; the rest default
+                  // collapsed until the user opens them.
+                  const expanded =
+                    i === 0 ? true : (report.analysisExpanded[s.id] ?? false);
                   return (
-                    <div key={s.id} className="flex flex-col gap-1.5">
-                      <RueaCard
-                        section={s}
-                        expanded={expanded}
-                        onToggle={() => toggleAnalysis(s.id, expanded)}
-                        applyLabel="In your report"
-                      />
-                      <div className="flex justify-end">
-                        <button
-                          onClick={() => deleteAnalysis(s.id)}
-                          className="text-xs font-semibold text-ink-muted underline underline-offset-2 transition hover:text-warning-ink"
-                        >
-                          Delete analysis
-                        </button>
-                      </div>
-                    </div>
+                    <RueaCard
+                      key={s.id}
+                      section={s}
+                      expanded={expanded}
+                      onToggle={() => toggleAnalysis(s.id, expanded)}
+                      applyLabel="In your report"
+                      selected={isAnalysisSelected(s.id)}
+                      onSelectChange={() => toggleAnalysisSelected(s.id)}
+                    />
                   );
                 })}
                 {report.customSupporting.map((text, i) => (
@@ -763,28 +881,73 @@ export default function ReportFlowPage() {
                 {analysisSections.length === 0 &&
                   report.customSupporting.length === 0 && (
                     <p className="text-sm leading-relaxed text-ink-muted">
-                      All analyses have been removed. Go back to Data Overview to
-                      add data points.
+                      All analyses have been removed. Go back to Review to add
+                      data points.
                     </p>
                   )}
               </div>
 
-              <div className="mb-6">
-                <DataPackExport
-                  grantName={grant.name}
-                  orgName={ACCOUNT_ORG_NAME}
-                  items={reportPackItems}
-                  uploads={report.uploads}
-                  sections={analysisSections}
-                  customItems={report.customSupporting}
-                  applyLabel="In your report"
-                  shareUrl={
-                    typeof window !== "undefined"
-                      ? `${window.location.origin}/grants/${grant.id}`
-                      : `/grants/${grant.id}`
-                  }
-                />
-              </div>
+              {analysisSections.length > 0 && (
+                <div className="mb-6 rounded-2xl border border-border bg-surface p-5">
+                  {/* Selected / all segmented toggle */}
+                  <div className="mb-4 inline-flex rounded-lg border border-border-strong bg-surface-alt p-1">
+                    <button
+                      onClick={() => setExportMode("selected")}
+                      aria-pressed={exportMode === "selected"}
+                      className={`rounded-md px-3.5 py-1.5 text-sm font-semibold transition duration-150 ${
+                        exportMode === "selected"
+                          ? "bg-white text-ink shadow-sm"
+                          : "text-ink-muted hover:text-ink"
+                      }`}
+                    >
+                      Export selected cards
+                    </button>
+                    <button
+                      onClick={selectAllAnalysis}
+                      aria-pressed={exportMode === "all"}
+                      className={`rounded-md px-3.5 py-1.5 text-sm font-semibold transition duration-150 ${
+                        exportMode === "all" && allAnalysisSelected
+                          ? "bg-white text-ink shadow-sm"
+                          : "text-ink-muted hover:text-ink"
+                      }`}
+                    >
+                      Export all cards
+                    </button>
+                  </div>
+
+                  {/* Download (with format menu) + Share link */}
+                  <div className="flex flex-wrap items-start gap-2.5">
+                    <div className="relative">
+                      <button
+                        onClick={() => setDownloadOpen((v) => !v)}
+                        aria-expanded={downloadOpen}
+                        className="inline-flex items-center gap-2 rounded-lg bg-accent px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 hover:brightness-105"
+                      >
+                        Download <span aria-hidden>▾</span>
+                      </button>
+                      {downloadOpen && (
+                        <div className="absolute z-10 mt-1.5 w-64 overflow-hidden rounded-xl border border-border-strong bg-white shadow-float">
+                          <button
+                            onClick={() => setDownloadOpen(false)}
+                            className="block w-full px-4 py-3 text-left text-sm font-semibold text-ink transition duration-150 hover:bg-surface-alt"
+                          >
+                            Download as PDF
+                          </button>
+                          <button
+                            onClick={() => setDownloadOpen(false)}
+                            className="block w-full border-t border-divider px-4 py-3 text-left text-sm font-semibold text-ink transition duration-150 hover:bg-surface-alt"
+                          >
+                            Download Word document (.docx)
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                    <button className="inline-flex items-center gap-2 rounded-lg border border-border-strong bg-white px-5 py-3 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 hover:border-accent">
+                      Share link
+                    </button>
+                  </div>
+                </div>
+              )}
 
               <div className="mb-6 rounded-2xl border border-border bg-surface p-6">
                 <div className="mb-2.5 text-sm font-bold">Next steps</div>
@@ -803,21 +966,6 @@ export default function ReportFlowPage() {
                   </li>
                 </ul>
               </div>
-
-              {!canSave && (
-                <div className="mb-4 rounded-2xl border border-warning-border bg-warning-bg px-5 py-4">
-                  <div className="mb-1 text-sm font-bold text-warning-ink">
-                    Finish every step before saving
-                  </div>
-                  <p className="text-sm leading-normal text-warning-ink">
-                    Mark these as complete first:{" "}
-                    {incompleteSteps
-                      .map((n) => STEP_NAV.find((s) => s.n === n)?.label)
-                      .join(", ")}
-                    .
-                  </p>
-                </div>
-              )}
 
               <div className="flex gap-2.5">
                 <button
@@ -887,60 +1035,3 @@ export default function ReportFlowPage() {
   );
 }
 
-/** Toggle a report step's completion. Only this marks a step complete. */
-function MarkCompleteButton({
-  complete,
-  onClick,
-}: {
-  complete: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`inline-flex items-center gap-2 rounded-xl border px-5 py-3 text-sm font-semibold whitespace-nowrap transition duration-150 ${
-        complete
-          ? "border-success-border bg-success-bg text-success-ink"
-          : "border-border-strong bg-white text-ink enabled:hover:border-accent"
-      }`}
-    >
-      {complete ? "✓ Marked as complete" : "Mark as complete"}
-    </button>
-  );
-}
-
-function SupportingCard({
-  section,
-  picked,
-  onToggle,
-}: {
-  section: (typeof RUEA_SECTIONS)[number];
-  picked: boolean;
-  onToggle: () => void;
-}) {
-  return (
-    <button
-      onClick={onToggle}
-      aria-pressed={picked}
-      className={`flex cursor-pointer items-center gap-3.5 rounded-2xl border bg-surface p-4 text-left ${
-        picked ? "border-accent" : "border-border"
-      }`}
-    >
-      <div
-        className={`flex h-5 w-5 flex-none items-center justify-center rounded-full border-2 text-xs text-white ${
-          picked ? "border-accent bg-accent" : "border-checkbox bg-transparent"
-        }`}
-      >
-        {picked ? "✓" : ""}
-      </div>
-      <div className="flex-1">
-        <div className="text-sm font-semibold">
-          {section.analysis.datum.content}
-        </div>
-        <div className="font-mono text-xs text-ink-faint">
-          {section.analysis.datum.citation}
-        </div>
-      </div>
-    </button>
-  );
-}

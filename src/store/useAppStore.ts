@@ -27,9 +27,17 @@ export type ReportChatState = {
   messages: ChatMessage[];
   marked: boolean;
   picks: Record<string, boolean>;
-  // Entries the user typed in themselves. They join the "Here's what I found"
-  // list as extra, pre-selected items (keyed "custom-<index>" in `picks`).
+  // Entries the user typed in themselves (or that were surfaced from an attached
+  // file). They join the "Here's what I found" list as extra, pre-selected items
+  // (keyed "custom-<index>" in `picks`).
   custom: string[];
+  // Optional per-custom source label, keyed by the custom entry's index. When
+  // absent, the item is shown as "Added by you"; a file attachment sets the
+  // file name here so the surfaced fact is traceable.
+  customSources?: Record<number, string>;
+  // Found items the user deleted, keyed by item id (seed item id, or
+  // "custom-<index>"). Soft-deleted so indexes/picks stay stable.
+  removed?: Record<string, boolean>;
 };
 
 // Per-step completion, keyed by step number (1-7). A step is only ever
@@ -173,6 +181,9 @@ export type CouplingModal = {
 type AppState = {
   signedIn: boolean;
   privacyAcked: boolean;
+  // Set once the user picks "Yes, don't ask again" when deleting a found data
+  // point in the report flow; suppresses the confirmation afterward.
+  dontAskDeleteFound: boolean;
 
   // First-run onboarding: a signed-in user who has not finished onboarding is
   // shown the welcome + org-details flow before the dashboard.
@@ -232,6 +243,7 @@ type AppState = {
   recordNav: (path: string) => void;
   signIn: () => void;
   ackPrivacy: () => void;
+  setDontAskDeleteFound: () => void;
 
   setOnboardStep: (step: number) => void;
   patchOnboardOrg: (patch: Partial<OnboardOrg>) => void;
@@ -305,6 +317,7 @@ export const useAppStore = create<AppState>()(
     (set, get) => ({
       signedIn: false,
       privacyAcked: false,
+      dontAskDeleteFound: false,
       onboarded: false,
       onboardStep: 0,
       onboardOrg: emptyOnboardOrg(),
@@ -350,6 +363,7 @@ export const useAppStore = create<AppState>()(
         }),
 
       signIn: () => set({ signedIn: true }),
+      setDontAskDeleteFound: () => set({ dontAskDeleteFound: true }),
       ackPrivacy: () => set({ privacyAcked: true }),
 
       setOnboardStep: (step) => set({ onboardStep: step }),
@@ -585,6 +599,7 @@ export const useAppStore = create<AppState>()(
       partialize: (state) => ({
         signedIn: state.signedIn,
         privacyAcked: state.privacyAcked,
+        dontAskDeleteFound: state.dontAskDeleteFound,
         onboarded: state.onboarded,
         onboardStep: state.onboardStep,
         onboardOrg: state.onboardOrg,
