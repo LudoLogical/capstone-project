@@ -70,6 +70,11 @@
   --color-info-border: #dce9ef;
   --color-info-border-2: #cfe0e8;
 
+  /* Error / red — destructive actions */
+  --color-error-ink: #c0392b;
+  --color-error-bg: #fbeae7;
+  --color-error-border: #ecc8c1;
+
   /* Neutral / declined */
   --color-neutral-ink: #9a8c80;
   --color-neutral-bg: #f1ece6;

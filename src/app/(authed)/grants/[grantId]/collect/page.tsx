@@ -11,6 +11,7 @@ import Modal from "@/components/Modal";
 import BackButton from "@/components/BackButton";
 import DataUploadField from "@/components/DataUploadField";
 import AddDataChatBox from "@/components/AddDataChatBox";
+import ResetAnalysisButton from "@/components/ResetAnalysisButton";
 
 // Progress-bar labels are kept identical to each step's page title.
 const STEP_LABELS = [
@@ -152,6 +153,17 @@ export default function DataCollectionWizardPage() {
         ...w.analysisAdded,
         ...Object.fromEntries(exportKeys.map((k) => [k, true])),
       },
+    }));
+  };
+
+  // Reset the whole analyze step back to its default state: nothing selected for
+  // export and expansion cleared.
+  const resetAnalysis = () => {
+    setExportMode("selected");
+    updateWizard(grantId, (w) => ({
+      ...w,
+      analysisAdded: {},
+      rueaExpanded: {},
     }));
   };
 
@@ -585,6 +597,12 @@ export default function DataCollectionWizardPage() {
               Save and exit →
             </button>
           </div>
+
+          {(foundSections.length > 0 || foundCustom.length > 0) && (
+            <div className="mt-8 border-t border-divider pt-6">
+              <ResetAnalysisButton onReset={resetAnalysis} />
+            </div>
+          )}
         </div>
       )}
 

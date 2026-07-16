@@ -17,6 +17,7 @@ import Modal from "@/components/Modal";
 import BackButton from "@/components/BackButton";
 import DataUploadField from "@/components/DataUploadField";
 import DeleteDataConfirmModal from "@/components/DeleteDataConfirmModal";
+import ResetAnalysisButton from "@/components/ResetAnalysisButton";
 
 const STEP_NAV = [
   { n: 1, label: "Share your context" },
@@ -27,10 +28,6 @@ const STEP_NAV = [
   { n: 6, label: "Review" },
   { n: 7, label: "Analysis" },
 ];
-
-// Every step before the final Analysis step must be marked complete before the
-// report can be saved to the grant.
-const REQUIRED_STEPS = [1, 2, 3, 4, 5, 6];
 
 type QuestionStepId = keyof ReportState["chat"];
 
@@ -173,6 +170,18 @@ export default function ReportFlowPage() {
     (s) => !report.removedAnalyses[s.id],
   );
 
+  // Reset the whole analysis step back to its default state: no cards removed,
+  // nothing selected for export, and expansion cleared.
+  const resetAnalysis = () => {
+    setExportMode("selected");
+    updateReport(grantId, (r) => ({
+      ...r,
+      removedAnalyses: {},
+      supportingPicks: {},
+      analysisExpanded: {},
+    }));
+  };
+
   const editCustomSupporting = (index: number, text: string) =>
     updateReport(grantId, (r) => ({
       ...r,
@@ -280,9 +289,6 @@ export default function ReportFlowPage() {
       requirementsSet: true,
     }));
 
-  const incompleteSteps = REQUIRED_STEPS.filter((n) => !isComplete(n));
-  const canSave = incompleteSteps.length === 0;
-
   // Gate: before anything else, the user supplies this grant's reporting
   // requirements. They're then kept in view and woven through every step.
   if (!report.requirementsSet) {
@@ -326,7 +332,6 @@ export default function ReportFlowPage() {
   }
 
   const saveToGrant = () => {
-    if (!canSave) return;
     updateReport(grantId, (r) => ({
       ...r,
       stepStatus: { ...r.stepStatus, 7: "complete" },
@@ -976,12 +981,17 @@ export default function ReportFlowPage() {
                 </button>
                 <button
                   onClick={saveToGrant}
-                  disabled={!canSave}
-                  className="inline-flex items-center gap-2 rounded-xl bg-accent px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex items-center gap-2 rounded-xl bg-accent px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 hover:brightness-105"
                 >
                   Save and exit →
                 </button>
               </div>
+
+              {analysisSections.length > 0 && (
+                <div className="mt-8 border-t border-divider pt-6">
+                  <ResetAnalysisButton onReset={resetAnalysis} />
+                </div>
+              )}
             </div>
           )}
         </div>
