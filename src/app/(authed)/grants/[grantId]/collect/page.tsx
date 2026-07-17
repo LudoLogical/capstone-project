@@ -13,7 +13,14 @@ import DataUploadField from "@/components/DataUploadField";
 import AddDataChatBox from "@/components/AddDataChatBox";
 import ResetAnalysisButton from "@/components/ResetAnalysisButton";
 import ShareModal from "@/components/ShareModal";
-import Icon from "@/components/Icon";
+import {
+  Bookmark,
+  Check,
+  X,
+  ChevronDown,
+  ArrowRight,
+  ArrowUpRight,
+} from "lucide-react";
 
 /**
  * The application flow is three steps: share your context, review the data we
@@ -284,7 +291,7 @@ export default function DataCollectionWizardPage() {
                                 : "bg-divider-2 text-ink-muted"
                           }`}
                         >
-                          {locked ? <Icon name="bookmark" size={11} /> : !current && visited ? <Icon name="check" size={12} /> : n}
+                          {locked ? <Bookmark size={11} /> : !current && visited ? <Check size={12} /> : n}
                         </div>
                         <span
                           className={`text-sm ${
@@ -354,7 +361,13 @@ export default function DataCollectionWizardPage() {
                       }
                       className="inline-flex items-center gap-2 rounded-lg border border-border-strong bg-white px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 enabled:hover:border-accent disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      {completed ? "View summary" : "Open form ↗"}
+                      {completed ? (
+                        "View summary"
+                      ) : (
+                        <>
+                          Open form <ArrowUpRight size={14} className="shrink-0" />
+                        </>
+                      )}
                     </button>
                   </div>
                 </div>
@@ -384,7 +397,7 @@ export default function DataCollectionWizardPage() {
               onClick={() => setStep(REVIEW_STEP)}
               className="inline-flex items-center gap-2 rounded-xl bg-accent-ink px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Save and Continue →
+              Save and Continue <ArrowRight size={16} className="shrink-0" />
             </button>
           </div>
         </div>
@@ -433,7 +446,7 @@ export default function DataCollectionWizardPage() {
                       selected ? "border-accent bg-accent" : "border-ink-muted"
                     }`}
                   >
-                    {selected ? <Icon name="check" size={14} /> : null}
+                    {selected ? <Check size={14} /> : null}
                   </span>
                   <div>
                     <div className="text-sm font-semibold">
@@ -479,7 +492,7 @@ export default function DataCollectionWizardPage() {
                             : "border-ink-muted"
                         }`}
                       >
-                        {selected ? <Icon name="check" size={14} /> : null}
+                        {selected ? <Check size={14} /> : null}
                       </span>
                       <div>
                         <div className="text-sm font-semibold">{text}</div>
@@ -494,7 +507,7 @@ export default function DataCollectionWizardPage() {
                       title="Delete"
                       className="absolute top-3 right-3 flex h-7 w-7 items-center justify-center rounded-lg text-base text-ink-muted transition duration-150 hover:bg-accent-tint hover:text-accent-ink"
                     >
-                      <Icon name="x" size={13} />
+                      <X size={13} />
                     </button>
                   </div>
                 );
@@ -518,9 +531,15 @@ export default function DataCollectionWizardPage() {
               onClick={unlockAnalysis}
               className="inline-flex items-center gap-2 rounded-xl bg-accent-ink px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {analysisUnlocked
-                ? "See updated analysis →"
-                : "Unlock your analysis →"}
+              {analysisUnlocked ? (
+                <>
+                  See updated analysis <ArrowRight size={16} className="shrink-0" />
+                </>
+              ) : (
+                <>
+                  Unlock your analysis <ArrowRight size={16} className="shrink-0" />
+                </>
+              )}
             </button>
           </div>
         </div>
@@ -586,7 +605,7 @@ export default function DataCollectionWizardPage() {
                               : "border-ink-muted"
                           }`}
                         >
-                          {selected ? <Icon name="check" size={14} /> : null}
+                          {selected ? <Check size={14} /> : null}
                         </span>
                       </button>
                       <div>
@@ -638,7 +657,7 @@ export default function DataCollectionWizardPage() {
                     aria-expanded={downloadOpen}
                     className="inline-flex items-center gap-2 rounded-lg bg-accent-ink px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 hover:bg-accent-ink-2 active:translate-y-px"
                   >
-                    Download <span aria-hidden>▾</span>
+                    Download <ChevronDown size={16} className="shrink-0" />
                   </button>
                   {downloadOpen && (
                     <div className="absolute z-10 mt-1.5 w-64 overflow-hidden rounded-xl border border-border-strong bg-white shadow-float">
@@ -678,7 +697,7 @@ export default function DataCollectionWizardPage() {
               onClick={() => router.push("/")}
               className="inline-flex items-center gap-2 rounded-xl bg-accent-ink px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Save and exit →
+              Save and exit <ArrowRight size={16} className="shrink-0" />
             </button>
           </div>
 

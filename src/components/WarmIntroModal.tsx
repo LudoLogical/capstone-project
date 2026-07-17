@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Modal from "./Modal";
 import type { OrgProfileContent } from "@/data/seed";
-import Icon from "./Icon";
+import { Check, BarChart3, X, Info } from "lucide-react";
 
 /** The warm-intro note NSR frames - addressed to the partner org, sent by you. */
 function defaultIntro(org: OrgProfileContent): string {
@@ -53,7 +53,7 @@ export default function WarmIntroModal({
       {sent ? (
         <div className="px-8 py-10 text-center">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-success-bg text-2xl text-success-ink">
-            <Icon name="check" size={26} />
+            <Check size={26} />
           </div>
           <div className="text-lg font-bold">Opening in your email client…</div>
           <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-ink-muted">
@@ -72,7 +72,7 @@ export default function WarmIntroModal({
         <div>
           <div className="flex items-start gap-3 rounded-t-2xl bg-accent-ink px-7 py-5 text-white">
             <span aria-hidden className="mt-0.5 text-xl">
-              <Icon name="bar-chart" size={18} />
+              <BarChart3 size={18} />
             </span>
             <div className="min-w-0 flex-1 leading-tight">
               <div className="text-sm font-bold">
@@ -88,7 +88,7 @@ export default function WarmIntroModal({
               aria-label="Close"
               className="-mt-1 -mr-1 flex-none rounded-lg p-1.5 text-lg leading-none text-white/80 transition hover:bg-white/15 hover:text-white"
             >
-              <Icon name="x" size={16} />
+              <X size={16} />
             </button>
           </div>
           <div className="px-7 py-6">
@@ -103,9 +103,7 @@ export default function WarmIntroModal({
             <EmailRow label="SUBJECT">{EMAIL_SUBJECT}</EmailRow>
 
             <div className="mt-4 flex items-start gap-2 rounded-xl border border-border bg-surface-alt px-4 py-3 text-xs leading-normal text-ink-muted">
-              <span aria-hidden className="mt-px flex-none text-accent">
-                ⓘ
-              </span>
+              <Info size={14} className="mt-px shrink-0 text-accent" />
               <span>
                 New Sun Rising vouches that you&apos;re both members of its
                 network - the same way a trusted introduction does. NSR

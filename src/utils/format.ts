@@ -13,14 +13,6 @@ export function formatDate(date: Date): string {
   });
 }
 
-export function formatMonthYear(date: Date): string {
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    year: "numeric",
-    timeZone: "UTC",
-  });
-}
-
 export function formatCurrency(amount: number): string {
   if (amount >= 1000) {
     return `$${Math.round(amount / 1000)}K`;

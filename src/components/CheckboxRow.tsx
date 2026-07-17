@@ -1,6 +1,6 @@
 "use client";
 
-import Icon from "./Icon";
+import { Check } from "lucide-react";
 
 export default function CheckboxRow({
   checked,
@@ -35,7 +35,7 @@ export default function CheckboxRow({
           checked ? "border-accent bg-accent" : "border-ink-muted"
         }`}
       >
-        {checked ? <Icon name="check" size={14} /> : null}
+        {checked ? <Check size={14} /> : null}
       </div>
       <div className="flex-1">
         <div className="text-sm leading-tight font-semibold text-ink-body">

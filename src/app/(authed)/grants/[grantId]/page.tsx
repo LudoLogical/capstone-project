@@ -10,7 +10,7 @@ import { INTERESTED_BY_GRANT, ORG_PROFILES } from "@/data/seed";
 import ShareModal from "@/components/ShareModal";
 import BackButton from "@/components/BackButton";
 import ClosedGrantModal from "@/components/ClosedGrantModal";
-import Icon from "@/components/Icon";
+import { Star, BarChart3, ArrowUpRight, ArrowRight } from "lucide-react";
 
 /** Initials for an org avatar chip, e.g. "Hilltop Harvest" → "HH". */
 function initialsOf(name: string): string {
@@ -180,7 +180,7 @@ export default function GrantDetailPage() {
           </div>
           <div className="flex flex-none flex-wrap gap-2.5">
             <button onClick={toggleSave} className={toggleClass(saved)}>
-              <Icon name="star" size={14} fill={saved} />
+              <Star size={14} fill={saved ? "currentColor" : "none"} className="shrink-0" />
               {saved ? "Saved for Later" : "Save for Later"}
             </button>
             <button
@@ -199,7 +199,7 @@ export default function GrantDetailPage() {
           rel="noopener noreferrer"
           className="mb-4 inline-flex items-center gap-2 rounded-lg border border-border-strong bg-white px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-ink no-underline transition duration-150 hover:border-accent"
         >
-          View grant on website ↗
+          View grant on website <ArrowUpRight size={15} className="shrink-0" />
         </a>
         <div className="mb-4 flex flex-wrap items-baseline gap-x-2 gap-y-1">
           <span className="text-xl font-bold text-accent-ink-2">
@@ -291,7 +291,7 @@ export default function GrantDetailPage() {
       {/* How your work lines up - the fit read, no score (items 2 & 9) */}
       <div className="mb-3.5 rounded-2xl border border-border bg-surface p-6">
         <div className="mb-1 inline-flex items-center gap-1 rounded-full border border-accent-tint-border bg-accent-tint px-3 py-1 text-xs font-bold text-accent-ink">
-          <Icon name="bar-chart" size={12} />
+          <BarChart3 size={12} />
           AI-ASSISTED
         </div>
         <div className="mt-2.5 text-base font-bold">How your work lines up</div>
@@ -370,9 +370,9 @@ export default function GrantDetailPage() {
                 <button
                   onClick={() => setShareOrgId(org.initiativeId)}
                   aria-label={`Share ${org.name}`}
-                  className="flex-none rounded-lg border border-border-strong bg-white px-2.5 py-1.5 text-xs font-semibold whitespace-nowrap text-ink transition duration-150 hover:border-accent"
+                  className="inline-flex flex-none items-center gap-1 rounded-lg border border-border-strong bg-white px-2.5 py-1.5 text-xs font-semibold whitespace-nowrap text-ink transition duration-150 hover:border-accent"
                 >
-                  ↗ Share
+                  <ArrowUpRight size={13} className="shrink-0" /> Share
                 </button>
               </div>
             ))}
@@ -382,7 +382,7 @@ export default function GrantDetailPage() {
           onClick={() => router.push(`/grants/${grant.id}/collaborate`)}
           className="mt-4 inline-flex items-center gap-2 rounded-lg border border-border-strong bg-white px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 hover:border-accent"
         >
-          See detail →
+          See detail <ArrowRight size={16} className="shrink-0" />
         </button>
       </div>
 
@@ -401,7 +401,7 @@ export default function GrantDetailPage() {
                 onClick={() => router.push(`/grants/${grant.id}/report`)}
                 className="inline-flex items-center gap-2 rounded-lg bg-accent-ink px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px"
               >
-                Go to outcome report →
+                Go to outcome report <ArrowRight size={16} className="shrink-0" />
               </button>
               {view.status === "awarded" && (
                 <button
@@ -419,7 +419,7 @@ export default function GrantDetailPage() {
         ) : (
           <div className="rounded-2xl border border-accent-tint-border bg-accent-tint-soft px-6 py-5">
             <div className="mb-2.5 inline-flex items-center gap-1 rounded-full border border-accent-tint-border bg-accent-tint px-3 py-1 text-xs font-bold text-accent-ink">
-              <Icon name="bar-chart" size={12} />
+              <BarChart3 size={12} />
           AI-ASSISTED
             </div>
             <div className="mb-1.5 text-base font-bold">Ready to apply?</div>

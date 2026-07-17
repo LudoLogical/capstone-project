@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useParams } from "next/navigation";
 import { useAppStore } from "@/store/useAppStore";
 import { ORG_PROFILES } from "@/data/seed";
+import { Hourglass, Info } from "lucide-react";
 import WarmIntroModal from "@/components/WarmIntroModal";
 import BackButton from "@/components/BackButton";
 
@@ -120,7 +121,8 @@ export default function OrgProfilePage() {
             </p>
             {contactRequested ? (
               <div className="inline-flex items-center gap-1 rounded-full border border-warning-border bg-warning-bg px-3 py-1 text-xs font-bold text-warning-ink">
-                ⏳ Requested - pending approval and consent
+                <Hourglass size={13} className="shrink-0" /> Requested - pending
+                approval and consent
               </div>
             ) : (
               <button
@@ -145,8 +147,8 @@ export default function OrgProfilePage() {
                   title={sig.source}
                   className="inline-flex items-center gap-1 rounded-full border border-info-border bg-info-bg px-3 py-1 text-xs font-bold text-info-ink"
                 >
-                  ◷ {sig.label}{" "}
-                  <span className="text-xs leading-none">ⓘ</span>
+                  {sig.label}{" "}
+                  <Info size={12} className="shrink-0" />
                 </span>
               ))}
             </div>

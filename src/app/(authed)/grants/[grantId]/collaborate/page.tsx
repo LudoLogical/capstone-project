@@ -11,7 +11,7 @@ import {
 import WarmIntroModal from "@/components/WarmIntroModal";
 import ShareModal from "@/components/ShareModal";
 import BackButton from "@/components/BackButton";
-import Icon from "@/components/Icon";
+import { Users, ArrowUpRight } from "lucide-react";
 
 /** Initials for the avatar chip, e.g. "Hilltop Harvest Collective" → "HH". */
 function initialsOf(name: string): string {
@@ -43,7 +43,7 @@ export default function CollaboratePage() {
 
       <div className="flex items-center gap-3">
         <div className="flex h-11 w-11 flex-none items-center justify-center rounded-xl bg-accent-tint-2 text-xl">
-          <Icon name="users" size={22} />
+          <Users size={22} />
         </div>
         <h1 className="font-serif text-3xl leading-tight font-bold">
           Who&apos;s open to collaborating
@@ -115,9 +115,9 @@ export default function CollaboratePage() {
                   <button
                     onClick={() => setShareOrg(org)}
                     aria-label={`Share ${org.name}`}
-                    className="flex-none rounded-lg border border-border-strong bg-white px-3 py-2 text-sm font-semibold text-ink transition duration-150 hover:border-accent"
+                    className="inline-flex flex-none items-center gap-1 rounded-lg border border-border-strong bg-white px-3 py-2 text-sm font-semibold text-ink transition duration-150 hover:border-accent"
                   >
-                    ↗ Share
+                    <ArrowUpRight size={14} className="shrink-0" /> Share
                   </button>
                 </div>
               </div>

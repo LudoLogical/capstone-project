@@ -20,7 +20,15 @@ import DataUploadField from "@/components/DataUploadField";
 import DeleteDataConfirmModal from "@/components/DeleteDataConfirmModal";
 import ResetAnalysisButton from "@/components/ResetAnalysisButton";
 import ShareModal from "@/components/ShareModal";
-import Icon from "@/components/Icon";
+import {
+  BarChart3,
+  Bookmark,
+  Check,
+  X,
+  ChevronDown,
+  ArrowRight,
+  ArrowUpRight,
+} from "lucide-react";
 
 const STEP_NAV = [
   { n: 1, label: "Share your context" },
@@ -390,7 +398,7 @@ export default function ReportFlowPage() {
       <div className="mx-auto w-full max-w-2xl animate-nc-rise px-8 pt-7 pb-20">
         <BackButton fallback="/" />
         <div className="mb-3 inline-flex items-center gap-1 rounded-full border border-accent-tint-border bg-accent-tint px-3 py-1 text-xs font-bold text-accent-ink">
-          <Icon name="bar-chart" size={12} />
+          <BarChart3 size={12} />
           AI-ASSISTED
         </div>
         <h1 className="mb-2 font-serif text-3xl leading-tight font-bold">
@@ -436,7 +444,7 @@ export default function ReportFlowPage() {
             onClick={submitRequirements}
             className="inline-flex items-center gap-2 rounded-xl bg-accent-ink px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px"
           >
-            Start report →
+            Start report <ArrowRight size={16} className="shrink-0" />
           </button>
           <button
             onClick={submitRequirements}
@@ -508,7 +516,7 @@ export default function ReportFlowPage() {
                               : "bg-divider-2 text-ink-muted"
                           }`}
                         >
-                          {locked ? <Icon name="bookmark" size={11} /> : s.n}
+                          {locked ? <Bookmark size={11} /> : s.n}
                         </div>
                         <span
                           className={`text-sm ${
@@ -603,7 +611,14 @@ export default function ReportFlowPage() {
                           }
                           className="inline-flex items-center gap-2 rounded-lg border border-border-strong bg-white px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 enabled:hover:border-accent disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                          {completed ? "View summary" : "Open form ↗"}
+                          {completed ? (
+                            "View summary"
+                          ) : (
+                            <>
+                              Open form{" "}
+                              <ArrowUpRight size={14} className="shrink-0" />
+                            </>
+                          )}
                         </button>
                       </div>
                     </div>
@@ -627,7 +642,7 @@ export default function ReportFlowPage() {
                   onClick={() => saveAndContinue(1)}
                   className="inline-flex items-center gap-2 rounded-xl bg-accent-ink px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  Save and continue →
+                  Save and continue <ArrowRight size={16} className="shrink-0" />
                 </button>
               </div>
             </div>
@@ -812,7 +827,7 @@ export default function ReportFlowPage() {
                       onClick={() => saveAndContinue(report.step)}
                       className="inline-flex items-center gap-2 rounded-xl bg-accent-ink px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      Save and continue →
+                      Save and continue <ArrowRight size={16} className="shrink-0" />
                     </button>
                   </div>
                 </div>
@@ -865,7 +880,7 @@ export default function ReportFlowPage() {
                                   : "border-ink-muted"
                               }`}
                             >
-                              {it.picked ? <Icon name="check" size={14} /> : null}
+                              {it.picked ? <Check size={14} /> : null}
                             </span>
                             <div>
                               <div className="text-sm font-semibold">
@@ -890,7 +905,7 @@ export default function ReportFlowPage() {
                             title="Delete"
                             className="absolute top-3 right-3 flex h-7 w-7 items-center justify-center rounded-lg text-base text-ink-muted transition duration-150 hover:bg-white hover:text-accent-ink"
                           >
-                            <Icon name="x" size={13} />
+                            <X size={13} />
                           </button>
                         </div>
                       ))}
@@ -910,9 +925,17 @@ export default function ReportFlowPage() {
                   onClick={() => saveAndContinue(6)}
                   className="inline-flex items-center gap-2 rounded-xl bg-accent-ink px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {isComplete(6)
-                    ? "See updated analysis →"
-                    : "Unlock your analysis →"}
+                  {isComplete(6) ? (
+                    <>
+                      See updated analysis{" "}
+                      <ArrowRight size={16} className="shrink-0" />
+                    </>
+                  ) : (
+                    <>
+                      Unlock your analysis{" "}
+                      <ArrowRight size={16} className="shrink-0" />
+                    </>
+                  )}
                 </button>
               </div>
 
@@ -953,9 +976,7 @@ export default function ReportFlowPage() {
                 language in “In Your Report” to strengthen your report.
               </p>
               <div className="mb-5 flex items-start gap-2.5 rounded-xl border border-accent-tint-border bg-accent-tint-soft px-4 py-3">
-                <span aria-hidden className="mt-px flex-none text-accent">
-                  <Icon name="check" size={14} />
-                </span>
+                <Check size={14} className="mt-px shrink-0 text-accent" />
                 <p className="text-sm leading-relaxed text-ink-body">
                   <strong>Check the box on each card</strong> you want in your
                   data analysis. Only checked cards are included when you
@@ -1087,7 +1108,7 @@ export default function ReportFlowPage() {
                         aria-expanded={downloadOpen}
                         className="inline-flex items-center gap-2 rounded-lg bg-accent-ink px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 hover:bg-accent-ink-2 active:translate-y-px"
                       >
-                        Download <span aria-hidden>▾</span>
+                        Download <ChevronDown size={16} className="shrink-0" />
                       </button>
                       {downloadOpen && (
                         <div className="absolute z-10 mt-1.5 w-64 overflow-hidden rounded-xl border border-border-strong bg-white shadow-float">
@@ -1145,7 +1166,7 @@ export default function ReportFlowPage() {
                   onClick={saveToGrant}
                   className="inline-flex items-center gap-2 rounded-xl bg-accent-ink px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 hover:bg-accent-ink-2 active:translate-y-px"
                 >
-                  Save and exit →
+                  Save and exit <ArrowRight size={16} className="shrink-0" />
                 </button>
               </div>
 

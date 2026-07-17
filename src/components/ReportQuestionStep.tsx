@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { ReportQuestionStep } from "@/data/seed";
 import type { ReportChatState } from "@/store/useAppStore";
 import DeleteDataConfirmModal from "./DeleteDataConfirmModal";
-import Icon from "./Icon";
+import { BarChart3, Paperclip, Check, X } from "lucide-react";
 
 type Props = {
   stepDef: ReportQuestionStep;
@@ -76,7 +76,7 @@ export default function ReportQuestionStep({
       <div className="mb-4 overflow-hidden rounded-2xl border border-border bg-surface">
         <div className="flex items-center gap-2.5 border-b border-divider bg-surface-alt px-5 py-3">
           <div className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-accent-tint text-sm text-accent-ink">
-            <Icon name="bar-chart" size={15} />
+            <BarChart3 size={15} />
           </div>
           <div className="text-sm font-bold">Reporting assistant</div>
           <span className="rounded-full border border-accent-tint-border bg-accent-tint px-2 py-0.5 text-xs font-bold tracking-wider text-accent-ink uppercase">
@@ -93,7 +93,7 @@ export default function ReportQuestionStep({
           {chat.messages.length === 0 ? (
             <div className="m-auto max-w-sm px-6 text-center">
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-accent-tint text-2xl text-accent-ink">
-                <Icon name="bar-chart" size={15} />
+                <BarChart3 size={15} />
               </div>
               <div className="text-sm font-bold text-ink">
                 You&apos;re chatting with an AI assistant
@@ -195,7 +195,7 @@ export default function ReportQuestionStep({
             title="Attach a file"
             className="inline-flex flex-none items-center justify-center rounded-xl border border-border-strong bg-white px-4 py-3 text-base text-ink transition duration-150 hover:border-accent"
           >
-            <Icon name="paperclip" size={16} />
+            <Paperclip size={16} />
           </button>
           <button
             onClick={send}
@@ -296,7 +296,7 @@ function FoundItem({
             picked ? "border-accent bg-accent" : "border-ink-muted"
           }`}
         >
-          {picked ? <Icon name="check" size={14} /> : null}
+          {picked ? <Check size={14} /> : null}
         </span>
         <div>
           <div className="text-sm font-semibold">{label}</div>
@@ -309,7 +309,7 @@ function FoundItem({
         title="Delete"
         className="absolute top-2.5 right-2.5 flex h-7 w-7 items-center justify-center rounded-lg text-base text-ink-muted transition duration-150 hover:bg-white hover:text-accent-ink"
       >
-        <Icon name="x" size={14} />
+        <X size={14} />
       </button>
     </div>
   );

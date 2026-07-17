@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Modal from "./Modal";
 import { PROVENANCE } from "@/data/seed";
-import Icon from "./Icon";
+import { FileText, Link, Download, ArrowUpRight } from "lucide-react";
 
 export default function CiteButton({
   provenanceKey,
@@ -43,10 +43,22 @@ export default function CiteButton({
           rel="noopener noreferrer"
           className="mb-4 flex items-center gap-2.5 rounded-xl border border-border-strong bg-surface-alt px-4 py-3 text-sm font-semibold text-accent no-underline transition duration-150 hover:border-accent"
         >
-          <Icon name={entry.linkKind === "file" ? "file-text" : "link"} size={13} />
+          {entry.linkKind === "file" ? (
+            <FileText size={13} className="shrink-0" />
+          ) : (
+            <Link size={13} className="shrink-0" />
+          )}
           <span className="min-w-0 flex-1 truncate">{entry.linkLabel}</span>
-          <span aria-hidden className="flex-none text-ink-muted">
-            {entry.linkKind === "file" ? "Open ↓" : "Open ↗"}
+          <span
+            aria-hidden
+            className="flex flex-none items-center gap-1 text-ink-muted"
+          >
+            Open{" "}
+            {entry.linkKind === "file" ? (
+              <Download size={13} />
+            ) : (
+              <ArrowUpRight size={13} />
+            )}
           </span>
         </a>
         <p className="text-xs leading-normal text-ink-muted">{entry.note}</p>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 import { useAppStore } from "@/store/useAppStore";
 
 /**
@@ -30,7 +31,7 @@ export default function BackButton({
         "mb-4 inline-flex items-center gap-1.5 text-sm font-semibold text-ink-muted hover:text-ink"
       }
     >
-      ← Back
+      <ArrowLeft size={16} className="shrink-0" /> Back
     </button>
   );
 }

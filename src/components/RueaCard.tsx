@@ -2,7 +2,7 @@
 
 import type { RueaBar } from "@/data/seed";
 import CiteButton from "./CiteButton";
-import Icon from "./Icon";
+import { Check, ChevronUp, ChevronDown } from "lucide-react";
 
 /**
  * What the card actually needs to render. `RueaSection` satisfies this, and so
@@ -99,7 +99,7 @@ export default function RueaCard({
                 selected ? "border-accent bg-accent" : "border-ink-muted"
               }`}
             >
-              {selected ? <Icon name="check" size={14} /> : null}
+              {selected ? <Check size={14} /> : null}
             </span>
           </button>
         )}
@@ -115,7 +115,9 @@ export default function RueaCard({
               <div className="mt-1 text-xs text-ink-muted">Source: {source}</div>
             )}
           </div>
-          <div className="text-sm text-ink-muted">{expanded ? "▲" : "▼"}</div>
+          <div className="text-ink-muted">
+            {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          </div>
         </button>
       </div>
 

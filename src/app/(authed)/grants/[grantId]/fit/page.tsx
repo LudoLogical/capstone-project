@@ -6,7 +6,7 @@ import { ACCOUNT_ORG_NAME } from "@/data/seed";
 import CiteButton from "@/components/CiteButton";
 import JargonTerm from "@/components/JargonTerm";
 import BackButton from "@/components/BackButton";
-import Icon from "@/components/Icon";
+import { BarChart3 } from "lucide-react";
 
 const PROS = [
   "You work in the exact neighborhoods this funder targets.",
@@ -32,7 +32,7 @@ export default function FitAnalysisPage() {
       <BackButton fallback={`/grants/${grant.id}`} />
 
       <div className="mb-3 inline-flex items-center gap-1 rounded-full border border-accent-tint-border bg-accent-tint px-3 py-1 text-xs font-bold text-accent-ink">
-        <Icon name="bar-chart" size={12} />
+        <BarChart3 size={12} />
           AI-ASSISTED
       </div>
       <h1 className="mb-3.5 font-serif text-3xl leading-tight font-bold">

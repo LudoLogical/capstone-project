@@ -2,9 +2,27 @@
 // grouped by the questions every funder asks (the Vibrant Communities
 // Framework), not by record type. This is page content, not part of the
 // shared domain model in `types/`.
+import {
+  House,
+  Target,
+  Calendar,
+  Wrench,
+  Footprints,
+  Salad,
+  TrendingUp,
+  Users,
+  Repeat,
+  Handshake,
+  MapPin,
+  Link,
+  DollarSign,
+  BarChart3,
+  type LucideIcon,
+} from "lucide-react";
+
 export type AccountFact = {
   id: string;
-  icon: string;
+  icon: LucideIcon;
   title: string;
   body: string;
   tags: ("Write" | "Report")[];
@@ -13,7 +31,7 @@ export type AccountFact = {
 
 export type AccountSection = {
   id: string;
-  icon: string;
+  icon: LucideIcon;
   title: string;
   subtitle: string;
   pct: number;
@@ -26,13 +44,13 @@ export const ACCOUNT_SECTIONS: AccountSection[] = [
   {
     id: "about-us",
     pct: 100,
-    icon: "🏠",
+    icon: House,
     title: "About Us",
     subtitle: "Who you are, and how long you've been doing this work",
     facts: [
       {
         id: "fact-mission",
-        icon: "🎯",
+        icon: Target,
         title: "Mission statement",
         body: "Hilltop Wellness Collective builds resident-led health and wellness programming in Pittsburgh's Hilltop neighborhoods.",
         tags: ["Write"],
@@ -40,7 +58,7 @@ export const ACCOUNT_SECTIONS: AccountSection[] = [
       },
       {
         id: "fact-founded",
-        icon: "📅",
+        icon: Calendar,
         title: "Founded",
         body: "2017, as a fiscally sponsored project of New Sun Rising. Became an independent 501(c)(3) in 2021.",
         tags: ["Write"],
@@ -51,13 +69,13 @@ export const ACCOUNT_SECTIONS: AccountSection[] = [
   {
     id: "what-we-do",
     pct: 100,
-    icon: "🛠️",
+    icon: Wrench,
     title: "What We Do",
     subtitle: "Your programs and how they run",
     facts: [
       {
         id: "fact-walking-groups",
-        icon: "🚶",
+        icon: Footprints,
         title: "Neighborhood walking groups",
         body: "Weekly resident-led walking groups across four Hilltop blocks, paired with blood-pressure screening every other session.",
         tags: ["Write", "Report"],
@@ -65,7 +83,7 @@ export const ACCOUNT_SECTIONS: AccountSection[] = [
       },
       {
         id: "fact-nutrition-workshops",
-        icon: "🥗",
+        icon: Salad,
         title: "Nutrition workshops",
         body: "Monthly cooking demonstrations using produce from Hilltop Harvest Collective's mobile stand.",
         tags: ["Write", "Report"],
@@ -76,13 +94,13 @@ export const ACCOUNT_SECTIONS: AccountSection[] = [
   {
     id: "our-results",
     pct: 80,
-    icon: "📈",
+    icon: TrendingUp,
     title: "Our Results",
     subtitle: "What your programs have produced so far",
     facts: [
       {
         id: "fact-residents-reached",
-        icon: "👥",
+        icon: Users,
         title: "Residents reached",
         body: "1,240 unique residents served across all programs in 2025.",
         tags: ["Report"],
@@ -90,7 +108,7 @@ export const ACCOUNT_SECTIONS: AccountSection[] = [
       },
       {
         id: "fact-retention",
-        icon: "🔁",
+        icon: Repeat,
         title: "Program retention",
         body: "68% of program participants returned for a second season.",
         tags: ["Report"],
@@ -101,13 +119,13 @@ export const ACCOUNT_SECTIONS: AccountSection[] = [
   {
     id: "who-we-serve",
     pct: 90,
-    icon: "🤝",
+    icon: Handshake,
     title: "Who We Serve & Work With",
     subtitle: "Your service area, partners, and the population you support",
     facts: [
       {
         id: "fact-service-area",
-        icon: "📍",
+        icon: MapPin,
         title: "Service area",
         body: "Hilltop neighborhoods within the City of Pittsburgh: Mount Oliver, Knoxville, St. Clair, and Bon Air.",
         tags: ["Write"],
@@ -115,7 +133,7 @@ export const ACCOUNT_SECTIONS: AccountSection[] = [
       },
       {
         id: "fact-partners",
-        icon: "🔗",
+        icon: Link,
         title: "Key partners",
         body: "Hilltop Harvest Collective (produce sourcing), Allegheny County Health Department (screening equipment loan).",
         tags: ["Write"],
@@ -126,13 +144,13 @@ export const ACCOUNT_SECTIONS: AccountSection[] = [
   {
     id: "what-were-asking-for",
     pct: 60,
-    icon: "💰",
+    icon: DollarSign,
     title: "What We're Asking For",
     subtitle: "Budget, funding gaps, and the case for support",
     facts: [
       {
         id: "fact-budget",
-        icon: "📊",
+        icon: BarChart3,
         title: "Annual operating budget",
         body: "$420,000, of which roughly 60% is currently grant-funded.",
         tags: ["Write"],

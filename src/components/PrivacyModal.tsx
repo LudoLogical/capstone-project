@@ -2,7 +2,7 @@
 
 import Modal from "./Modal";
 import { useAppStore } from "@/store/useAppStore";
-import Icon from "./Icon";
+import { Check } from "lucide-react";
 
 export default function PrivacyModal() {
   const signedIn = useAppStore((s) => s.signedIn);
@@ -22,7 +22,7 @@ export default function PrivacyModal() {
           "You choose what the AI reads, one item at a time.",
         ].map((line) => (
           <div key={line} className="flex items-start gap-2.5">
-            <Icon name="check" size={14} className="mt-0.5 flex-none text-success-ink" />
+            <Check size={14} className="mt-0.5 flex-none text-success-ink" />
             <span className="text-sm leading-normal">{line}</span>
           </div>
         ))}

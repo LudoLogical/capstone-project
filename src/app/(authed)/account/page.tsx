@@ -13,7 +13,16 @@ import BackButton from "@/components/BackButton";
 import { useAppStore } from "@/store/useAppStore";
 import { ISSUE_TAGS, LOCATION_OPTIONS } from "@/data/selectors";
 import { useOrgName, usePersonName } from "@/store/derived";
-import Icon from "@/components/Icon";
+import {
+  Paperclip,
+  Plus,
+  Trash2,
+  FileText,
+  ArrowLeft,
+  ArrowRight,
+  ArrowUpRight,
+  type LucideIcon,
+} from "lucide-react";
 
 type RepositoryKind = "file" | "link" | "conversation";
 
@@ -50,7 +59,7 @@ export default function AccountProfilePage() {
         kind="file"
         description="Files you've uploaded while working on applications and outcome reports. We save them and pull from them the next time you apply or report."
         addLabel="Upload new file"
-        addIcon="paperclip"
+        addIcon={Paperclip}
         fileUpload
         verb="Uploaded"
         items={REPOSITORY_FILES}
@@ -62,7 +71,7 @@ export default function AccountProfilePage() {
         kind="link"
         description="Website links you've saved while working on applications and reports. We pull from them the next time you apply or report."
         addLabel="Add new website link"
-        addIcon="plus"
+        addIcon={Plus}
         addPlaceholder="https://example.org"
         verb="Uploaded"
         items={REPOSITORY_LINKS}
@@ -280,7 +289,7 @@ function RepositorySection({
   kind,
   description,
   addLabel,
-  addIcon,
+  addIcon: AddIcon,
   verb,
   items: initialItems,
   underlineLabel = false,
@@ -292,7 +301,7 @@ function RepositorySection({
   kind: RepositoryKind;
   description: string;
   addLabel?: string;
-  addIcon?: string;
+  addIcon?: LucideIcon;
   verb: "Uploaded" | "Logged";
   items: RepositoryItem[];
   underlineLabel?: boolean;
@@ -405,7 +414,7 @@ function RepositorySection({
             onClick={() => fileInputRef.current?.click()}
             className="inline-flex items-center gap-2 rounded-lg border border-border-strong bg-white px-3 py-1.5 text-sm font-semibold text-ink-secondary transition duration-150 hover:border-accent"
           >
-            <span aria-hidden>{addIcon}</span> {addLabel}
+            {AddIcon ? <AddIcon size={15} /> : null} {addLabel}
           </button>
         </div>
       ) : (
@@ -415,7 +424,7 @@ function RepositorySection({
             aria-expanded={adding}
             className="inline-flex items-center gap-2 rounded-lg border border-border-strong bg-white px-3 py-1.5 text-sm font-semibold text-ink-secondary transition duration-150 hover:border-accent"
           >
-            <span aria-hidden>{addIcon}</span> {addLabel}
+            {AddIcon ? <AddIcon size={15} /> : null} {addLabel}
           </button>
           {adding && (
             <div className="mt-2.5 flex flex-wrap items-center gap-2">
@@ -482,7 +491,7 @@ function RepositorySection({
                   aria-label={`Remove ${item.label}`}
                   className="inline-flex items-center gap-1.5 rounded-lg border border-accent-tint-border bg-accent-tint px-3 py-2 text-xs font-semibold text-accent-ink transition duration-150 hover:border-accent hover:bg-accent-tint-2"
                 >
-                  <Icon name="trash" size={12} /> Remove
+                  <Trash2 size={12} /> Remove
                 </button>
               </div>
             ))}
@@ -509,7 +518,7 @@ function RepositorySection({
             aria-label="Previous page"
             className="inline-flex items-center gap-1 text-sm font-semibold text-ink-secondary transition duration-150 enabled:hover:text-ink disabled:cursor-not-allowed disabled:opacity-40"
           >
-            ← Prev
+            <ArrowLeft size={16} className="shrink-0" /> Prev
           </button>
 
           <div className="flex items-center gap-1.5">
@@ -532,7 +541,7 @@ function RepositorySection({
             aria-label="Next page"
             className="inline-flex items-center gap-1 text-sm font-semibold text-ink-secondary transition duration-150 enabled:hover:text-ink disabled:cursor-not-allowed disabled:opacity-40"
           >
-            Next →
+            Next <ArrowRight size={16} className="shrink-0" />
           </button>
         </div>
       )}
@@ -654,7 +663,7 @@ function RepositoryPreview({
         ) : (
           <div className="flex items-center gap-3.5 rounded-xl border border-border bg-surface-alt px-4 py-4">
             <div className="flex h-11 w-11 flex-none items-center justify-center rounded-lg bg-accent-tint text-lg text-accent-ink">
-              <Icon name="file-text" size={20} />
+              <FileText size={20} />
             </div>
             <div className="min-w-0 flex-1">
               <div className="truncate text-sm font-semibold text-ink">
@@ -666,9 +675,9 @@ function RepositoryPreview({
               href={blob.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex-none rounded-lg border border-border-strong bg-white px-3 py-2 text-xs font-semibold text-ink transition duration-150 hover:border-accent"
+              className="inline-flex flex-none items-center gap-1 rounded-lg border border-border-strong bg-white px-3 py-2 text-xs font-semibold text-ink transition duration-150 hover:border-accent"
             >
-              Open file ↗
+              Open file <ArrowUpRight size={13} className="shrink-0" />
             </a>
           </div>
         )}
@@ -684,7 +693,7 @@ function RepositoryPreview({
       </div>
       <div className="flex items-center gap-3.5 rounded-xl border border-border bg-surface-alt px-4 py-4">
         <div className="flex h-11 w-11 flex-none items-center justify-center rounded-lg bg-accent-tint text-lg text-accent-ink">
-          <Icon name="file-text" size={20} />
+          <FileText size={20} />
         </div>
         <div className="min-w-0">
           <div className="truncate text-sm font-semibold text-ink">

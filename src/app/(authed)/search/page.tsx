@@ -12,6 +12,7 @@ import {
   sortGrants,
   type SortOption,
 } from "@/data/selectors";
+import { Search, Plus, Minus, ArrowLeft, ArrowRight } from "lucide-react";
 import CheckboxRow from "@/components/CheckboxRow";
 import RadioRow from "@/components/RadioRow";
 import RangeHistogram from "@/components/RangeHistogram";
@@ -48,9 +49,17 @@ function ShowMoreButton({
   return (
     <button
       onClick={onToggle}
-      className="mt-0.5 self-start text-xs font-bold text-ink-secondary underline underline-offset-2 transition-colors duration-150 hover:text-ink"
+      className="mt-0.5 inline-flex items-center gap-1 self-start text-xs font-bold text-ink-secondary underline underline-offset-2 transition-colors duration-150 hover:text-ink"
     >
-      {expanded ? "− Show less" : `+ Show ${hiddenCount} more`}
+      {expanded ? (
+        <>
+          <Minus size={14} className="shrink-0" /> Show less
+        </>
+      ) : (
+        <>
+          <Plus size={14} className="shrink-0" /> Show {hiddenCount} more
+        </>
+      )}
     </button>
   );
 }
@@ -333,7 +342,7 @@ export default function SearchPage() {
 
           {sorted.length === 0 ? (
             <EmptyState
-              icon="search"
+              icon={Search}
               title="No grants match your filters"
               body="Try removing an issue tag or organization type."
               action={
@@ -362,9 +371,9 @@ export default function SearchPage() {
                   <button
                     onClick={() => setPage(Math.max(0, safePage - 1))}
                     disabled={safePage === 0}
-                    className="rounded-lg border border-border-strong bg-white px-3 py-2 text-sm font-semibold text-ink transition duration-150 enabled:hover:border-accent disabled:cursor-not-allowed disabled:opacity-40"
+                    className="inline-flex items-center gap-1 rounded-lg border border-border-strong bg-white px-3 py-2 text-sm font-semibold text-ink transition duration-150 enabled:hover:border-accent disabled:cursor-not-allowed disabled:opacity-40"
                   >
-                    ← Prev
+                    <ArrowLeft size={16} className="shrink-0" /> Prev
                   </button>
                   {Array.from({ length: pageCount }).map((_, i) => (
                     <button
@@ -384,9 +393,9 @@ export default function SearchPage() {
                   <button
                     onClick={() => setPage(Math.min(pageCount - 1, safePage + 1))}
                     disabled={safePage === pageCount - 1}
-                    className="rounded-lg border border-border-strong bg-white px-3 py-2 text-sm font-semibold text-ink transition duration-150 enabled:hover:border-accent disabled:cursor-not-allowed disabled:opacity-40"
+                    className="inline-flex items-center gap-1 rounded-lg border border-border-strong bg-white px-3 py-2 text-sm font-semibold text-ink transition duration-150 enabled:hover:border-accent disabled:cursor-not-allowed disabled:opacity-40"
                   >
-                    Next →
+                    Next <ArrowRight size={16} className="shrink-0" />
                   </button>
                 </div>
               )}

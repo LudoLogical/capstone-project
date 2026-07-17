@@ -2,21 +2,29 @@
 
 import { useAppStore } from "@/store/useAppStore";
 import { ISSUE_TAGS, LOCATION_OPTIONS } from "@/data/selectors";
-import Icon from "./Icon";
+import {
+  Search,
+  BarChart3,
+  Users,
+  Check,
+  ArrowLeft,
+  ArrowRight,
+  type LucideIcon,
+} from "lucide-react";
 
-const FEATURES = [
+const FEATURES: { icon: LucideIcon; title: string; body: string }[] = [
   {
-    icon: "search",
+    icon: Search,
     title: "Find Matching Grants",
     body: "Describe your work in plain language and let AI rank grants by how well they fit - no more scrolling directories sorted by deadline.",
   },
   {
-    icon: "bar-chart",
+    icon: BarChart3,
     title: "Storytell Your Impact",
     body: "Turn the numbers you already have into grant-ready framing, every figure traceable to its source. Reporting becomes gathering, not scrambling.",
   },
   {
-    icon: "users",
+    icon: Users,
     title: "Find Grant Collaborators",
     body: "See other New Sun Rising organizations open to teaming up - then ask NSR for a warm introduction. You always decide who to reach.",
   },
@@ -92,7 +100,7 @@ export default function Onboarding() {
                 {FEATURES.map((f) => (
                   <div key={f.title} className="flex items-start gap-3.5">
                     <div className="flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-accent-tint text-lg">
-                      {f.icon}
+                      <f.icon size={20} />
                     </div>
                     <div>
                       <div className="text-sm font-bold">{f.title}</div>
@@ -178,7 +186,7 @@ export default function Onboarding() {
 
               {matchCount > 0 && (
                 <div className="mt-6 flex items-center gap-2.5 rounded-xl border border-warning-border bg-warning-bg px-4 py-3">
-                  <Icon name="bar-chart" size={16} className="flex-none text-warning-ink" />
+                  <BarChart3 size={16} className="flex-none text-warning-ink" />
                   <p className="text-sm leading-normal text-warning-ink">
                     <strong>{matchCount} grants</strong>{" "}
                     in the New Sun Rising network already look relevant -
@@ -194,7 +202,7 @@ export default function Onboarding() {
           {step === 2 && (
             <div className="text-center">
               <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-success-bg text-2xl">
-                <Icon name="check" size={24} />
+                <Check size={24} />
               </div>
               <h1 className="mb-2 font-serif text-3xl leading-tight font-bold">
                 You&apos;re all set.
@@ -215,7 +223,7 @@ export default function Onboarding() {
                     key={line}
                     className="flex items-center gap-3 border-b border-border-soft py-3 last:border-b-0"
                   >
-                    <Icon name="check" size={14} className="flex-none text-success-ink-2" />
+                    <Check size={14} className="flex-none text-success-ink-2" />
                     <span className="text-sm text-ink-secondary">{line}</span>
                   </div>
                 ))}
@@ -237,7 +245,7 @@ export default function Onboarding() {
                 onClick={() => setStep(step - 1)}
                 className="text-sm font-semibold text-ink-secondary hover:text-ink"
               >
-                ← Back
+                <ArrowLeft size={16} className="shrink-0" /> Back
               </button>
             )}
 
@@ -246,14 +254,16 @@ export default function Onboarding() {
                 onClick={() => setStep(step + 1)}
                 className="inline-flex items-center gap-2 rounded-xl bg-accent-ink px-6 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px"
               >
-                {step === 0 ? "Get started" : "Continue"} →
+                {step === 0 ? "Get started" : "Continue"}{" "}
+                <ArrowRight size={16} className="shrink-0" />
               </button>
             ) : (
               <button
                 onClick={complete}
                 className="inline-flex items-center gap-2 rounded-xl bg-accent-ink px-6 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px"
               >
-                Go to my dashboard →
+                Go to my dashboard{" "}
+                <ArrowRight size={16} className="shrink-0" />
               </button>
             )}
           </div>

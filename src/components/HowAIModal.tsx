@@ -2,24 +2,31 @@
 
 import { useState } from "react";
 import Modal from "./Modal";
+import { BarChart3, Sparkles, Bookmark, type LucideIcon } from "lucide-react";
 
-const TIERS = [
+const TIERS: {
+  icon: LucideIcon;
+  label: string;
+  color: string;
+  bg: string;
+  body: string;
+}[] = [
   {
-    icon: "bar-chart",
+    icon: BarChart3,
     label: "AI-ASSISTED",
     color: "text-accent-ink",
     bg: "bg-accent-tint",
     body: "Fully automated. Used to rank grants by fit and explain your data in plain language. You review everything before it goes anywhere.",
   },
   {
-    icon: "◔",
+    icon: Sparkles,
     label: "AI SUGGESTS",
     color: "text-info-ink",
     bg: "bg-info-bg",
     body: "The AI surfaces options - like a possible collaborator - but a human always takes the next step. It never reaches out on your behalf.",
   },
   {
-    icon: "bookmark",
+    icon: Bookmark,
     label: "NO AI",
     color: "text-ink-secondary",
     bg: "bg-neutral-bg",
@@ -46,9 +53,9 @@ export default function HowAIModal() {
           {TIERS.map((t) => (
             <div key={t.label} className={`rounded-xl p-4 ${t.bg}`}>
               <div
-                className={`mb-2 inline-flex gap-1.5 text-xs font-extrabold ${t.color}`}
+                className={`mb-2 inline-flex items-center gap-1.5 text-xs font-extrabold ${t.color}`}
               >
-                <span>{t.icon}</span>
+                <t.icon size={14} className="shrink-0" />
                 <span>{t.label}</span>
               </div>
               <p className="text-sm leading-relaxed text-ink-body">{t.body}</p>

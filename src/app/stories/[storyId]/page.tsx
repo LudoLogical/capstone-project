@@ -1,6 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
+import { ArrowRight } from "lucide-react";
 import { STORIES } from "@/data/seed";
 import BackButton from "@/components/BackButton";
 
@@ -55,7 +56,7 @@ export default function StoryDetailPage() {
             onClick={() => router.push("/search")}
             className="inline-flex items-center gap-2 rounded-xl bg-accent-ink px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Start your own →
+            Start your own <ArrowRight size={16} className="shrink-0" />
           </button>
           <BackButton className="inline-flex items-center gap-2 rounded-xl border border-border-strong bg-white px-5 py-3 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 enabled:hover:border-accent" />
         </div>

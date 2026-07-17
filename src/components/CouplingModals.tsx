@@ -6,7 +6,7 @@ import { useAppStore } from "@/store/useAppStore";
 import { useGrantView, isSavedStage } from "@/store/derived";
 import type { CouplingModal } from "@/store/useAppStore";
 import JargonTerm from "./JargonTerm";
-import Icon from "./Icon";
+import { Check } from "lucide-react";
 
 /** The "also do the coupled action" checkbox each prompt offers. */
 function CoupledCheckbox({
@@ -33,7 +33,7 @@ function CoupledCheckbox({
           checked ? "border-accent bg-accent" : "border-ink-muted"
         }`}
       >
-        {checked ? <Icon name="check" size={14} /> : null}
+        {checked ? <Check size={14} /> : null}
       </div>
       <div>
         <div className="text-sm leading-tight font-bold">{label}</div>

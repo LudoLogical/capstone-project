@@ -22,7 +22,21 @@ import {
 import { formatCurrency, formatDate } from "@/utils/format";
 import Onboarding from "@/components/Onboarding";
 import DaysLeftChip from "@/components/DaysLeftChip";
-import Icon from "@/components/Icon";
+import {
+  Trash2,
+  MoreVertical,
+  X,
+  Check,
+  Info,
+  Calendar,
+  FileText,
+  Award,
+  Star,
+  Users,
+  Bookmark,
+  ArrowRight,
+  type LucideIcon,
+} from "lucide-react";
 import ResolvePastDueModal from "@/components/ResolvePastDueModal";
 import Modal from "@/components/Modal";
 import CheckboxRow from "@/components/CheckboxRow";
@@ -68,7 +82,7 @@ function GrantMiniCard({
   secondary?: { label: string; to?: string; onClick?: () => void };
   tertiary?: { label: string; to?: string; onClick?: () => void };
   /** A small action in the card's upper right. */
-  remove?: { label: string; onClick: () => void; icon?: string };
+  remove?: { label: string; onClick: () => void };
   /** A kebab (three-dot) menu in the upper right, in place of `remove`. */
   menu?: { label: string; onClick: () => void; danger?: boolean }[];
   /** Past its deadline: the primary action greys out and explains itself. */
@@ -92,7 +106,7 @@ function GrantMiniCard({
           title={remove.label}
           className="absolute top-3 right-3 flex h-7 w-7 items-center justify-center rounded-lg text-sm text-ink-muted transition duration-150 hover:bg-accent-tint hover:text-accent-ink"
         >
-          <Icon name={remove.icon ?? "trash"} size={15} />
+          <Trash2 size={15} />
         </button>
       )}
       {menu && (
@@ -104,7 +118,7 @@ function GrantMiniCard({
             title="More actions"
             className="flex h-7 w-7 items-center justify-center rounded-lg text-sm text-ink-muted transition duration-150 hover:bg-surface-alt hover:text-ink"
           >
-            <Icon name="more-vertical" size={16} />
+            <MoreVertical size={16} />
           </button>
           {menuOpen && (
             <>
@@ -163,7 +177,7 @@ function GrantMiniCard({
                   : "border-success-border bg-success-bg text-success-ink"
               }`}
             >
-              <Icon name={unsuccessful ? "x" : "check"} size={12} />
+              {unsuccessful ? <X size={12} /> : <Check size={12} />}
               {badge}
             </div>
           );
@@ -173,7 +187,7 @@ function GrantMiniCard({
           until the user files it. */}
       {view.status === "report-overdue" && (
         <div className="mb-2 inline-flex items-center gap-1 rounded-full border border-error-border bg-error-bg px-2.5 py-1 text-xs font-bold text-error-ink">
-          <Icon name="info" size={12} />
+          <Info size={12} />
           {STATUS_LABEL["report-overdue"]}
         </div>
       )}
@@ -185,13 +199,13 @@ function GrantMiniCard({
           onClick={onClosedClick}
           className="mb-2 inline-flex items-center gap-1 rounded-full border border-warning-border bg-warning-bg px-2.5 py-1 text-xs font-bold text-warning-ink transition duration-150 hover:brightness-95"
         >
-          <Icon name="info" size={12} />
+          <Info size={12} />
           Needs attention - what happened?
         </button>
       )}
       <div className="mb-3 flex flex-wrap items-center gap-1.5">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-surface-alt px-2.5 py-1 text-xs font-semibold text-ink-secondary">
-          <Icon name="calendar" size={13} />
+          <Calendar size={13} />
           {dueLabel}
         </span>
         {deadline && <DaysLeftChip date={deadline} />}
@@ -242,7 +256,7 @@ const CARDS_PER_PAGE = 3;
  * paged once there are more than fit comfortably.
  */
 function BoardColumn<T>({
-  icon,
+  icon: Icon,
   title,
   tone,
   items,
@@ -250,7 +264,7 @@ function BoardColumn<T>({
   renderItem,
   toolbar,
 }: {
-  icon: string;
+  icon: LucideIcon;
   title: string;
   tone: Tone;
   items: T[];
@@ -275,7 +289,7 @@ function BoardColumn<T>({
         <div
           className={`flex h-8 w-8 flex-none items-center justify-center rounded-lg ${t.tile}`}
         >
-          <Icon name={icon} size={17} />
+          <Icon size={17} />
         </div>
         <div className="text-sm font-bold">{title}</div>
         <div className="rounded-full bg-white px-2 py-0.5 text-xs font-bold text-ink-secondary">
@@ -470,7 +484,7 @@ export default function HomePage() {
           <SectionLabel>Your grants at a glance</SectionLabel>
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <BoardColumn
-              icon="file-text"
+              icon={FileText}
               title="Grant Applications"
               tone="accent"
               items={inProgress}
@@ -511,7 +525,7 @@ export default function HomePage() {
             />
 
             <BoardColumn
-              icon="award"
+              icon={Award}
               title="Awarded Grant Reports"
               tone="success"
               items={awarded}
@@ -560,7 +574,7 @@ export default function HomePage() {
             />
 
             <BoardColumn
-              icon="star"
+              icon={Star}
               title="Saved Grants"
               tone="neutral"
               items={saved}
@@ -597,7 +611,7 @@ export default function HomePage() {
             />
 
             <BoardColumn
-              icon="users"
+              icon={Users}
               title="Open to Collaborate"
               tone="accent"
               items={collaborating}
@@ -630,7 +644,7 @@ export default function HomePage() {
             />
 
             <BoardColumn
-              icon="bookmark"
+              icon={Bookmark}
               title="Archived Grants"
               tone="neutral"
               items={shownArchived}
@@ -709,7 +723,8 @@ export default function HomePage() {
             onClick={() => signIn()}
             className="inline-flex items-center gap-2 rounded-xl bg-accent-ink px-6 py-3.5 text-base font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px"
           >
-            Sign in to your portal →
+            Sign in to your portal{" "}
+            <ArrowRight size={18} className="shrink-0" />
           </button>
         </section>
       )}
@@ -734,8 +749,8 @@ export default function HomePage() {
                 <p className="mb-3 text-sm leading-normal">
                   <strong>{st.who}</strong> {st.what}
                 </p>
-                <div className="mt-auto text-sm font-bold text-accent">
-                  Read their story →
+                <div className="mt-auto inline-flex items-center gap-1 text-sm font-bold text-accent">
+                  Read their story <ArrowRight size={16} className="shrink-0" />
                 </div>
               </div>
             </button>

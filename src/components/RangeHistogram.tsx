@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef } from "react";
+import { Minus } from "lucide-react";
 
 const BINS = 32;
 
@@ -179,7 +180,9 @@ export default function RangeHistogram({
             className="w-full rounded-lg border border-border-strong bg-white px-3 py-2.5 text-sm text-ink outline-none focus:border-accent"
           />
         </label>
-        <span className="pb-2.5 text-ink-muted">–</span>
+        <span className="pb-2.5 text-ink-muted">
+          <Minus size={16} />
+        </span>
         <label className="flex-1">
           <span className="mb-1.5 block text-xs font-bold text-ink-muted">
             Max

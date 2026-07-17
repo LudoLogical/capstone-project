@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import Icon from "./Icon";
+import { Paperclip, FileText, X } from "lucide-react";
 
 // File types the portal accepts for supporting data, disclosed to the user and
 // enforced on the file picker via the accept attribute.
@@ -60,7 +60,7 @@ export default function DataUploadField({
           onClick={() => fileInputRef.current?.click()}
           className="inline-flex items-center gap-2 rounded-xl bg-accent-ink px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px"
         >
-          <Icon name="paperclip" size={15} />
+          <Paperclip size={15} className="shrink-0" />
           Upload files
         </button>
       </div>
@@ -92,14 +92,14 @@ export default function DataUploadField({
               key={`${u}-${i}`}
               className="inline-flex items-center gap-1.5 rounded-full border border-border-strong bg-surface-alt py-1 pr-1.5 pl-3 text-xs font-bold text-ink-secondary"
             >
-              <Icon name="file-text" size={12} />
+              <FileText size={12} className="shrink-0" />
               {u}
               <button
                 onClick={() => onRemove(i)}
                 aria-label={`Remove ${u}`}
                 className="flex h-4 w-4 flex-none items-center justify-center rounded-full text-ink-muted transition duration-150 hover:bg-divider-2 hover:text-ink"
               >
-                <Icon name="x" size={11} />
+                <X size={11} />
               </button>
             </span>
           ))}

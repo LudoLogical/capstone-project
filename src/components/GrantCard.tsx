@@ -9,7 +9,7 @@ import { isPastDeadline } from "@/store/derived";
 import { GrantLifecycleStage } from "@/types/grantRecord";
 import { INTERESTED_BY_GRANT } from "@/data/seed";
 import ClosedGrantModal from "./ClosedGrantModal";
-import Icon from "./Icon";
+import { Users, Star, ArrowRight } from "lucide-react";
 
 export default function GrantCard({
   grant,
@@ -103,7 +103,7 @@ export default function GrantCard({
               onClick={() => router.push(`/grants/${grant.id}/collaborate`)}
               className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-accent-tint-2 px-3 py-1 text-xs font-bold text-accent-ink-2 transition duration-150 hover:brightness-95"
             >
-              <Icon name="users" size={12} />
+              <Users size={12} className="shrink-0" />
               {collabCount} open to collaborate
             </button>
           )}
@@ -122,14 +122,14 @@ export default function GrantCard({
               }`}
               aria-pressed={saved}
             >
-              <Icon name="star" size={13} fill={saved} />
+              <Star size={13} fill={saved ? "currentColor" : "none"} className="shrink-0" />
               {saved ? "Saved" : "Save"}
             </button>
             <button
               onClick={() => router.push(`/grants/${grant.id}`)}
               className="inline-flex items-center gap-2 rounded-lg bg-accent-ink px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
             >
-              View grant details →
+              View grant details <ArrowRight size={14} className="shrink-0" />
             </button>
           </div>
         </div>

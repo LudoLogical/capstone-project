@@ -4,7 +4,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useAppStore } from "@/store/useAppStore";
 import { DATA_DETAILS } from "@/data/seed";
-import Icon from "@/components/Icon";
+import { Check } from "lucide-react";
 
 /** Digits with at most one decimal point, e.g. "8" or "4.5". */
 const NUMERIC_INPUT = /^\d*\.?\d*$/;
@@ -91,7 +91,7 @@ export default function DataFormPage() {
       <div className="mx-auto max-w-xl animate-nc-rise px-8 pt-10 pb-20">
         <div className="mb-5 flex items-center gap-3">
           <div className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-success-bg text-xl text-success-ink">
-            <Icon name="check" size={20} />
+            <Check size={20} />
           </div>
           <div>
             <h1 className="font-serif text-xl leading-tight font-bold">

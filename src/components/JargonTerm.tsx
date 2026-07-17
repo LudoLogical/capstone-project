@@ -1,5 +1,6 @@
 "use client";
 
+import { Info } from "lucide-react";
 import { JARGON } from "@/data/seed";
 
 /**
@@ -25,9 +26,7 @@ export default function JargonTerm({
         aria-label={entry ? `${entry.term}: ${entry.definition}` : undefined}
       >
         {children}
-        <span aria-hidden className="text-[12px] leading-none no-underline">
-          ⓘ
-        </span>
+        <Info size={12} className="shrink-0 no-underline" />
       </button>
       {entry && (
         <span
