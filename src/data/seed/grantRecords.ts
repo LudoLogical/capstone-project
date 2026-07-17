@@ -255,9 +255,22 @@ export const RECORD_GREEN_SPACES: GrantRecord = {
 export const RECORD_SENIOR_MOBILITY: GrantRecord = {
   id: "gr-senior-mobility",
   grant: GRANT_SENIOR_MOBILITY,
-  alignmentAnalysis:
-    "Strong fit on issue area and region, but the application window closed before this was picked up.",
+  alignmentAnalysis: {
+    estimatedFit: 76,
+    pros: [
+      "Health and Community are stated issue areas for both the collective and this grant.",
+      "The collective's neighborhood walking groups already address exactly the kind of mobility barrier the grant funds.",
+      "The collective is a 501(c)(3) operating in Pittsburgh, which sits inside the grant's Allegheny County target region.",
+    ],
+    cons: [
+      "The collective's programming is open to residents of every age rather than targeted at the adults aged 60 and over the grant requires applicants to serve.",
+      "The grant asks for letters of support from two community partners, and none are on file.",
+      "The collective does not currently track participants by age, which the grant's quarterly count of older adults served would require.",
+    ],
+  },
   stage: GrantLifecycleStage.Saved,
+  subscribed: false,
+  collabContactRecords: [],
   writingAnalyses: [],
   reportingAnalyses: [],
 };

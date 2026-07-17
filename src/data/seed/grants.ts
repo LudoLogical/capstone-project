@@ -336,7 +336,6 @@ export const GRANT_SENIOR_MOBILITY: Grant = {
     firstReportDeadline: new Date("2027-09-30T00:00:00Z"),
     reportFrequency: 12,
   },
-  collabOpportunitySubscribers: NO_COLLAB_SUBSCRIBERS,
   isRecommended: false,
 };
 
@@ -432,7 +431,6 @@ function makeGrant(g: {
         : plusMonths(awardEnds, 1),
       reportFrequency: g.reportFrequency ?? 12,
     },
-    collabOpportunitySubscribers: NO_COLLAB_SUBSCRIBERS,
     isRecommended: g.isRecommended ?? false,
   };
 }
