@@ -1,10 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useMemo, useRef, useState, type ReactNode } from "react";
 import {
-  ACCOUNT_ORG_NAME,
   REPOSITORY_FILES,
   REPOSITORY_LINKS,
   REPOSITORY_CONVERSATIONS,
@@ -13,6 +11,9 @@ import {
 import Modal from "@/components/Modal";
 import BackButton from "@/components/BackButton";
 import { useAppStore } from "@/store/useAppStore";
+import { ISSUE_TAGS, LOCATION_OPTIONS } from "@/data/selectors";
+import { useOrgName, usePersonName } from "@/store/derived";
+import Icon from "@/components/Icon";
 
 type RepositoryKind = "file" | "link" | "conversation";
 
@@ -28,20 +29,12 @@ const PAGE_SIZE = 6;
  * persisted store.
  */
 export default function AccountProfilePage() {
-  const router = useRouter();
-  const onboardOrg = useAppStore((s) => s.onboardOrg);
-  const restartOnboarding = useAppStore((s) => s.restartOnboarding);
-  const orgName = onboardOrg.name.trim() || ACCOUNT_ORG_NAME;
-
-  const editSetup = () => {
-    restartOnboarding();
-    router.push("/");
-  };
+  const orgName = useOrgName();
 
   return (
     <div className="animate-nc-rise mx-auto w-full px-8 pt-7 pb-20">
       <BackButton fallback="/" />
-      <h1 className="mb-2.5 font-serif text-3xl leading-tight font-medium">
+      <h1 className="mb-2.5 font-serif text-3xl leading-tight font-bold">
         {orgName}
       </h1>
       <p className="mb-6 max-w-3xl text-sm leading-relaxed text-ink-muted">
@@ -50,64 +43,14 @@ export default function AccountProfilePage() {
         can edit any of it right here.
       </p>
 
-      {(onboardOrg.issues.length > 0 || onboardOrg.areas.length > 0) && (
-        <div className="mb-9 rounded-2xl border border-border bg-surface p-6">
-          <div className="mb-1 text-base font-bold">
-            What you told us during setup
-          </div>
-          <p className="mb-4 text-sm leading-relaxed text-ink-muted">
-            We use this to match you with grants. Update it anytime by{" "}
-            <button
-              onClick={editSetup}
-              className="font-semibold text-ink underline underline-offset-2 hover:text-accent"
-            >
-              revisiting setup
-            </button>
-            .
-          </p>
-          {onboardOrg.issues.length > 0 && (
-            <div className="mb-4">
-              <div className="mb-2 text-xs font-bold tracking-wider text-ink-muted uppercase">
-                Issues you work on
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {onboardOrg.issues.map((issue) => (
-                  <span
-                    key={issue}
-                    className="inline-flex items-center gap-1 rounded-full border border-border-strong bg-surface-alt px-3 py-1 text-xs font-bold text-ink-secondary"
-                  >
-                    {issue}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-          {onboardOrg.areas.length > 0 && (
-            <div>
-              <div className="mb-2 text-xs font-bold tracking-wider text-ink-muted uppercase">
-                Where you serve
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {onboardOrg.areas.map((area) => (
-                  <span
-                    key={area}
-                    className="inline-flex items-center gap-1 rounded-full border border-border-strong bg-surface-alt px-3 py-1 text-xs font-bold text-ink-secondary"
-                  >
-                    {area}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
+      <ProfileDetailsSection />
 
       <RepositorySection
         title="Files"
         kind="file"
         description="Files you've uploaded while working on applications and outcome reports. We save them and pull from them the next time you apply or report."
         addLabel="Upload new file"
-        addIcon="📤"
+        addIcon="paperclip"
         fileUpload
         verb="Uploaded"
         items={REPOSITORY_FILES}
@@ -119,7 +62,7 @@ export default function AccountProfilePage() {
         kind="link"
         description="Website links you've saved while working on applications and reports. We pull from them the next time you apply or report."
         addLabel="Add new website link"
-        addIcon="📋"
+        addIcon="plus"
         addPlaceholder="https://example.org"
         verb="Uploaded"
         items={REPOSITORY_LINKS}
@@ -147,6 +90,187 @@ export default function AccountProfilePage() {
           </>
         }
       />
+    </div>
+  );
+}
+
+/**
+ * Your details, editable in place. This is the same information onboarding
+ * collects, so it's edited with the same tag lists rather than sending the user
+ * back through setup to change one thing.
+ */
+function ProfileDetailsSection() {
+  const org = useAppStore((s) => s.onboardOrg);
+  const patchOrg = useAppStore((s) => s.patchOnboardOrg);
+  const toggleIssue = useAppStore((s) => s.toggleOnboardIssue);
+  const toggleArea = useAppStore((s) => s.toggleOnboardArea);
+  const addToast = useAppStore((s) => s.addToast);
+  const personName = usePersonName();
+  const orgNameRead = useOrgName();
+  const [editing, setEditing] = useState(false);
+  // Names are edited as a draft so a half-typed name never lands in the store.
+  const [person, setPerson] = useState(org.person);
+  const [name, setName] = useState(org.name);
+
+  const startEditing = () => {
+    setPerson(org.person);
+    setName(org.name);
+    setEditing(true);
+  };
+  const save = () => {
+    patchOrg({ person: person.trim(), name: name.trim() });
+    setEditing(false);
+    addToast("Profile updated.");
+  };
+
+  const chip = (active: boolean) =>
+    `rounded-full border px-3 py-1.5 text-xs font-bold transition duration-150 ${
+      active
+        ? "border-accent bg-accent text-white"
+        : "border-border-strong bg-white text-ink-secondary hover:border-accent"
+    }`;
+
+  return (
+    <div className="mb-9 rounded-2xl border border-border bg-surface p-6">
+      <div className="mb-1 flex items-center justify-between gap-3">
+        <div className="text-base font-bold">Your details</div>
+        {!editing && (
+          <button
+            onClick={startEditing}
+            className="flex-none rounded-lg border border-border-strong bg-white px-3 py-1.5 text-xs font-semibold text-ink transition duration-150 hover:border-accent"
+          >
+            Edit
+          </button>
+        )}
+      </div>
+      <p className="mb-4 text-sm leading-relaxed text-ink-muted">
+        We use this to match you with grants and to fill in your applications.
+      </p>
+
+      {editing ? (
+        <div className="flex flex-col gap-4">
+          <div>
+            <label className="mb-1.5 block text-xs font-bold tracking-wider text-ink-muted uppercase">
+              Your name
+            </label>
+            <input
+              value={person}
+              onChange={(e) => setPerson(e.target.value)}
+              placeholder="e.g. Maya Torres"
+              className="w-full rounded-xl border border-border-strong bg-white px-4 py-2.5 text-sm text-ink outline-none focus:border-accent"
+            />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-xs font-bold tracking-wider text-ink-muted uppercase">
+              Organization name
+            </label>
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. Hilltop Wellness Collective"
+              className="w-full rounded-xl border border-border-strong bg-white px-4 py-2.5 text-sm text-ink outline-none focus:border-accent"
+            />
+          </div>
+          <div>
+            <div className="mb-2 text-xs font-bold tracking-wider text-ink-muted uppercase">
+              Issues you work on
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {ISSUE_TAGS.map((issue) => (
+                <button
+                  key={issue}
+                  onClick={() => toggleIssue(issue)}
+                  aria-pressed={org.issues.includes(issue)}
+                  className={chip(org.issues.includes(issue))}
+                >
+                  {issue}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <div className="mb-2 text-xs font-bold tracking-wider text-ink-muted uppercase">
+              Where you serve
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {LOCATION_OPTIONS.map((area) => (
+                <button
+                  key={area}
+                  onClick={() => toggleArea(area)}
+                  aria-pressed={org.areas.includes(area)}
+                  className={chip(org.areas.includes(area))}
+                >
+                  {area}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="flex gap-2.5">
+            <button
+              onClick={save}
+              className="rounded-lg bg-accent-ink px-4 py-2.5 text-sm font-semibold text-white shadow-cta transition duration-150 hover:bg-accent-ink-2 active:translate-y-px"
+            >
+              Save changes
+            </button>
+            <button
+              onClick={() => setEditing(false)}
+              className="rounded-lg border border-border-strong bg-white px-4 py-2.5 text-sm font-semibold text-ink transition duration-150 hover:border-accent"
+            >
+              Done
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-4">
+          <ProfileReadRow label="Your name" value={personName} />
+          <ProfileReadRow label="Organization name" value={orgNameRead} />
+          <ProfileReadTags label="Issues you work on" values={org.issues} />
+          <ProfileReadTags label="Where you serve" values={org.areas} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ProfileReadRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <div className="mb-1 text-xs font-bold tracking-wider text-ink-muted uppercase">
+        {label}
+      </div>
+      <div className={`text-sm ${value ? "text-ink" : "text-ink-muted"}`}>
+        {value || "Not set yet"}
+      </div>
+    </div>
+  );
+}
+
+function ProfileReadTags({
+  label,
+  values,
+}: {
+  label: string;
+  values: string[];
+}) {
+  return (
+    <div>
+      <div className="mb-2 text-xs font-bold tracking-wider text-ink-muted uppercase">
+        {label}
+      </div>
+      {values.length === 0 ? (
+        <div className="text-sm text-ink-muted">Not set yet</div>
+      ) : (
+        <div className="flex flex-wrap gap-2">
+          {values.map((v) => (
+            <span
+              key={v}
+              className="inline-flex items-center gap-1 rounded-full border border-border-strong bg-surface-alt px-3 py-1 text-xs font-bold text-ink-secondary"
+            >
+              {v}
+            </span>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -235,7 +359,7 @@ function RepositorySection({
 
   return (
     <section className="mb-12">
-      <h2 className="mb-1.5 font-serif text-2xl leading-tight font-medium">
+      <h2 className="mb-1.5 font-serif text-xl leading-tight font-bold">
         {title}
       </h2>
       <p className="mb-3.5 max-w-3xl text-sm leading-relaxed text-ink-muted">
@@ -310,7 +434,7 @@ function RepositorySection({
               <button
                 onClick={addItem}
                 disabled={!draft.trim()}
-                className="inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white transition duration-150 hover:bg-accent-ink disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex items-center gap-2 rounded-lg bg-accent-ink px-4 py-2 text-sm font-semibold text-white transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Add
               </button>
@@ -330,7 +454,7 @@ function RepositorySection({
 
       <div className="rounded-2xl border border-border bg-surface p-4">
         {pageItems.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-border-strong px-4 py-8 text-center text-sm text-ink-faint">
+          <div className="rounded-xl border border-dashed border-border-strong px-4 py-8 text-center text-sm text-ink-muted">
             Nothing here yet.
           </div>
         ) : (
@@ -349,7 +473,7 @@ function RepositorySection({
                   >
                     {item.label}
                   </button>
-                  <div className="mt-0.5 text-xs text-ink-faint">
+                  <div className="mt-0.5 text-xs text-ink-muted">
                     {verb} {item.date} by {item.by}
                   </div>
                 </div>
@@ -358,7 +482,7 @@ function RepositorySection({
                   aria-label={`Remove ${item.label}`}
                   className="inline-flex items-center gap-1.5 rounded-lg border border-accent-tint-border bg-accent-tint px-3 py-2 text-xs font-semibold text-accent-ink transition duration-150 hover:border-accent hover:bg-accent-tint-2"
                 >
-                  <span aria-hidden>🗑</span> Remove
+                  <Icon name="trash" size={12} /> Remove
                 </button>
               </div>
             ))}
@@ -414,7 +538,7 @@ function RepositorySection({
       )}
 
       {pageCount > 1 && (
-        <div className="mt-1 text-center text-xs text-ink-faint">
+        <div className="mt-1 text-center text-xs text-ink-muted">
           Page {safePage + 1} of {pageCount}
         </div>
       )}
@@ -446,7 +570,7 @@ function RepositoryPreview({
   blob?: FileBlob;
 }) {
   const meta = (
-    <div className="mt-4 text-xs text-ink-faint">
+    <div className="mt-4 text-xs text-ink-muted">
       {verb} {item.date} by {item.by}
     </div>
   );
@@ -530,13 +654,13 @@ function RepositoryPreview({
         ) : (
           <div className="flex items-center gap-3.5 rounded-xl border border-border bg-surface-alt px-4 py-4">
             <div className="flex h-11 w-11 flex-none items-center justify-center rounded-lg bg-accent-tint text-lg text-accent-ink">
-              📄
+              <Icon name="file-text" size={20} />
             </div>
             <div className="min-w-0 flex-1">
               <div className="truncate text-sm font-semibold text-ink">
                 {item.label}
               </div>
-              <div className="text-xs text-ink-faint">{ext} file</div>
+              <div className="text-xs text-ink-muted">{ext} file</div>
             </div>
             <a
               href={blob.url}
@@ -560,13 +684,13 @@ function RepositoryPreview({
       </div>
       <div className="flex items-center gap-3.5 rounded-xl border border-border bg-surface-alt px-4 py-4">
         <div className="flex h-11 w-11 flex-none items-center justify-center rounded-lg bg-accent-tint text-lg text-accent-ink">
-          📄
+          <Icon name="file-text" size={20} />
         </div>
         <div className="min-w-0">
           <div className="truncate text-sm font-semibold text-ink">
             {item.label}
           </div>
-          <div className="text-xs text-ink-faint">{ext} document</div>
+          <div className="text-xs text-ink-muted">{ext} document</div>
         </div>
       </div>
       <p className="mt-3 text-sm leading-relaxed text-ink-muted">

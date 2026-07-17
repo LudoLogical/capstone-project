@@ -67,6 +67,7 @@ export const GRANT_HEALTHY_NEIGHBORHOODS: Grant = {
     applicationWindowEnd: new Date("2026-09-30T23:59:59Z"),
     notificationDate: new Date("2026-10-15T00:00:00Z"),
     awardTerm: 24,
+    awardEndDate: new Date("2028-12-31T23:59:59Z"),
     firstReportDeadline: new Date("2027-04-15T00:00:00Z"),
     reportFrequency: 6,
   },
@@ -143,6 +144,7 @@ export const GRANT_FOOD_ACCESS: Grant = {
     applicationWindowEnd: new Date("2026-10-31T23:59:59Z"),
     notificationDate: new Date("2026-12-01T00:00:00Z"),
     awardTerm: 12,
+    awardEndDate: new Date("2027-11-30T23:59:59Z"),
     firstReportDeadline: new Date("2027-12-01T00:00:00Z"),
     reportFrequency: 12,
   },
@@ -198,6 +200,7 @@ export const GRANT_YOUTH_DIGITAL_WELLNESS: Grant = {
     applicationWindowEnd: new Date("2026-11-01T23:59:59Z"),
     notificationDate: new Date("2026-12-01T00:00:00Z"),
     awardTerm: 12,
+    awardEndDate: new Date("2027-12-31T23:59:59Z"),
     firstReportDeadline: new Date("2027-01-15T00:00:00Z"),
     reportFrequency: -1,
   },
@@ -265,15 +268,458 @@ export const GRANT_GREEN_SPACES: Grant = {
     applicationWindowEnd: new Date("2026-08-31T23:59:59Z"),
     notificationDate: new Date("2026-10-01T00:00:00Z"),
     awardTerm: 24,
+    awardEndDate: new Date("2028-10-31T23:59:59Z"),
     firstReportDeadline: new Date("2027-05-01T00:00:00Z"),
     reportFrequency: 6,
   },
   isRecommended: false,
 };
 
+// A grant whose application window has already closed, so the closed-deadline
+// handling has something real to act on.
+export const GRANT_SENIOR_MOBILITY: Grant = {
+  id: "g-senior-mobility",
+  name: "Senior Mobility & Access Grant",
+  link: "https://alleghenycounty.us/grants/senior-mobility-access",
+  grantor: "Grable Foundation",
+  purpose:
+    "Funds neighborhood projects that help older adults move around safely and independently, from walkability fixes to volunteer ride programs.",
+  issues: ["Health", "Community"],
+  targetRegions: [REGION_ALLEGHENY_COUNTY],
+  award: {
+    totalAmount: 35000,
+    annualAmount: 35000,
+    benefits: [
+      "Mobility audit support from a county planning partner",
+      "Introductions to regional senior-services providers",
+    ],
+  },
+  requirements: {
+    eligibility: [
+      "Applicant must serve adults aged 60 and over in Allegheny County",
+      "Applicant must be a 501(c)(3) nonprofit or fiscally sponsored community project",
+    ],
+    application: [
+      "Complete the online application form",
+      "Submit a description of the mobility barrier you're addressing",
+      "Submit letters of support from two community partners",
+    ],
+    awardee: [
+      "Track the number of older adults served each quarter",
+      "Submit a final narrative report",
+    ],
+    reporting: [
+      {
+        shortName: "Final report",
+        statement: "Submit a final report within 30 days of award term end.",
+        question:
+          "Have you submitted a final report within 30 days of the award term end?",
+      },
+    ],
+  },
+  guidance: {
+    application: [
+      "Name the specific barrier (a broken sidewalk, a transit gap) rather than describing mobility in general",
+      "Show how older adults themselves shaped the proposal",
+    ],
+    reporting: [
+      "Report unique riders or participants, not total trips",
+      "Include at least one participant story",
+    ],
+  },
+  timeline: {
+    applicationWindowStart: new Date("2026-02-01T00:00:00Z"),
+    applicationWindowEnd: new Date("2026-07-15T23:59:59Z"),
+    notificationDate: new Date("2026-09-01T00:00:00Z"),
+    awardTerm: 12,
+    awardEndDate: new Date("2027-09-30T23:59:59Z"),
+    firstReportDeadline: new Date("2027-09-30T00:00:00Z"),
+    reportFrequency: 12,
+  },
+  collabOpportunitySubscribers: NO_COLLAB_SUBSCRIBERS,
+  isRecommended: false,
+};
+
+/**
+ * Builds a catalog grant from the handful of fields that actually differ between
+ * them. The requirements and guidance below are the shape every funder in this
+ * catalog asks for; the four hand-written grants above carry their own bespoke
+ * copy because the flows quote them directly.
+ */
+function makeGrant(g: {
+  id: string;
+  name: string;
+  grantor: Grant["grantor"];
+  purpose: string;
+  issues: Grant["issues"];
+  regions?: Grant["targetRegions"];
+  totalAmount: number;
+  /** Application window close, ISO. Everything else is derived from it. */
+  closes: string;
+  opens?: string;
+  /** Decision date, ISO. Defaults to ~6 weeks after close. */
+  decidesOn?: string;
+  awardTerm?: number;
+  awardEnds?: string;
+  firstReportDue?: string;
+  reportFrequency?: number;
+  isRecommended?: boolean;
+}): Grant {
+  const closes = new Date(g.closes);
+  const plusMonths = (d: Date, m: number) => {
+    const n = new Date(d);
+    n.setMonth(n.getMonth() + m);
+    return n;
+  };
+  const decidesOn = g.decidesOn
+    ? new Date(g.decidesOn)
+    : plusMonths(closes, 2);
+  const awardTerm = g.awardTerm ?? 12;
+  const awardEnds = g.awardEnds
+    ? new Date(g.awardEnds)
+    : plusMonths(decidesOn, awardTerm);
+  return {
+    id: g.id,
+    name: g.name,
+    link: `https://example.org/grants/${g.id}`,
+    grantor: g.grantor,
+    purpose: g.purpose,
+    issues: g.issues,
+    targetRegions: g.regions ?? [REGION_ALLEGHENY_COUNTY],
+    award: {
+      totalAmount: g.totalAmount,
+      annualAmount: Math.round(g.totalAmount / Math.max(1, awardTerm / 12)),
+      benefits: ["Access to the funder's grantee network"],
+    },
+    requirements: {
+      eligibility: [
+        "Applicant must be a 501(c)(3) nonprofit or fiscally sponsored community project",
+        "Proposed work must take place in the funder's target region",
+      ],
+      application: [
+        "Complete the online application form",
+        "Submit a program budget",
+        "Provide at least one letter of community support",
+      ],
+      awardee: ["Track participation for the funded programming"],
+      reporting: [
+        {
+          shortName: "Final report",
+          statement: "Submit a final report at the end of the award term.",
+          question:
+            "Have you submitted a final report at the end of the award term?",
+        },
+      ],
+    },
+    guidance: {
+      application: [
+        "Name the specific need you're addressing and cite a data source",
+        "Show how the community shaped the work, not just received it",
+      ],
+      reporting: [
+        "Pair output counts with at least one outcome measure",
+        "Include a participant story alongside the numbers",
+      ],
+    },
+    timeline: {
+      applicationWindowStart: new Date(g.opens ?? plusMonths(closes, -2)),
+      applicationWindowEnd: closes,
+      notificationDate: decidesOn,
+      awardTerm,
+      awardEndDate: awardEnds,
+      firstReportDeadline: g.firstReportDue
+        ? new Date(g.firstReportDue)
+        : plusMonths(awardEnds, 1),
+      reportFrequency: g.reportFrequency ?? 12,
+    },
+    collabOpportunitySubscribers: NO_COLLAB_SUBSCRIBERS,
+    isRecommended: g.isRecommended ?? false,
+  };
+}
+
+/**
+ * The open catalog behind Explore. Deadlines are spread across the coming year
+ * so the countdown chips have every urgency band to show.
+ */
+export const CATALOG_GRANTS: Grant[] = [
+  makeGrant({
+    id: "g-clean-air",
+    name: "Allegheny County Clean Air Innovation Grant",
+    grantor: "Allegheny County Health Department",
+    purpose:
+      "Supports community-led air quality monitoring and pollution-reduction projects in neighborhoods with documented air-quality concerns.",
+    issues: ["Environment", "Health"],
+    totalAmount: 50000,
+    closes: "2026-07-21T23:59:59Z",
+    isRecommended: true,
+  }),
+  makeGrant({
+    id: "g-vibrancy-fund",
+    name: "Pittsburgh Community Vibrancy Fund",
+    grantor: "New Sun Rising",
+    purpose:
+      "Supports community-grounded work that strengthens neighborhood vibrancy, from food access to youth programming to environmental stewardship.",
+    issues: ["Community"],
+    regions: [REGION_ALLEGHENY_COUNTY, REGION_WESTMORELAND_COUNTY],
+    totalAmount: 60000,
+    closes: "2026-07-27T23:59:59Z",
+    isRecommended: true,
+  }),
+  makeGrant({
+    id: "g-arts-culture",
+    name: "POISE Community Arts & Culture Fund",
+    grantor: "POISE Foundation",
+    purpose:
+      "Supports community arts, culture, and storytelling projects led by and for Black and historically underinvested communities.",
+    issues: ["Community"],
+    totalAmount: 30000,
+    closes: "2026-08-05T23:59:59Z",
+  }),
+  makeGrant({
+    id: "g-youth-dev",
+    name: "Hillman Youth Development Grant",
+    grantor: "Richard King Mellon Foundation",
+    purpose:
+      "Multi-year support for youth development organizations with demonstrated outcomes.",
+    issues: ["Youth"],
+    totalAmount: 75000,
+    closes: "2026-08-12T23:59:59Z",
+    awardTerm: 24,
+    reportFrequency: 6,
+  }),
+  makeGrant({
+    id: "g-mental-health",
+    name: "Community Mental Health Access Fund",
+    grantor: "Staunton Farm Foundation",
+    purpose:
+      "Funds programs that lower the barriers between neighbors and mental health support.",
+    issues: ["Health"],
+    totalAmount: 40000,
+    closes: "2026-08-28T23:59:59Z",
+  }),
+  makeGrant({
+    id: "g-digital-equity",
+    name: "Digital Equity & Broadband Access Grant",
+    grantor: "PNC Foundation",
+    purpose:
+      "Closes the connectivity gap through device access, training, and neighborhood wifi projects.",
+    issues: ["Technology", "Community"],
+    totalAmount: 45000,
+    closes: "2026-09-10T23:59:59Z",
+  }),
+  makeGrant({
+    id: "g-food-rescue",
+    name: "Regional Food Rescue Partnership Grant",
+    grantor: "Hunger-Free PA",
+    purpose:
+      "Supports organizations recovering surplus food and moving it to neighbors who need it.",
+    issues: ["Food Security"],
+    totalAmount: 28000,
+    closes: "2026-09-18T23:59:59Z",
+  }),
+  makeGrant({
+    id: "g-housing-stability",
+    name: "Housing Stability Innovation Fund",
+    grantor: "Allegheny County DHS",
+    purpose:
+      "Funds work that keeps families housed, from eviction prevention to tenant organizing.",
+    issues: ["Community"],
+    totalAmount: 65000,
+    closes: "2026-09-25T23:59:59Z",
+  }),
+  makeGrant({
+    id: "g-early-literacy",
+    name: "Early Literacy Partnership Grant",
+    grantor: "Grable Foundation",
+    purpose:
+      "Supports out-of-school literacy programming for children from birth to age eight.",
+    issues: ["Youth"],
+    totalAmount: 35000,
+    closes: "2026-10-08T23:59:59Z",
+  }),
+  makeGrant({
+    id: "g-riverfront",
+    name: "Riverfront Restoration & Green Jobs Fund",
+    grantor: "Heinz Endowments",
+    purpose:
+      "Restores riverfront land while training residents for green-economy careers.",
+    issues: ["Environment"],
+    totalAmount: 80000,
+    closes: "2026-10-20T23:59:59Z",
+    awardTerm: 24,
+    reportFrequency: 6,
+  }),
+  makeGrant({
+    id: "g-immigrant-services",
+    name: "Immigrant & Refugee Family Services Grant",
+    grantor: "The Pittsburgh Foundation",
+    purpose:
+      "Funds language access, navigation, and cultural connection for immigrant families.",
+    issues: ["Community"],
+    totalAmount: 42000,
+    closes: "2026-11-05T23:59:59Z",
+  }),
+  makeGrant({
+    id: "g-senior-nutrition",
+    name: "Senior Nutrition & Congregate Meals Grant",
+    grantor: "Allegheny County DHS",
+    purpose:
+      "Supports meal programs that keep older adults nourished and connected.",
+    issues: ["Food Security", "Health"],
+    totalAmount: 30000,
+    closes: "2026-11-18T23:59:59Z",
+  }),
+  makeGrant({
+    id: "g-workforce",
+    name: "Neighborhood Workforce Pathways Fund",
+    grantor: "Richard King Mellon Foundation",
+    purpose:
+      "Backs training-to-placement pipelines rooted in a specific neighborhood.",
+    issues: ["Community"],
+    totalAmount: 90000,
+    closes: "2026-12-01T23:59:59Z",
+    awardTerm: 24,
+  }),
+  makeGrant({
+    id: "g-maker-stem",
+    name: "Youth Maker & STEM Access Grant",
+    grantor: "Grable Foundation",
+    purpose:
+      "Opens doors to making, technology, and STEM careers for young people.",
+    issues: ["Youth", "Technology"],
+    totalAmount: 32000,
+    closes: "2026-12-15T23:59:59Z",
+  }),
+  makeGrant({
+    id: "g-urban-farm",
+    name: "Urban Agriculture Growth Grant",
+    grantor: "Hunger-Free PA",
+    purpose:
+      "Funds community gardens, urban farms, and the infrastructure that keeps them producing.",
+    issues: ["Food Security", "Environment"],
+    totalAmount: 26000,
+    closes: "2027-01-15T23:59:59Z",
+  }),
+  makeGrant({
+    id: "g-safe-passage",
+    name: "Safe Passage & Neighborhood Walkability Grant",
+    grantor: "Pittsburgh City Council",
+    purpose:
+      "Improves the routes neighbors walk every day, from lighting to crossings to street trees.",
+    issues: ["Community", "Health"],
+    regions: [REGION_PITTSBURGH],
+    totalAmount: 38000,
+    closes: "2027-02-01T23:59:59Z",
+  }),
+];
+
+/**
+ * Grants seeded into a specific lifecycle state so every edge case on the board
+ * has something real behind it. Their statuses are set in the store's default
+ * `grantStatus`; the dates here are what put them in each state.
+ */
+export const GRANT_ARTS_MICROGRANT = makeGrant({
+  id: "g-arts-microgrant",
+  name: "Community Arts Microgrant",
+  grantor: "POISE Foundation",
+  purpose: "Small grants for neighborhood arts programming led by residents.",
+  issues: ["Community"],
+  totalAmount: 8000,
+  closes: "2025-05-30T23:59:59Z",
+});
+
+export const GRANT_SAFETY_INNOVATION = makeGrant({
+  id: "g-safety-innovation",
+  name: "Neighborhood Safety Innovation Fund",
+  grantor: "Heinz Endowments",
+  purpose:
+    "Funds resident-designed approaches to neighborhood safety that don't rely on policing.",
+  issues: ["Community"],
+  totalAmount: 45000,
+  closes: "2025-04-15T23:59:59Z",
+});
+
+export const GRANT_SUMMER_YOUTH = makeGrant({
+  id: "g-summer-youth",
+  name: "Summer Youth Programming Grant",
+  grantor: "Grable Foundation",
+  purpose:
+    "Supports summer programming that keeps young people engaged and connected.",
+  issues: ["Youth"],
+  totalAmount: 25000,
+  closes: "2025-03-01T23:59:59Z",
+});
+
+/** Withdrawn: the user pulled this application before the window closed. */
+export const GRANT_CIVIC_TECH = makeGrant({
+  id: "g-civic-tech",
+  name: "Civic Tech Prototyping Fund",
+  grantor: "PNC Foundation",
+  purpose:
+    "Seeds small technology prototypes built with, not for, the neighborhoods they serve.",
+  issues: ["Technology", "Community"],
+  totalAmount: 15000,
+  closes: "2025-09-30T23:59:59Z",
+});
+
+/** Submitted, and the funder's decision date has already passed. */
+export const GRANT_PARKS_ACCESS = makeGrant({
+  id: "g-parks-access",
+  name: "Parks & Recreation Access Grant",
+  grantor: "The Pittsburgh Foundation",
+  purpose:
+    "Expands access to parks and recreation for neighborhoods with the least green space.",
+  issues: ["Environment", "Community"],
+  totalAmount: 33000,
+  closes: "2026-05-01T23:59:59Z",
+  decidesOn: "2026-06-30T23:59:59Z",
+});
+
+/** Awarded, with a final report already overdue. */
+export const GRANT_WELLNESS_PILOT = makeGrant({
+  id: "g-wellness-pilot",
+  name: "Community Wellness Pilot Grant",
+  grantor: "Staunton Farm Foundation",
+  purpose:
+    "One-year pilots that bring wellness programming into everyday neighborhood spaces.",
+  issues: ["Health"],
+  totalAmount: 20000,
+  closes: "2025-01-31T23:59:59Z",
+  decidesOn: "2025-03-01T00:00:00Z",
+  awardEnds: "2026-03-01T23:59:59Z",
+  firstReportDue: "2026-06-15T23:59:59Z",
+  reportFrequency: 0,
+});
+
+/** Awarded, multi-report: one report done, the next one due soon. */
+export const GRANT_NEIGHBORHOOD_HEALTH = makeGrant({
+  id: "g-neighborhood-health",
+  name: "Neighborhood Health Partners Grant",
+  grantor: "Allegheny County Health Department",
+  purpose:
+    "Two-year support for organizations embedding health services in trusted community settings.",
+  issues: ["Health", "Community"],
+  totalAmount: 70000,
+  closes: "2025-06-30T23:59:59Z",
+  decidesOn: "2025-08-15T00:00:00Z",
+  awardTerm: 24,
+  awardEnds: "2027-08-15T23:59:59Z",
+  firstReportDue: "2026-02-15T23:59:59Z",
+  reportFrequency: 6,
+});
+
 export const ALL_GRANTS: Grant[] = [
   GRANT_HEALTHY_NEIGHBORHOODS,
   GRANT_FOOD_ACCESS,
   GRANT_YOUTH_DIGITAL_WELLNESS,
   GRANT_GREEN_SPACES,
+  GRANT_SENIOR_MOBILITY,
+  GRANT_PARKS_ACCESS,
+  GRANT_WELLNESS_PILOT,
+  GRANT_NEIGHBORHOOD_HEALTH,
+  GRANT_ARTS_MICROGRANT,
+  GRANT_SAFETY_INNOVATION,
+  GRANT_SUMMER_YOUTH,
+  GRANT_CIVIC_TECH,
+  ...CATALOG_GRANTS,
 ];

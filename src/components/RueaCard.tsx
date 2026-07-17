@@ -1,7 +1,24 @@
 "use client";
 
-import type { RueaSection } from "@/data/seed";
+import type { RueaBar } from "@/data/seed";
 import CiteButton from "./CiteButton";
+import Icon from "./Icon";
+
+/**
+ * What the card actually needs to render. `RueaSection` satisfies this, and so
+ * does a data point analyzed without an authoritative datum behind it - those
+ * simply have no comparison bars and nothing to cite.
+ */
+export type AnalysisCardSection = {
+  id: string;
+  provenanceKey?: string;
+  analysis: {
+    datum: { content: string; citation?: string };
+    result: { understand: string[]; apply: string[] };
+  };
+  bars?: RueaBar[];
+  evalNote?: string;
+};
 
 const BAR_COLORS: Record<string, string> = {
   me: "bg-accent",
@@ -10,7 +27,7 @@ const BAR_COLORS: Record<string, string> = {
   other: "bg-info-ink",
 };
 
-function StatBars({ bars }: { bars: RueaSection["bars"] }) {
+function StatBars({ bars }: { bars: RueaBar[] }) {
   const max = Math.max(...bars.map((b) => b.value));
   return (
     <div className="flex flex-col gap-2.5">
@@ -38,11 +55,15 @@ function StatBars({ bars }: { bars: RueaSection["bars"] }) {
 }
 
 type RueaCardProps = {
-  section: RueaSection;
+  section: AnalysisCardSection;
   expanded: boolean;
   onToggle: () => void;
   onAdd?: () => void;
   added?: boolean;
+  // When provided, a checkbox is shown on the left of the card header and its
+  // state is controlled by `selected` / `onSelectChange`.
+  selected?: boolean;
+  onSelectChange?: () => void;
   // Heading for the "how to use it" section. Defaults to the application-writing
   // wording; the report flow passes "In your report".
   applyLabel?: string;
@@ -54,6 +75,8 @@ export default function RueaCard({
   onToggle,
   onAdd,
   added = false,
+  selected,
+  onSelectChange,
   applyLabel = "In your application",
 }: RueaCardProps) {
   const { analysis } = section;
@@ -62,26 +85,39 @@ export default function RueaCard({
 
   return (
     <div className="overflow-hidden rounded-2xl border border-border bg-surface">
-      <button
-        onClick={onToggle}
-        className="flex w-full items-center gap-3.5 bg-white px-5 py-4 text-left"
-      >
-        <div className="min-w-0 flex-1">
-          <div className="mb-1 text-xs font-bold tracking-wider text-ink-muted uppercase">
-            Remember
+      <div className="flex items-stretch bg-white">
+        {onSelectChange && (
+          <button
+            onClick={onSelectChange}
+            aria-pressed={!!selected}
+            aria-label={selected ? "Deselect card" : "Select card"}
+            className="flex flex-none items-start py-4 pl-5"
+          >
+            <span
+              aria-hidden
+              className={`flex h-[22px] w-[22px] items-center justify-center rounded-md border-2 text-sm font-extrabold text-white ${
+                selected ? "border-accent bg-accent" : "border-ink-muted"
+              }`}
+            >
+              {selected ? <Icon name="check" size={14} /> : null}
+            </span>
+          </button>
+        )}
+        <button
+          onClick={onToggle}
+          className={`flex flex-1 items-center gap-3.5 py-4 pr-5 text-left ${
+            onSelectChange ? "pl-3" : "pl-5"
+          }`}
+        >
+          <div className="min-w-0 flex-1">
+            <div className="text-sm font-bold">{headline}</div>
+            {source && (
+              <div className="mt-1 text-xs text-ink-muted">Source: {source}</div>
+            )}
           </div>
-          <div className="text-sm font-bold">{headline}</div>
-          {source && (
-            <div className="mt-1 flex items-start gap-1 text-xs text-ink-muted">
-              <span aria-hidden className="flex-none">
-                🔖
-              </span>
-              <span>Source: {source}</span>
-            </div>
-          )}
-        </div>
-        <div className="text-sm text-ink-muted">{expanded ? "▲" : "▼"}</div>
-      </button>
+          <div className="text-sm text-ink-muted">{expanded ? "▲" : "▼"}</div>
+        </button>
+      </div>
 
       {expanded && (
         <div className="border-t border-divider px-5 pb-5">
@@ -98,15 +134,20 @@ export default function RueaCard({
             </ul>
           </div>
 
-          <div className="my-4">
-            <div className="mb-2.5 text-xs font-bold tracking-wider text-ink-muted uppercase">
-              In context
+          {/* Only shown when there's a real comparison to draw. */}
+          {(section.bars?.length || section.evalNote) && (
+            <div className="my-4">
+              <div className="mb-2.5 text-xs font-bold tracking-wider text-ink-muted uppercase">
+                In context
+              </div>
+              {section.bars?.length ? <StatBars bars={section.bars} /> : null}
+              {section.evalNote && (
+                <p className="mt-2.5 text-sm leading-relaxed font-bold text-accent-ink">
+                  {section.evalNote}
+                </p>
+              )}
             </div>
-            <StatBars bars={section.bars} />
-            <p className="mt-2.5 text-sm leading-relaxed font-bold text-accent-ink">
-              {section.evalNote}
-            </p>
-          </div>
+          )}
 
           <div className="mb-4">
             <div className="mb-2 text-xs font-bold tracking-wider text-ink-muted uppercase">
@@ -122,7 +163,9 @@ export default function RueaCard({
           </div>
 
           <div className="flex flex-wrap gap-2.5">
-            <CiteButton provenanceKey={section.provenanceKey} />
+            {section.provenanceKey && (
+              <CiteButton provenanceKey={section.provenanceKey} />
+            )}
             {onAdd && (
               <button
                 onClick={onAdd}
@@ -130,10 +173,10 @@ export default function RueaCard({
                 className={`inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold whitespace-nowrap transition duration-150 disabled:cursor-default ${
                   added
                     ? "border border-success-border bg-success-bg text-success-ink"
-                    : "bg-accent text-white shadow-cta enabled:hover:brightness-105"
+                    : "bg-accent-ink text-white shadow-cta enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px"
                 }`}
               >
-                {added ? "Added to Data Analysis!" : "Add to Data Analysis ✓"}
+                {added ? "Added to Data Analysis!" : "Add to Data Analysis"}
               </button>
             )}
           </div>

@@ -51,11 +51,14 @@ export function filterGrants(grants: Grant[], filters: SearchFilters): Grant[] {
         `${grant.purpose} ${grant.grantor} ${grant.issues.join(" ")}`.toLowerCase();
       if (!haystack.includes(q)) return false;
     }
-    if (
-      filters.issues.length > 0 &&
-      !filters.issues.some((i) => (grant.issues as string[]).includes(i))
-    ) {
-      return false;
+    if (filters.issues.length > 0) {
+      // The sidebar's tags are broader than the issues carried on a grant
+      // ("Health/Wellness" vs "Health"), so a tag matches through the map above
+      // rather than by string equality.
+      const wanted = new Set(
+        filters.issues.flatMap((tag) => TAG_ISSUES[tag] ?? [tag]),
+      );
+      if (!grant.issues.some((i) => wanted.has(i))) return false;
     }
     // Org-type eligibility isn't a discrete field on Grant (it lives inside
     // free-text `requirements.eligibility`), so this filter is UI-only for
@@ -147,6 +150,37 @@ export const LOCATION_OPTIONS = [
 
 // Broad issue tags surfaced in the Explore search filter and onboarding. Shared
 // so the two stay in sync.
+/**
+ * How each sidebar tag maps onto the canonical issues a grant is tagged with.
+ * Without this the filter would compare "Food" against "Food Security" and
+ * silently match nothing.
+ */
+export const TAG_ISSUES: Record<string, string[]> = {
+  Arts: ["Community"],
+  "Black-Led": ["Community"],
+  "Community Development": ["Community"],
+  Disabilities: ["Health", "Community"],
+  Education: ["Youth"],
+  "Environment/EJ": ["Environment"],
+  "Faith-Based": ["Community"],
+  Food: ["Food Security"],
+  "Health/Wellness": ["Health"],
+  Housing: ["Community"],
+  Innovation: ["Technology"],
+  "Justice/Equality": ["Community"],
+  Literary: ["Youth", "Community"],
+  Mothers: ["Community", "Health"],
+  "Queer Led/Serving": ["Community"],
+  Recreation: ["Community", "Health"],
+  "Social Services": ["Community"],
+  Sustainability: ["Environment"],
+  Technology: ["Technology"],
+  Water: ["Environment"],
+  "Women-Led": ["Community"],
+  "Workforce Development": ["Community"],
+  Youth: ["Youth"],
+};
+
 export const ISSUE_TAGS: readonly string[] = [
   "Arts",
   "Black-Led",

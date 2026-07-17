@@ -9,6 +9,8 @@ import { formatCurrencyFull, formatDate } from "@/utils/format";
 import { INTERESTED_BY_GRANT, ORG_PROFILES } from "@/data/seed";
 import ShareModal from "@/components/ShareModal";
 import BackButton from "@/components/BackButton";
+import ClosedGrantModal from "@/components/ClosedGrantModal";
+import Icon from "@/components/Icon";
 
 /** Initials for an org avatar chip, e.g. "Hilltop Harvest" → "HH". */
 function initialsOf(name: string): string {
@@ -114,11 +116,14 @@ export default function GrantDetailPage() {
   const openCouplingModal = useAppStore((s) => s.openCouplingModal);
   const discoverable = useAppStore((s) => s.discoverable[grantId]);
   const startApplication = useAppStore((s) => s.startApplication);
-  const awardedMark = useAppStore((s) => s.awardedGrants[grantId]);
-  const setAwarded = useAppStore((s) => s.setAwarded);
+  const setGrantStatus = useAppStore((s) => s.setGrantStatus);
+  const clearGrantStatus = useAppStore((s) => s.clearGrantStatus);
   const addToast = useAppStore((s) => s.addToast);
   const [shareOpen, setShareOpen] = useState(false);
   const [shareOrgId, setShareOrgId] = useState<string | null>(null);
+  const [closedOpen, setClosedOpen] = useState(false);
+  const setStage = useAppStore((s) => s.setStage);
+  const setDiscoverable = useAppStore((s) => s.setDiscoverable);
 
   if (!view) {
     return (
@@ -128,26 +133,32 @@ export default function GrantDetailPage() {
     );
   }
 
-  const { grant, stage, seedStage } = view;
+  const { grant, stage } = view;
   const saved = isSavedStage(stage);
-  const isAwarded =
-    seedStage === GrantLifecycleStage.Awarded ||
-    seedStage === GrantLifecycleStage.Reported ||
-    !!awardedMark;
+  const isAwarded = view.status === "awarded";
 
+  // A closed grant can't be picked up: saving and listing to collaborate are
+  // blocked outright. Un-saving / un-listing stays available so the user can
+  // still clear it off their board.
+  const closed = view.isClosed;
   const toggleSave = () => {
+    if (closed && !saved) return setClosedOpen(true);
     openCouplingModal(saved ? "unsave" : "save", grant.id);
   };
   const toggleCollaborate = () => {
+    if (closed && !discoverable) return setClosedOpen(true);
     openCouplingModal(discoverable ? "uncollab" : "discover", grant.id);
   };
 
-  // Grey when off, orange (accent) when on - see items 6 & 8.
+  // Grey when off, orange (accent) when on. A closed grant never gets the
+  // orange treatment - there's nothing to opt into.
   const toggleClass = (on: boolean) =>
     `inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold whitespace-nowrap transition duration-150 ${
       on
-        ? "bg-accent text-white shadow-cta hover:brightness-105"
-        : "border border-border-strong bg-white text-ink hover:border-accent"
+        ? "bg-accent-ink text-white shadow-cta hover:bg-accent-ink-2 active:translate-y-px"
+        : closed
+          ? "border border-border-strong bg-divider-2 text-ink-muted hover:bg-border-strong"
+          : "border border-border-strong bg-white text-ink hover:border-accent"
     }`;
 
   const collabOrgs = (INTERESTED_BY_GRANT[grant.id] ?? [])
@@ -161,7 +172,7 @@ export default function GrantDetailPage() {
       <div className="mb-5 rounded-2xl border border-border bg-surface p-8">
         <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0">
-            <div className="mb-2 font-serif text-3xl">{grant.name}</div>
+            <div className="mb-2 font-serif text-3xl font-bold">{grant.name}</div>
             <div className="text-sm text-ink-muted">
               {grant.grantor} ·{" "}
               {grant.targetRegions.map((r) => r.name).join(", ")}
@@ -169,15 +180,16 @@ export default function GrantDetailPage() {
           </div>
           <div className="flex flex-none flex-wrap gap-2.5">
             <button onClick={toggleSave} className={toggleClass(saved)}>
-              {saved ? "★ Saved for Later" : "☆ Save for Later"}
+              <Icon name="star" size={14} fill={saved} />
+              {saved ? "Saved for Later" : "Save for Later"}
             </button>
             <button
               onClick={toggleCollaborate}
               className={toggleClass(!!discoverable)}
             >
               {discoverable
-                ? "🤝 Open to Collaborate"
-                : "🤝 List as Open to Collaborate"}
+                ? "Open to Collaborate"
+                : "List as Open to Collaborate"}
             </button>
           </div>
         </div>
@@ -279,7 +291,8 @@ export default function GrantDetailPage() {
       {/* How your work lines up - the fit read, no score (items 2 & 9) */}
       <div className="mb-3.5 rounded-2xl border border-border bg-surface p-6">
         <div className="mb-1 inline-flex items-center gap-1 rounded-full border border-accent-tint-border bg-accent-tint px-3 py-1 text-xs font-bold text-accent-ink">
-          ✦ AI-ASSISTED
+          <Icon name="bar-chart" size={12} />
+          AI-ASSISTED
         </div>
         <div className="mt-2.5 text-base font-bold">How your work lines up</div>
         <p className="mt-1.5 text-xs leading-relaxed text-ink-muted">
@@ -343,7 +356,7 @@ export default function GrantDetailPage() {
                 key={org.initiativeId}
                 className="flex items-start gap-3 rounded-xl border border-border bg-surface-alt px-4 py-3"
               >
-                <div className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-radial from-accent-warm to-accent to-70% text-xs font-bold text-white">
+                <div className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-accent text-xs font-bold text-white">
                   {initialsOf(org.name)}
                 </div>
                 <div className="min-w-0 flex-1">
@@ -377,28 +390,42 @@ export default function GrantDetailPage() {
         {isAwarded ? (
           <div className="rounded-2xl border border-success-border bg-success-bg px-6 py-5">
             <div className="mb-1.5 text-base font-bold text-success-ink">
-              🏆 You&apos;ve won this grant
+              You&apos;ve won this grant
             </div>
             <p className="mb-3.5 text-sm leading-relaxed text-ink-body">
               It now lives under Report for Awarded Grants on your dashboard.
               Turn your records into an outcome report when you&apos;re ready.
             </p>
-            <button
-              onClick={() => router.push(`/grants/${grant.id}/report`)}
-              className="inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:brightness-105"
-            >
-              Go to outcome report →
-            </button>
+            <div className="flex flex-wrap items-center gap-4">
+              <button
+                onClick={() => router.push(`/grants/${grant.id}/report`)}
+                className="inline-flex items-center gap-2 rounded-lg bg-accent-ink px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px"
+              >
+                Go to outcome report →
+              </button>
+              {view.status === "awarded" && (
+                <button
+                  onClick={() => {
+                    clearGrantStatus(grant.id);
+                    addToast("Reverted - no longer marked as awarded.");
+                  }}
+                  className="text-sm font-semibold text-ink-muted underline underline-offset-2 transition duration-150 hover:text-ink"
+                >
+                  Undo - you weren&apos;t awarded this grant
+                </button>
+              )}
+            </div>
           </div>
         ) : (
-          <div className="rounded-2xl border border-accent-tint-border bg-linear-to-br from-accent-tint-soft to-accent-tint px-6 py-5">
+          <div className="rounded-2xl border border-accent-tint-border bg-accent-tint-soft px-6 py-5">
             <div className="mb-2.5 inline-flex items-center gap-1 rounded-full border border-accent-tint-border bg-accent-tint px-3 py-1 text-xs font-bold text-accent-ink">
-              ✦ AI-ASSISTED
+              <Icon name="bar-chart" size={12} />
+          AI-ASSISTED
             </div>
             <div className="mb-1.5 text-base font-bold">Ready to apply?</div>
             <p className="mb-3.5 text-sm leading-relaxed text-ink-muted">
               We&apos;ll help you gather your context and supporting data first -
-              you choose what to share. This adds the grant to Data for Grant
+              you choose what to share. This adds the grant to Grant
               Applications on your dashboard.
             </p>
             <button
@@ -406,9 +433,9 @@ export default function GrantDetailPage() {
                 startApplication(grant.id);
                 router.push(`/grants/${grant.id}/collect`);
               }}
-              className="inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-lg bg-accent-ink px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
             >
-              ✦ Start Gathering Data for Application
+              Start Gathering Data for Application
             </button>
           </div>
         )}
@@ -427,14 +454,28 @@ export default function GrantDetailPage() {
           </div>
           <button
             onClick={() => {
-              setAwarded(grant.id, true);
+              setGrantStatus(grant.id, "awarded");
               addToast("Marked as awarded. Find it under your reports.");
             }}
             className="inline-flex items-center gap-2 rounded-lg border border-border-strong bg-white px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 enabled:hover:border-accent"
           >
-            🏆 Mark as awarded
+            Mark as awarded
           </button>
         </div>
+      )}
+
+      {closedOpen && (
+        <ClosedGrantModal
+          grantName={grant.name}
+          closedOn={grant.timeline.applicationWindowEnd}
+          onClose={() => setClosedOpen(false)}
+          onRemove={() => {
+            setStage(grant.id, GrantLifecycleStage.Unsaved);
+            setDiscoverable(grant.id, false);
+            setClosedOpen(false);
+            router.push("/");
+          }}
+        />
       )}
 
       {shareOpen && (

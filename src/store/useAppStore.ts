@@ -26,10 +26,21 @@ export type ChatMessage = { from: "user" | "ai"; text: string };
 export type ReportChatState = {
   messages: ChatMessage[];
   marked: boolean;
+  // The unsent message box contents. Kept per section so each page's chat box
+  // holds its own draft rather than sharing one across the flow.
+  draft: string;
   picks: Record<string, boolean>;
-  // Entries the user typed in themselves. They join the "Here's what I found"
-  // list as extra, pre-selected items (keyed "custom-<index>" in `picks`).
+  // Entries the user typed in themselves (or that were surfaced from an attached
+  // file). They join the found-data list as extra, pre-selected items
+  // (keyed "custom-<index>" in `picks`).
   custom: string[];
+  // Optional per-custom source label, keyed by the custom entry's index. When
+  // absent, the item is shown as "Added by you"; a file attachment sets the
+  // file name here so the surfaced fact is traceable.
+  customSources?: Record<number, string>;
+  // Found items the user deleted, keyed by item id (seed item id, or
+  // "custom-<index>"). Soft-deleted so indexes/picks stay stable.
+  removed?: Record<string, boolean>;
 };
 
 // Per-step completion, keyed by step number (1-7). A step is only ever
@@ -76,14 +87,17 @@ export type WizardState = {
   // step (keyed by section id, or "custom:<text>"). When any are added, the
   // exported pack is limited to them.
   analysisAdded: Record<string, boolean>;
-  // Which of the 4 application steps the user has actually opened. Drives the
-  // n/4 progress shown on the dashboard.
+  // Which of the application steps the user has actually opened. Drives the
+  // n/3 progress shown on the dashboard.
   visited: Record<number, boolean>;
+  // The Analysis step is locked until the user unlocks it from Review.
+  analysisUnlocked: boolean;
 };
 
 const emptyChat = (): ReportChatState => ({
   messages: [],
   marked: false,
+  draft: "",
   picks: {},
   custom: [],
 });
@@ -98,6 +112,7 @@ export function makeWizardState(): WizardState {
     rueaExpanded: {},
     analysisAdded: {},
     visited: { 1: true },
+    analysisUnlocked: false,
   };
 }
 
@@ -112,6 +127,7 @@ function hydrateWizard(w: WizardState | undefined): WizardState {
     customFound: w.customFound ?? base.customFound,
     analysisAdded: w.analysisAdded ?? base.analysisAdded,
     visited: w.visited ?? base.visited,
+    analysisUnlocked: w.analysisUnlocked ?? base.analysisUnlocked,
   };
 }
 
@@ -158,6 +174,93 @@ function hydrateReport(r: ReportState | undefined): ReportState {
   };
 }
 
+/**
+ * Where a grant sits in its lifecycle. One field rather than a spread of
+ * booleans: the states are mutually exclusive, and a grant that is "submitted"
+ * cannot also be "awarded". Absent = the user hasn't started anything with it
+ * beyond saving it.
+ *
+ * The portal can't submit applications or hear verdicts, so every transition
+ * past `applying` is the user telling us what happened.
+ */
+export type GrantStatus =
+  // Active - the grant is live work and shows in a working column.
+  | "applying" // an application is being put together
+  | "awarded" // won; the award period is running
+  | "report-overdue" // a report deadline passed without one being submitted
+  // Terminal - the grant is done and lives in Archived, labelled with why.
+  | "submitted" // sent to the funder; nothing to do but wait
+  | "reported" // the outcome report is done
+  | "withdrawn" // the user pulled the application
+  | "not-awarded" // the funder said no
+  | "deadline-past"; // a date passed and the grant can no longer be acted on
+
+/** Terminal statuses: the grant is finished and belongs in Archived. */
+export const TERMINAL_STATUSES: GrantStatus[] = [
+  "submitted",
+  "reported",
+  "withdrawn",
+  "not-awarded",
+  "deadline-past",
+];
+
+export const isTerminalStatus = (s: GrantStatus | undefined): boolean =>
+  !!s && TERMINAL_STATUSES.includes(s);
+
+export const STATUS_LABEL: Record<GrantStatus, string> = {
+  applying: "Application in progress",
+  submitted: "Application Submitted",
+  awarded: "Awarded",
+  "report-overdue": "Report Overdue",
+  reported: "Report Completed",
+  withdrawn: "Application Withdrawn",
+  "not-awarded": "Not Awarded",
+  "deadline-past": "Deadline Past",
+};
+
+/**
+ * Terminal statuses that mean the grant ended without a win. Shown in red, not
+ * green - filing something away is not the same as finishing it.
+ */
+export const UNSUCCESSFUL_STATUSES: GrantStatus[] = [
+  "not-awarded",
+  "deadline-past",
+  "withdrawn",
+];
+
+/**
+ * Where an archived grant goes if the user un-archives it, or `null` when the
+ * outcome is out of their hands. A missed deadline and a funder's "no" are
+ * facts, not decisions - there is nothing to move back to.
+ */
+export const MOVE_BACK_TARGET: Record<
+  GrantStatus,
+  { status: GrantStatus; label: string } | null
+> = {
+  // Active states can be walked back a step - these are clicks, and clicks are
+  // mis-clicked.
+  applying: null,
+  "report-overdue": null,
+  awarded: { status: "submitted", label: "Move back to Submitted" },
+  // Terminal states: only the ones the user chose can be undone. A withdrawal,
+  // a missed deadline, and a funder's "no" are all final.
+  submitted: { status: "applying", label: "Move back to Application" },
+  reported: { status: "awarded", label: "Move back to Report" },
+  withdrawn: null,
+  "not-awarded": null,
+  "deadline-past": null,
+};
+
+/** The Archived filter chips, in display order. */
+export const ARCHIVE_FILTERS: { key: GrantStatus | "all"; label: string }[] = [
+  { key: "all", label: "All" },
+  { key: "deadline-past", label: "Deadline Past" },
+  { key: "not-awarded", label: "Not Awarded" },
+  { key: "reported", label: "Report Completed" },
+  { key: "submitted", label: "Application Submitted" },
+  { key: "withdrawn", label: "Application Withdrawn" },
+];
+
 export type Toast = { id: number; text: string };
 
 // The save/collaborate coupling is surfaced through confirmation prompts
@@ -173,6 +276,9 @@ export type CouplingModal = {
 type AppState = {
   signedIn: boolean;
   privacyAcked: boolean;
+  // Set once the user picks "Yes, don't ask again" when deleting a found data
+  // point in the report flow; suppresses the confirmation afterward.
+  dontAskDeleteFound: boolean;
 
   // First-run onboarding: a signed-in user who has not finished onboarding is
   // shown the welcome + org-details flow before the dashboard.
@@ -186,15 +292,21 @@ type AppState = {
   stageOverrides: Record<string, GrantLifecycleStage>;
   discoverable: Record<string, boolean>;
 
-  // Grants the user has explicitly started an application for. This is what
-  // moves a grant from "Saved Grants" into "Grant Applications" on the
-  // dashboard; saving alone never does. One grant is seeded as an in-progress
-  // application so the column isn't empty on first run.
-  applicationStarted: Record<string, boolean>;
+  // Grants the user deleted from their board. They stay in the catalog (Explore
+  // still lists open ones) but never reappear on the dashboard.
+  deletedGrants: Record<string, boolean>;
 
-  // Grants the user has marked as awarded ("we won this"). Moves the grant into
-  // the reports column, on top of any grants seeded as awarded.
-  awardedGrants: Record<string, boolean>;
+  // How many reports the user has filed per grant. Drives which deadline in a
+  // multi-report grant's schedule is the live one.
+  reportsSubmitted: Record<string, number>;
+
+  // Where each grant sits in its lifecycle. This single field replaced the old
+  // applicationStarted / awardedGrants / appliedGrants / archivedGrants
+  // booleans, which could contradict each other. Absent = saved-only. Which
+  // dashboard column a grant lands in is derived from this; the save bookmark
+  // (`stageOverrides`) and collaborate listing (`discoverable`) stay separate,
+  // since they're genuinely independent of application progress.
+  grantStatus: Record<string, GrantStatus>;
 
   draftFilters: SearchFilters;
   appliedFilters: SearchFilters;
@@ -225,6 +337,9 @@ type AppState = {
   // truncate the stack back to that page, so bouncing between two pages can't
   // create a Back loop that traps the user.
   navStack: string[];
+  // How many in-app navigations have happened this session. Back is only
+  // offered when there is real history behind the user.
+  navCount: number;
 
   toasts: Toast[];
 
@@ -232,6 +347,7 @@ type AppState = {
   recordNav: (path: string) => void;
   signIn: () => void;
   ackPrivacy: () => void;
+  setDontAskDeleteFound: () => void;
 
   setOnboardStep: (step: number) => void;
   patchOnboardOrg: (patch: Partial<OnboardOrg>) => void;
@@ -243,12 +359,21 @@ type AppState = {
   toggleDiscoverable: (grantId: string) => void;
   setDiscoverable: (grantId: string, on: boolean) => void;
 
-  // Mark a grant as an application in progress (and save it, so it's
-  // bookmarked). Moves it into the Grant Applications column.
+  // Move a grant to a lifecycle status, or clear it back to saved-only. Every
+  // transition is explicit: the portal never infers that an application was
+  // submitted or a verdict received.
+  setGrantStatus: (grantId: string, status: GrantStatus) => void;
+  clearGrantStatus: (grantId: string) => void;
+
+  // Start an application: marks it in progress and saves it, so it's bookmarked.
   startApplication: (grantId: string) => void;
 
-  // Mark / unmark a grant as awarded. Moves it into / out of the reports column.
-  setAwarded: (grantId: string, won: boolean) => void;
+  // Remove an archived grant from the board for good.
+  deleteGrant: (grantId: string) => void;
+
+  // Record a filed report. `done` is true when that was the last one owed, which
+  // ends the grant; otherwise it stays awarded with the next deadline live.
+  submitReport: (grantId: string, done: boolean) => void;
 
   // Save/collaborate coupling - surfaced through prompts, not locked. Opening
   // a modal is what a Save/Unsave/collaborate control does; the confirm*
@@ -305,14 +430,36 @@ export const useAppStore = create<AppState>()(
     (set, get) => ({
       signedIn: false,
       privacyAcked: false,
+      dontAskDeleteFound: false,
       onboarded: false,
       onboardStep: 0,
       onboardOrg: emptyOnboardOrg(),
       stageOverrides: {},
-      discoverable: {},
-      applicationStarted: { "g-healthy-neighborhoods": true },
-      awardedGrants: {},
-
+      // Seeded so the board shows a past-deadline grant in both Saved and Open
+      // to Collaborate - the states the user still needs to resolve.
+      discoverable: { "g-senior-mobility": true, "g-green-spaces": true },
+      // g-neighborhood-health reports every 6 months and has one in already, so
+      // its next deadline is the one the board should be counting down to.
+      reportsSubmitted: { "g-neighborhood-health": 1 },
+      deletedGrants: {},
+      // One in-progress application so the board isn't empty on first run, plus
+      // seeded past grants so Archived shows the range of reasons a grant lands
+      // there.
+      grantStatus: {
+        // Active work, one per column state.
+        "g-healthy-neighborhoods": "applying", // open, in progress
+        "g-youth-digital-wellness": "applying", // open, in progress
+        "g-green-spaces": "submitted", // awaiting a decision that isn't due yet
+        "g-parks-access": "submitted", // decision date passed: needs attention
+        "g-food-access": "awarded", // report not due yet
+        "g-neighborhood-health": "awarded", // multi-report, next one due soon
+        "g-wellness-pilot": "awarded", // final report already overdue
+        // Terminal, one per archive reason.
+        "g-arts-microgrant": "deadline-past",
+        "g-safety-innovation": "not-awarded",
+        "g-summer-youth": "reported",
+        "g-civic-tech": "withdrawn",
+      },
       draftFilters: DEFAULT_FILTERS,
       appliedFilters: DEFAULT_FILTERS,
       sortBy: "relevance",
@@ -333,6 +480,7 @@ export const useAppStore = create<AppState>()(
       couplingModal: null,
 
       navStack: [],
+      navCount: 0,
 
       toasts: [],
 
@@ -340,16 +488,22 @@ export const useAppStore = create<AppState>()(
         set((state) => {
           const stack = state.navStack;
           if (stack[stack.length - 1] === path) return state;
+          // `navCount` counts real in-app navigations. Back uses it only to ask
+          // "is there anywhere to go back to?" - the browser's own history is
+          // what decides where, so Back always lands on the page the user was
+          // actually just on.
+          const navCount = state.navCount + 1;
           // Revisiting a page already in the stack means the user went back to
           // it (via a Back control or the browser); truncate to that point
-          // instead of pushing a duplicate, which keeps Back moving strictly
-          // outward and prevents A→B→A→B loops.
+          // instead of pushing a duplicate.
           const existing = stack.indexOf(path);
-          if (existing >= 0) return { navStack: stack.slice(0, existing + 1) };
-          return { navStack: [...stack, path] };
+          if (existing >= 0)
+            return { navStack: stack.slice(0, existing + 1), navCount };
+          return { navStack: [...stack, path], navCount };
         }),
 
       signIn: () => set({ signedIn: true }),
+      setDontAskDeleteFound: () => set({ dontAskDeleteFound: true }),
       ackPrivacy: () => set({ privacyAcked: true }),
 
       setOnboardStep: (step) => set({ onboardStep: step }),
@@ -402,22 +556,42 @@ export const useAppStore = create<AppState>()(
           discoverable: { ...state.discoverable, [grantId]: on },
         })),
 
+      setGrantStatus: (grantId, status) =>
+        set((state) => ({
+          grantStatus: { ...state.grantStatus, [grantId]: status },
+        })),
+      clearGrantStatus: (grantId) =>
+        set((state) => {
+          const next = { ...state.grantStatus };
+          delete next[grantId];
+          return { grantStatus: next };
+        }),
+
+      deleteGrant: (grantId) =>
+        set((state) => ({
+          deletedGrants: { ...state.deletedGrants, [grantId]: true },
+        })),
+
+      submitReport: (grantId, done) =>
+        set((state) => ({
+          reportsSubmitted: {
+            ...state.reportsSubmitted,
+            [grantId]: (state.reportsSubmitted[grantId] ?? 0) + 1,
+          },
+          grantStatus: {
+            ...state.grantStatus,
+            [grantId]: done ? "reported" : "awarded",
+          },
+        })),
+
       startApplication: (grantId) =>
         set((state) => ({
-          applicationStarted: {
-            ...state.applicationStarted,
-            [grantId]: true,
-          },
+          grantStatus: { ...state.grantStatus, [grantId]: "applying" },
           // Starting an application implies the grant is saved/bookmarked.
           stageOverrides: {
             ...state.stageOverrides,
             [grantId]: GrantLifecycleStage.Saved,
           },
-        })),
-
-      setAwarded: (grantId, won) =>
-        set((state) => ({
-          awardedGrants: { ...state.awardedGrants, [grantId]: won },
         })),
 
       openCouplingModal: (type, grantId) =>
@@ -585,13 +759,15 @@ export const useAppStore = create<AppState>()(
       partialize: (state) => ({
         signedIn: state.signedIn,
         privacyAcked: state.privacyAcked,
+        dontAskDeleteFound: state.dontAskDeleteFound,
         onboarded: state.onboarded,
         onboardStep: state.onboardStep,
         onboardOrg: state.onboardOrg,
         stageOverrides: state.stageOverrides,
         discoverable: state.discoverable,
-        applicationStarted: state.applicationStarted,
-        awardedGrants: state.awardedGrants,
+        grantStatus: state.grantStatus,
+        reportsSubmitted: state.reportsSubmitted,
+        deletedGrants: state.deletedGrants,
         wizard: state.wizard,
         report: state.report,
         collabPicks: state.collabPicks,

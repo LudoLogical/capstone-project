@@ -1,21 +1,17 @@
 import type { Metadata } from "next";
-import { Hanken_Grotesk, Source_Serif_4 } from "next/font/google";
+import { Lato } from "next/font/google";
 import "./globals.css";
 import AppShell from "@/components/AppShell";
 import StoreHydrator from "@/components/StoreHydrator";
 
-// tokens.css named both of these fonts but nothing ever loaded them, so the
-// Vite app silently fell back to the system sans/serif. next/font self-hosts
-// them and exposes each as a CSS variable, which globals.css maps onto the
-// `font-ui` / `font-serif` utilities.
-const hankenGrotesk = Hanken_Grotesk({
-  variable: "--font-hanken-grotesk",
+// Lato is the whole type system, per the design system: UI, body, and headings
+// (matched to newsunrising.org). Headings are Lato 700 - the condensed Oswald
+// substitute was retired for readability. next/font self-hosts it and exposes it
+// as a CSS variable, which globals.css maps onto `font-ui` / `font-display`.
+const lato = Lato({
+  variable: "--font-lato",
   subsets: ["latin"],
-});
-
-const sourceSerif = Source_Serif_4({
-  variable: "--font-source-serif",
-  subsets: ["latin"],
+  weight: ["300", "400", "700", "900"],
 });
 
 export const metadata: Metadata = {
@@ -30,7 +26,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${hankenGrotesk.variable} ${sourceSerif.variable} h-full`}
+      className={`${lato.variable} h-full`}
     >
       <body className="flex min-h-screen flex-col bg-canvas font-ui text-ink antialiased">
         <StoreHydrator />

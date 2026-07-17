@@ -25,7 +25,7 @@ export default function JargonTerm({
         aria-label={entry ? `${entry.term}: ${entry.definition}` : undefined}
       >
         {children}
-        <span aria-hidden className="text-[10px] leading-none no-underline">
+        <span aria-hidden className="text-[12px] leading-none no-underline">
           ⓘ
         </span>
       </button>

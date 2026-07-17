@@ -5,7 +5,7 @@ import Modal from "./Modal";
 
 const TIERS = [
   {
-    icon: "✦",
+    icon: "bar-chart",
     label: "AI-ASSISTED",
     color: "text-accent-ink",
     bg: "bg-accent-tint",
@@ -19,7 +19,7 @@ const TIERS = [
     body: "The AI surfaces options - like a possible collaborator - but a human always takes the next step. It never reaches out on your behalf.",
   },
   {
-    icon: "🔒",
+    icon: "bookmark",
     label: "NO AI",
     color: "text-ink-secondary",
     bg: "bg-neutral-bg",

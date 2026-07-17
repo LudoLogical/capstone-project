@@ -51,7 +51,7 @@ export default function ShareModal({
     },
     {
       label: "Email",
-      glyph: "✉",
+      glyph: "@",
       bg: "#4f46e5",
       href: `mailto:?subject=${encodeURIComponent(name)}&body=${encodeURIComponent(link)}`,
     },
@@ -95,7 +95,7 @@ export default function ShareModal({
           onClick={copy}
           className="flex-none rounded-lg bg-accent px-4 py-2.5 text-xs font-bold whitespace-nowrap text-white transition duration-150 hover:brightness-105"
         >
-          {copied ? "Link copied ✓" : "Copy link"}
+          {copied ? "Link copied" : "Copy link"}
         </button>
       </div>
     </Modal>

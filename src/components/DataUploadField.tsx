@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Icon from "./Icon";
 
 // File types the portal accepts for supporting data, disclosed to the user and
 // enforced on the file picker via the accept attribute.
@@ -57,9 +58,10 @@ export default function DataUploadField({
       <div className="mb-2 flex flex-wrap gap-2.5">
         <button
           onClick={() => fileInputRef.current?.click()}
-          className="inline-flex items-center gap-2 rounded-xl bg-accent px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:brightness-105"
+          className="inline-flex items-center gap-2 rounded-xl bg-accent-ink px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px"
         >
-          📤 Upload files
+          <Icon name="paperclip" size={15} />
+          Upload files
         </button>
       </div>
       <p className="mb-3 text-xs text-ink-muted">
@@ -90,13 +92,14 @@ export default function DataUploadField({
               key={`${u}-${i}`}
               className="inline-flex items-center gap-1.5 rounded-full border border-border-strong bg-surface-alt py-1 pr-1.5 pl-3 text-xs font-bold text-ink-secondary"
             >
-              📎 {u}
+              <Icon name="file-text" size={12} />
+              {u}
               <button
                 onClick={() => onRemove(i)}
                 aria-label={`Remove ${u}`}
                 className="flex h-4 w-4 flex-none items-center justify-center rounded-full text-ink-muted transition duration-150 hover:bg-divider-2 hover:text-ink"
               >
-                ✕
+                <Icon name="x" size={11} />
               </button>
             </span>
           ))}

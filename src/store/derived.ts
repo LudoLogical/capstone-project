@@ -8,7 +8,13 @@ import {
   ORG_PROFILES,
   type AccountSection,
 } from "@/data/seed";
-import { useAppStore, type ReportState, type WizardState } from "./useAppStore";
+import {
+  useAppStore,
+  isTerminalStatus,
+  type GrantStatus,
+  type ReportState,
+  type WizardState,
+} from "./useAppStore";
 
 export type Progress = { done: number; total: number };
 
@@ -30,6 +36,24 @@ export type GrantView = {
   // awarded grant is not shown as "saved" until the user actually saves it, and
   // unsaving reliably clears the saved state everywhere.
   isSaved: boolean;
+  // The application window has closed - the grant can no longer be worked on,
+  // saved, or listed for collaboration.
+  isClosed: boolean;
+  // Where this grant sits in its lifecycle, or undefined if the user has done
+  // nothing with it beyond saving.
+  status: GrantStatus | undefined;
+  // The report deadline this grant is working toward, or null once every report
+  // it owes has been filed.
+  reportDue: Date | null;
+  // Past its deadline with no word from the user on what happened. It stays put
+  // on the board, flagged, until they resolve it - only they know whether they
+  // actually submitted.
+  needsAttention: boolean;
+  // Whether the user has actually opened the application / report flow. Their
+  // state only exists once they've engaged with it, so the dashboard can offer
+  // "Start" rather than "Continue" the first time.
+  writingStarted: boolean;
+  reportStarted: boolean;
   alignmentAnalysis: GrantRecord["alignmentAnalysis"] | null;
   hasWritingProgress: boolean;
   hasReportingProgress: boolean;
@@ -40,16 +64,81 @@ export type GrantView = {
   reportProgress: Progress;
 };
 
+// Stand-in names used until the user gives their own, so the portal never shows
+// a blank where a name belongs.
+export const DEFAULT_PERSON_NAME = "Your Name";
+export const DEFAULT_ORG_NAME = "Your Organization";
+
+/** The user's name, or the "Your Name" placeholder. */
+export function usePersonName(): string {
+  const person = useAppStore((s) => s.onboardOrg.person);
+  return person.trim() || DEFAULT_PERSON_NAME;
+}
+
+/** The org's name, or the "Your Organization" placeholder. */
+export function useOrgName(): string {
+  const name = useAppStore((s) => s.onboardOrg.name);
+  return name.trim() || DEFAULT_ORG_NAME;
+}
+
+/**
+ * True once a grant's application window has closed. Read at render time rather
+ * than module load so the state is right whenever the page is open.
+ */
+export function isPastDeadline(grant: Grant): boolean {
+  return grant.timeline.applicationWindowEnd.getTime() < Date.now();
+}
+
+/** True once the funder's own decision deadline has come and gone. */
+export function isPastDecisionDate(grant: Grant): boolean {
+  return grant.timeline.notificationDate.getTime() < Date.now();
+}
+
+/**
+ * The report deadline a grant is currently working toward, or null when every
+ * report it owes has been filed. Multi-report grants step forward one
+ * `reportFrequency` at a time; reporting stops once the schedule runs past the
+ * end of the award period (plus a window for the final report).
+ */
+export function nextReportDeadline(
+  grant: Grant,
+  reportsSubmitted: number,
+): Date | null {
+  const { firstReportDeadline, reportFrequency, awardEndDate } = grant.timeline;
+  if (reportFrequency < 0) return null; // this grant asks for no reports
+  if (reportsSubmitted === 0) return firstReportDeadline;
+  if (reportFrequency === 0) return null; // a single report, already filed
+  const next = new Date(firstReportDeadline);
+  next.setMonth(next.getMonth() + reportsSubmitted * reportFrequency);
+  // The last report falls due shortly after the award period ends; anything
+  // past that window means the grant is done reporting.
+  const FINAL_REPORT_WINDOW_MS = 90 * 86_400_000;
+  if (next.getTime() > awardEndDate.getTime() + FINAL_REPORT_WINDOW_MS)
+    return null;
+  return next;
+}
+
+/**
+ * Whole days between now and `date`, rounded up. Negative once the date is past.
+ */
+export function daysUntil(date: Date): number {
+  const ms = date.getTime() - Date.now();
+  return Math.ceil(ms / 86_400_000);
+}
+
 // The application flow has 4 steps; the dashboard reports how many the user has
 // opened as n/WRITING_TARGET.
-const WRITING_TARGET = 4;
+const WRITING_TARGET = 3;
 
 function buildGrantView(
   grant: Grant,
   stageOverrides: Record<string, GrantLifecycleStage>,
   reportState?: ReportState,
   wizardState?: WizardState,
+  status?: GrantStatus,
+  reportsSubmitted = 0,
 ): GrantView {
+  const reportDue = nextReportDeadline(grant, reportsSubmitted);
   const record = INITIATIVE_HILLTOP_WELLNESS.grantRecords.get(grant.id);
   const override = stageOverrides[grant.id];
   const stage = override ?? record?.stage ?? GrantLifecycleStage.NotSaved;
@@ -71,8 +160,7 @@ function buildGrantView(
   // Report progress reflects the steps the user has actually marked complete
   // in the live report flow (out of 7). Before they've touched it, fall back to
   // whatever the seed conversations imply so an awarded grant still reads > 0.
-  const reportConversations =
-    record?.reportingAnalyses[0]?.conversations ?? [];
+  const reportConversations = record?.reportingAnalyses[0]?.conversations ?? [];
   const seededReportDone = reportConversations.filter(
     (c) => c.markedComplete,
   ).length;
@@ -90,6 +178,24 @@ function buildGrantView(
     stage,
     seedStage: record?.stage ?? null,
     isSaved,
+    isClosed: isPastDeadline(grant),
+    status,
+    // Two things can go unanswered, and only the user knows either. Before the
+    // deadline nothing is owed; after it, we ask once and then stop.
+    //   - the application window closed while they were still applying (or had
+    //     only saved it): did they submit?
+    //   - a submitted application passed the funder's decision date: what was
+    //     the verdict?
+    reportDue,
+    needsAttention:
+      (isPastDeadline(grant) &&
+        (status === undefined || status === "applying")) ||
+      (status === "submitted" && isPastDecisionDate(grant)) ||
+      // An awarded grant whose report deadline has come and gone: only the user
+      // knows whether they filed it.
+      (status === "awarded" && !!reportDue && reportDue.getTime() < Date.now()),
+    writingStarted: !!wizardState,
+    reportStarted: !!reportState,
     alignmentAnalysis: record?.alignmentAnalysis ?? null,
     hasWritingProgress: (record?.writingAnalyses.length ?? 0) > 0,
     hasReportingProgress: (record?.reportingAnalyses.length ?? 0) > 0,
@@ -108,17 +214,35 @@ export function useGrantView(grantId: string): GrantView | undefined {
   const stageOverrides = useAppStore((s) => s.stageOverrides);
   const reports = useAppStore((s) => s.report);
   const wizards = useAppStore((s) => s.wizard);
+  const grantStatus = useAppStore((s) => s.grantStatus);
+  const reportsSubmitted = useAppStore((s) => s.reportsSubmitted);
   const grant = ALL_GRANTS.find((g) => g.id === grantId);
   if (!grant) return undefined;
-  return buildGrantView(grant, stageOverrides, reports[grant.id], wizards[grant.id]);
+  return buildGrantView(
+    grant,
+    stageOverrides,
+    reports[grant.id],
+    wizards[grant.id],
+    grantStatus[grant.id],
+    reportsSubmitted[grant.id] ?? 0,
+  );
 }
 
 export function useAllGrantViews(): GrantView[] {
   const stageOverrides = useAppStore((s) => s.stageOverrides);
   const reports = useAppStore((s) => s.report);
   const wizards = useAppStore((s) => s.wizard);
+  const grantStatus = useAppStore((s) => s.grantStatus);
+  const reportsSubmitted = useAppStore((s) => s.reportsSubmitted);
   return ALL_GRANTS.map((g) =>
-    buildGrantView(g, stageOverrides, reports[g.id], wizards[g.id]),
+    buildGrantView(
+      g,
+      stageOverrides,
+      reports[g.id],
+      wizards[g.id],
+      grantStatus[g.id],
+      reportsSubmitted[g.id] ?? 0,
+    ),
   );
 }
 
@@ -130,44 +254,46 @@ export function isSavedStage(stage: GrantLifecycleStage): boolean {
 }
 
 /**
- * The three dashboard columns are independent memberships, not a single
- * pipeline, so a grant can appear in more than one:
+ * The dashboard columns, derived from each grant's single lifecycle `status`.
+ * They are not one pipeline: the save bookmark and the collaborate listing are
+ * independent of application progress, so a grant can appear in more than one
+ * working column.
  *
- * - Saved Grants: every grant the user has bookmarked (save/unsave writes the
- *   stage). Unsaving removes a grant from here and here ONLY.
- * - Grant Applications: grants the user explicitly started an application for.
- *   Independent of the save bookmark, so unsaving never removes it from here.
- * - Report for Awarded Grants: grants that are awarded (seeded, or marked by
- *   the user). Independent of the save bookmark too.
- *
- * Awarded grants are shown only under reports; they don't also clutter Saved.
+ * - Applications: an application is being written (`applying`).
+ * - Awarded Grant Reports: `awarded`, or the award period has ended.
+ * - Saved: bookmarked, and not yet active work.
+ * - Open to Collaborate: listed as discoverable.
+ * - Archived: a terminal status, labelled with why it ended.
  */
 export function useDashboardGroups() {
-  const views = useAllGrantViews();
-  const applicationStarted = useAppStore((s) => s.applicationStarted);
-  const awardedGrants = useAppStore((s) => s.awardedGrants);
+  const everything = useAllGrantViews();
   const discoverable = useAppStore((s) => s.discoverable);
+  const deletedGrants = useAppStore((s) => s.deletedGrants);
 
-  const isAwarded = (v: GrantView): boolean =>
-    v.seedStage === GrantLifecycleStage.Awarded ||
-    v.seedStage === GrantLifecycleStage.Reported ||
-    !!awardedGrants[v.grant.id];
+  // Deleting is the user's way of saying "this is not mine to think about".
+  // It only affects their board; Explore still lists the grant if it's open.
+  const all = everything.filter((v) => !deletedGrants[v.grant.id]);
 
-  // Saved membership uses the view's `isSaved` (override-aware, independent of
-  // awarded status), so it stays consistent with every other place that shows a
-  // save state - notably the Explore cards.
-  const awarded = views.filter(isAwarded);
-  const inProgress = views.filter(
-    (v) => !isAwarded(v) && !!applicationStarted[v.grant.id],
+  // A terminal status is the end of the road: the grant leaves every working
+  // column and shows only under Archived, tagged with how it ended.
+  const archived = all.filter((v) => isTerminalStatus(v.status));
+  const views = all.filter((v) => !isTerminalStatus(v.status));
+
+  const awarded = views.filter(
+    (v) => v.status === "awarded" || v.status === "report-overdue",
   );
-  const saved = views.filter((v) => v.isSaved);
+  const inProgress = views.filter((v) => v.status === "applying");
+  // Saved is the bookmark, independent of progress; active work has its own
+  // column, so it isn't repeated here.
+  const saved = views.filter((v) => v.isSaved && v.status === undefined);
   const collaborating = views.filter((v) => !!discoverable[v.grant.id]);
-  return { inProgress, saved, awarded, collaborating };
+  return { inProgress, saved, awarded, collaborating, archived };
 }
 
 /** A short, human-readable name for a route, used in "Back to ..." controls. */
 export function labelForPath(path: string | null | undefined): string {
-  if (!path || path === "/" || path.startsWith("/dashboard")) return "dashboard";
+  if (!path || path === "/" || path.startsWith("/dashboard"))
+    return "dashboard";
   if (path.startsWith("/search")) return "search";
   if (path.startsWith("/account")) return "profile";
   const m = path.match(/^\/grants\/([^/]+)(?:\/([^/]+))?(?:\/([^/]+))?/);
@@ -191,7 +317,10 @@ export function labelForPath(path: string | null | undefined): string {
  * from, falling back to a sensible default when there's no history (e.g. a
  * fresh load or a deep link). `href` is the target, `label` names it.
  */
-export function useBackTarget(fallback: string): { href: string; label: string } {
+export function useBackTarget(fallback: string): {
+  href: string;
+  label: string;
+} {
   const navStack = useAppStore((s) => s.navStack);
   // The entry before the current one is where Back goes; fall back when there's
   // no history (fresh load or deep link).

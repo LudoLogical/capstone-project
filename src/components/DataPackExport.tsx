@@ -157,7 +157,7 @@ export default function DataPackExport({
   uploads: string[];
   shareUrl: string;
   // When provided, the on-screen preview shows the same explained boxes as the
-  // "Explain my data" step (RUEA cards + your own additions) instead of a plain
+  // Analyze step (RUEA cards + your own additions) instead of a plain
   // text list. `items` is still what gets written into the downloaded document.
   sections?: RueaSection[];
   customItems?: string[];
@@ -274,15 +274,15 @@ export default function DataPackExport({
       <div className="flex flex-wrap gap-2.5">
         <button
           onClick={downloadDoc}
-          className="inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-white shadow-cta transition duration-150 hover:brightness-105"
+          className="inline-flex items-center gap-2 rounded-lg bg-accent-ink px-4 py-2.5 text-sm font-semibold text-white shadow-cta transition duration-150 hover:bg-accent-ink-2 active:translate-y-px"
         >
-          ⬇ Download (Word)
+          Download (Word)
         </button>
         <button
           onClick={printPdf}
           className="inline-flex items-center gap-2 rounded-lg border border-border-strong bg-white px-4 py-2.5 text-sm font-semibold text-ink transition duration-150 hover:border-accent"
         >
-          🖨 Save as PDF
+          Save as PDF
         </button>
         <button
           onClick={() => setShareOpen(true)}

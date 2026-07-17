@@ -11,6 +11,7 @@ import {
 import WarmIntroModal from "@/components/WarmIntroModal";
 import ShareModal from "@/components/ShareModal";
 import BackButton from "@/components/BackButton";
+import Icon from "@/components/Icon";
 
 /** Initials for the avatar chip, e.g. "Hilltop Harvest Collective" → "HH". */
 function initialsOf(name: string): string {
@@ -42,9 +43,9 @@ export default function CollaboratePage() {
 
       <div className="flex items-center gap-3">
         <div className="flex h-11 w-11 flex-none items-center justify-center rounded-xl bg-accent-tint-2 text-xl">
-          🤝
+          <Icon name="users" size={22} />
         </div>
-        <h1 className="font-serif text-3xl leading-tight font-medium">
+        <h1 className="font-serif text-3xl leading-tight font-bold">
           Who&apos;s open to collaborating
         </h1>
       </div>
@@ -73,7 +74,7 @@ export default function CollaboratePage() {
                 className="flex flex-col rounded-2xl border border-border bg-surface p-5"
               >
                 <div className="flex items-start gap-3">
-                  <div className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-radial from-accent-warm to-accent to-70% text-sm font-bold text-white">
+                  <div className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-accent text-sm font-bold text-white">
                     {initialsOf(org.name)}
                   </div>
                   <div className="min-w-0 flex-1">
@@ -106,10 +107,10 @@ export default function CollaboratePage() {
                     className={`flex-none rounded-lg px-3 py-2 text-sm font-semibold transition duration-150 ${
                       sent
                         ? "border border-success-border bg-success-bg text-success-ink"
-                        : "bg-accent text-white shadow-cta hover:brightness-105"
+                        : "bg-accent-ink text-white shadow-cta hover:bg-accent-ink-2 active:translate-y-px"
                     }`}
                   >
-                    {sent ? "✓ Introduced" : "✉ Email"}
+                    {sent ? "Introduced" : "Email"}
                   </button>
                   <button
                     onClick={() => setShareOrg(org)}
