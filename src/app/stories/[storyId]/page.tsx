@@ -29,7 +29,7 @@ export default function StoryDetailPage() {
         <div className="mb-3.5 inline-flex items-center gap-1 rounded-full bg-accent-tint-2 px-3 py-1 text-xs font-bold text-accent-ink-2">
           {story.tag}
         </div>
-        <h1 className="mb-1.5 font-serif text-3xl leading-tight font-medium">
+        <h1 className="mb-1.5 font-serif text-3xl leading-tight font-bold">
           {story.who}
         </h1>
         <div className="mb-5 text-sm text-ink-muted">

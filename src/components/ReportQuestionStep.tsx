@@ -66,7 +66,7 @@ export default function ReportQuestionStep({
       <div className="mb-2 text-xs font-bold tracking-wider text-ink-muted uppercase">
         Question {stepDef.index} · {stepDef.topic}
       </div>
-      <h2 className="mb-4 font-serif text-2xl leading-tight font-medium">
+      <h2 className="mb-4 font-serif text-xl leading-tight font-bold">
         {stepDef.question}
       </h2>
 
@@ -79,7 +79,7 @@ export default function ReportQuestionStep({
             <Icon name="bar-chart" size={15} />
           </div>
           <div className="text-sm font-bold">Reporting assistant</div>
-          <span className="rounded-full border border-accent-tint-border bg-accent-tint px-2 py-0.5 text-[10px] font-bold tracking-wider text-accent-ink uppercase">
+          <span className="rounded-full border border-accent-tint-border bg-accent-tint px-2 py-0.5 text-xs font-bold tracking-wider text-accent-ink uppercase">
             AI
           </span>
         </div>
@@ -292,8 +292,8 @@ function FoundItem({
       >
         <span
           aria-hidden
-          className={`mt-0.5 flex h-6 w-6 flex-none items-center justify-center rounded-md border-2 text-sm font-extrabold text-white ${
-            picked ? "border-accent bg-accent" : "border-checkbox"
+          className={`mt-0.5 flex h-[22px] w-[22px] flex-none items-center justify-center rounded-md border-2 text-sm font-extrabold text-white ${
+            picked ? "border-accent bg-accent" : "border-ink-muted"
           }`}
         >
           {picked ? <Icon name="check" size={14} /> : null}

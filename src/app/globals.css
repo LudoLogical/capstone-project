@@ -14,11 +14,18 @@
  * ------------------------------------------------------------------------ */
 @theme {
   /* Fonts - wired to the next/font/google variables set in layout.tsx */
+  /* Lato for everything - UI, body, and headings. Headings are Lato 700; the
+     condensed Oswald substitute was retired for readability. `font-display` and
+     the `font-serif` legacy alias both point here so call sites keep working. */
   --font-ui: var(--font-lato), sans-serif;
-  /* Oswald: semi-condensed display face for page titles, modal titles, and grant
-     names. `font-serif` stays as a legacy alias so call sites keep working. */
-  --font-display: var(--font-oswald), sans-serif;
-  --font-serif: var(--font-oswald), sans-serif;
+  --font-display: var(--font-lato), sans-serif;
+  --font-serif: var(--font-lato), sans-serif;
+
+  /* Type scale. 14px is a WCAG-driven floor: nothing renders below it, so
+     `text-xs` is redefined from Tailwind's 12px up to the floor. Meta, pills,
+     and eyebrows all sit here. */
+  --text-xs: 14px;
+  --text-xs--line-height: 20px;
 
   /* Surfaces */
   --color-canvas: #f3e2cf;

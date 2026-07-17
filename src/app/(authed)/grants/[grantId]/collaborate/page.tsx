@@ -45,7 +45,7 @@ export default function CollaboratePage() {
         <div className="flex h-11 w-11 flex-none items-center justify-center rounded-xl bg-accent-tint-2 text-xl">
           <Icon name="users" size={22} />
         </div>
-        <h1 className="font-serif text-3xl leading-tight font-medium">
+        <h1 className="font-serif text-3xl leading-tight font-bold">
           Who&apos;s open to collaborating
         </h1>
       </div>

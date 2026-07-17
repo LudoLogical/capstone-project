@@ -45,7 +45,7 @@ export default function GrantCard({
             onClick={() => router.push(`/grants/${grant.id}`)}
             role="button"
             tabIndex={0}
-            className="mb-1 cursor-pointer font-serif text-xl"
+            className="mb-1 cursor-pointer font-serif text-xl font-bold"
           >
             {grant.name}
           </div>

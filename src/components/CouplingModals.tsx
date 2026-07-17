@@ -29,8 +29,8 @@ function CoupledCheckbox({
       className="mt-4 flex cursor-pointer items-start gap-2.5 rounded-xl border border-border bg-surface-alt px-4 py-3.5"
     >
       <div
-        className={`mt-0.5 flex h-5 w-5 flex-none items-center justify-center rounded-sm border-2 text-xs font-extrabold text-white ${
-          checked ? "border-accent bg-accent" : "border-checkbox"
+        className={`mt-0.5 flex h-[22px] w-[22px] flex-none items-center justify-center rounded-sm border-2 text-xs font-extrabold text-white ${
+          checked ? "border-accent bg-accent" : "border-ink-muted"
         }`}
       >
         {checked ? <Icon name="check" size={14} /> : null}

@@ -34,7 +34,7 @@ export default function AccountProfilePage() {
   return (
     <div className="animate-nc-rise mx-auto w-full px-8 pt-7 pb-20">
       <BackButton fallback="/" />
-      <h1 className="mb-2.5 font-serif text-3xl leading-tight font-medium">
+      <h1 className="mb-2.5 font-serif text-3xl leading-tight font-bold">
         {orgName}
       </h1>
       <p className="mb-6 max-w-3xl text-sm leading-relaxed text-ink-muted">
@@ -359,7 +359,7 @@ function RepositorySection({
 
   return (
     <section className="mb-12">
-      <h2 className="mb-1.5 font-serif text-2xl leading-tight font-medium">
+      <h2 className="mb-1.5 font-serif text-xl leading-tight font-bold">
         {title}
       </h2>
       <p className="mb-3.5 max-w-3xl text-sm leading-relaxed text-ink-muted">

@@ -251,7 +251,7 @@ export default function DataCollectionWizardPage() {
                 key={group.title}
                 className={gi > 0 ? "border-t border-divider-2 pt-3" : ""}
               >
-                <div className="mb-1.5 px-1 text-[10px] font-bold tracking-wider text-ink-muted uppercase">
+                <div className="mb-1.5 px-1 text-xs font-bold tracking-wider text-ink-muted uppercase">
                   {group.title}
                 </div>
                 <div className="flex flex-col gap-0.5">
@@ -309,7 +309,7 @@ export default function DataCollectionWizardPage() {
         <div className="min-w-0 flex-1">
       {wizard.step === 1 && (
         <div>
-          <h1 className="mb-2 font-serif text-2xl leading-tight font-medium">
+          <h1 className="mb-2 font-serif text-xl leading-tight font-bold">
             Share Your Context
           </h1>
           <p className="mb-5 text-sm leading-relaxed text-ink-muted">
@@ -392,7 +392,7 @@ export default function DataCollectionWizardPage() {
 
       {wizard.step === REVIEW_STEP && (
         <div>
-          <h1 className="mb-2 font-serif text-2xl leading-tight font-medium">
+          <h1 className="mb-2 font-serif text-xl leading-tight font-bold">
             Review Your Data
           </h1>
           <div className="mb-4 flex items-center justify-between gap-3">
@@ -429,8 +429,8 @@ export default function DataCollectionWizardPage() {
                 >
                   <span
                     aria-hidden
-                    className={`mt-0.5 flex h-6 w-6 flex-none items-center justify-center rounded-md border-2 text-sm font-extrabold text-white ${
-                      selected ? "border-accent bg-accent" : "border-checkbox"
+                    className={`mt-0.5 flex h-[22px] w-[22px] flex-none items-center justify-center rounded-md border-2 text-sm font-extrabold text-white ${
+                      selected ? "border-accent bg-accent" : "border-ink-muted"
                     }`}
                   >
                     {selected ? <Icon name="check" size={14} /> : null}
@@ -473,10 +473,10 @@ export default function DataCollectionWizardPage() {
                     >
                       <span
                         aria-hidden
-                        className={`mt-0.5 flex h-6 w-6 flex-none items-center justify-center rounded-md border-2 text-sm font-extrabold text-white ${
+                        className={`mt-0.5 flex h-[22px] w-[22px] flex-none items-center justify-center rounded-md border-2 text-sm font-extrabold text-white ${
                           selected
                             ? "border-accent bg-accent"
-                            : "border-checkbox"
+                            : "border-ink-muted"
                         }`}
                       >
                         {selected ? <Icon name="check" size={14} /> : null}
@@ -528,7 +528,7 @@ export default function DataCollectionWizardPage() {
 
       {wizard.step === ANALYSIS_STEP && (
         <div>
-          <h1 className="mb-2 font-serif text-2xl leading-tight font-medium">
+          <h1 className="mb-2 font-serif text-xl leading-tight font-bold">
             Analyze Your Data
           </h1>
           <p className="mb-5 text-sm leading-relaxed text-ink-muted">
@@ -580,10 +580,10 @@ export default function DataCollectionWizardPage() {
                       >
                         <span
                           aria-hidden
-                          className={`flex h-6 w-6 items-center justify-center rounded-md border-2 text-sm font-extrabold text-white ${
+                          className={`flex h-[22px] w-[22px] items-center justify-center rounded-md border-2 text-sm font-extrabold text-white ${
                             selected
                               ? "border-accent bg-accent"
-                              : "border-checkbox"
+                              : "border-ink-muted"
                           }`}
                         >
                           {selected ? <Icon name="check" size={14} /> : null}

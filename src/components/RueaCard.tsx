@@ -95,8 +95,8 @@ export default function RueaCard({
           >
             <span
               aria-hidden
-              className={`flex h-6 w-6 items-center justify-center rounded-md border-2 text-sm font-extrabold text-white ${
-                selected ? "border-accent bg-accent" : "border-checkbox"
+              className={`flex h-[22px] w-[22px] items-center justify-center rounded-md border-2 text-sm font-extrabold text-white ${
+                selected ? "border-accent bg-accent" : "border-ink-muted"
               }`}
             >
               {selected ? <Icon name="check" size={14} /> : null}

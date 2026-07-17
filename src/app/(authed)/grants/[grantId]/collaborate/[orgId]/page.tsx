@@ -45,7 +45,7 @@ export default function OrgProfilePage() {
           <div className="h-16 w-16 rounded-full bg-accent" />
           <div className="min-w-50 flex-1">
             <div className="mb-1 flex items-center gap-2">
-              <h1 className="font-serif text-2xl leading-tight font-medium">
+              <h1 className="font-serif text-xl leading-tight font-bold">
                 {profile.name}
               </h1>
               <span className="inline-flex items-center gap-1 rounded-full bg-accent-tint-2 px-3 py-1 text-xs font-bold text-accent-ink-2">
@@ -146,7 +146,7 @@ export default function OrgProfilePage() {
                   className="inline-flex items-center gap-1 rounded-full border border-info-border bg-info-bg px-3 py-1 text-xs font-bold text-info-ink"
                 >
                   ◷ {sig.label}{" "}
-                  <span className="text-[10px] leading-none">ⓘ</span>
+                  <span className="text-xs leading-none">ⓘ</span>
                 </span>
               ))}
             </div>

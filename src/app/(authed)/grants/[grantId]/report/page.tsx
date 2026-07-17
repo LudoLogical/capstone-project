@@ -393,7 +393,7 @@ export default function ReportFlowPage() {
           <Icon name="bar-chart" size={12} />
           AI-ASSISTED
         </div>
-        <h1 className="mb-2 font-serif text-3xl leading-tight font-medium">
+        <h1 className="mb-2 font-serif text-3xl leading-tight font-bold">
           What does {grant.name} ask for in a report?
         </h1>
         <p className="mb-5 text-sm leading-relaxed text-ink-muted">
@@ -478,7 +478,7 @@ export default function ReportFlowPage() {
                 key={group.title}
                 className={gi > 0 ? "border-t border-divider-2 pt-3" : ""}
               >
-                <div className="mb-1.5 px-1 text-[10px] font-bold tracking-wider text-ink-muted uppercase">
+                <div className="mb-1.5 px-1 text-xs font-bold tracking-wider text-ink-muted uppercase">
                   {group.title}
                 </div>
                 <div className="flex flex-col gap-0.5">
@@ -557,7 +557,7 @@ export default function ReportFlowPage() {
           )}
           {report.step === 1 && (
             <div>
-              <h1 className="mb-2 font-serif text-2xl leading-tight font-medium">
+              <h1 className="mb-2 font-serif text-xl leading-tight font-bold">
                 Share your context
               </h1>
               <p className="mb-5 text-sm leading-relaxed text-ink-muted">
@@ -821,7 +821,7 @@ export default function ReportFlowPage() {
 
           {report.step === 6 && (
             <div>
-              <h1 className="mb-2 font-serif text-2xl leading-tight font-medium">
+              <h1 className="mb-2 font-serif text-xl leading-tight font-bold">
                 Review Your Data
               </h1>
               <p className="mb-5 text-sm leading-relaxed text-ink-muted">
@@ -859,10 +859,10 @@ export default function ReportFlowPage() {
                           >
                             <span
                               aria-hidden
-                              className={`mt-0.5 flex h-6 w-6 flex-none items-center justify-center rounded-md border-2 text-sm font-extrabold text-white ${
+                              className={`mt-0.5 flex h-[22px] w-[22px] flex-none items-center justify-center rounded-md border-2 text-sm font-extrabold text-white ${
                                 it.picked
                                   ? "border-accent bg-accent"
-                                  : "border-checkbox"
+                                  : "border-ink-muted"
                               }`}
                             >
                               {it.picked ? <Icon name="check" size={14} /> : null}
@@ -942,7 +942,7 @@ export default function ReportFlowPage() {
 
           {report.step === 7 && (
             <div>
-              <h1 className="mb-2 font-serif text-2xl leading-tight font-medium">
+              <h1 className="mb-2 font-serif text-xl leading-tight font-bold">
                 Analysis
               </h1>
               <p className="mb-3.5 text-sm leading-relaxed text-ink-muted">

@@ -139,7 +139,7 @@ function GrantMiniCard({
       )}
       <button
         onClick={() => router.push(`/grants/${view.grant.id}`)}
-        className={`mb-1 line-clamp-2 block text-left font-serif text-base leading-snug transition duration-150 hover:text-accent ${
+        className={`mb-1 line-clamp-2 block text-left font-serif text-base leading-snug font-bold transition duration-150 hover:text-accent ${
           hasCorner ? "pr-8" : ""
         }`}
       >
@@ -421,7 +421,7 @@ export default function HomePage() {
   return (
     <div className="animate-nc-rise mx-auto w-full px-8 pt-8 pb-20">
       <div className="mb-6">
-        <h1 className="font-serif text-3xl leading-tight font-medium">
+        <h1 className="font-serif text-3xl leading-tight font-bold">
           {showPersonal
             ? `Welcome to the Vibrancy Portal, ${firstName}.`
             : "Welcome to the Vibrancy Portal."}

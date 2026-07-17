@@ -172,7 +172,7 @@ export default function GrantDetailPage() {
       <div className="mb-5 rounded-2xl border border-border bg-surface p-8">
         <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0">
-            <div className="mb-2 font-serif text-3xl">{grant.name}</div>
+            <div className="mb-2 font-serif text-3xl font-bold">{grant.name}</div>
             <div className="text-sm text-ink-muted">
               {grant.grantor} ·{" "}
               {grant.targetRegions.map((r) => r.name).join(", ")}

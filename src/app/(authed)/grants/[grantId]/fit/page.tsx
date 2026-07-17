@@ -35,7 +35,7 @@ export default function FitAnalysisPage() {
         <Icon name="bar-chart" size={12} />
           AI-ASSISTED
       </div>
-      <h1 className="mb-3.5 font-serif text-3xl leading-tight font-medium">
+      <h1 className="mb-3.5 font-serif text-3xl leading-tight font-bold">
         How {grant.name} fits {ACCOUNT_ORG_NAME}
       </h1>
 

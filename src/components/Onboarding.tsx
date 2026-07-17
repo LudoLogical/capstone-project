@@ -79,7 +79,7 @@ export default function Onboarding() {
           {/* ── Step 0: welcome + feature rundown ── */}
           {step === 0 && (
             <div>
-              <h1 className="mb-2 font-serif text-3xl leading-tight font-medium">
+              <h1 className="mb-2 font-serif text-3xl leading-tight font-bold">
                 Everything you need to find and win grants, in one place
               </h1>
               <p className="mb-6 text-sm leading-relaxed text-ink-muted">
@@ -112,7 +112,7 @@ export default function Onboarding() {
               <div className="mb-2.5 text-xs font-bold tracking-wider text-accent-ink-2 uppercase">
                 About your work · 1 of 1
               </div>
-              <h1 className="mb-2 font-serif text-3xl leading-tight font-medium">
+              <h1 className="mb-2 font-serif text-3xl leading-tight font-bold">
                 Tell us about your organization
               </h1>
               <p className="mb-6 text-sm leading-relaxed text-ink-muted">
@@ -196,7 +196,7 @@ export default function Onboarding() {
               <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-success-bg text-2xl">
                 <Icon name="check" size={24} />
               </div>
-              <h1 className="mb-2 font-serif text-3xl leading-tight font-medium">
+              <h1 className="mb-2 font-serif text-3xl leading-tight font-bold">
                 You&apos;re all set.
               </h1>
               <p className="mx-auto mb-6 max-w-md text-sm leading-relaxed text-ink-muted">

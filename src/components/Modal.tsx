@@ -66,7 +66,7 @@ export default function Modal({
           <>
             <div className="flex items-start justify-between gap-4">
               {title && (
-                <h2 className="font-serif text-xl leading-tight font-medium">
+                <h2 className="font-serif text-xl leading-tight font-bold">
                   {title}
                 </h2>
               )}

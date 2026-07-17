@@ -94,7 +94,7 @@ export default function DataFormPage() {
             <Icon name="check" size={20} />
           </div>
           <div>
-            <h1 className="font-serif text-2xl leading-tight font-medium">
+            <h1 className="font-serif text-xl leading-tight font-bold">
               {detail.label}
             </h1>
             <p className="text-sm text-ink-muted">
@@ -128,7 +128,7 @@ export default function DataFormPage() {
 
   return (
     <div className="mx-auto max-w-xl animate-nc-rise px-8 pt-10 pb-20">
-      <h1 className="mb-1 font-serif text-2xl leading-tight font-medium">
+      <h1 className="mb-1 font-serif text-xl leading-tight font-bold">
         {detail.label}
       </h1>
       <p className="mb-6 text-sm leading-relaxed text-ink-muted">

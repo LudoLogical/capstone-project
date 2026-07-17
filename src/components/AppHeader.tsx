@@ -45,11 +45,14 @@ export default function AppHeader() {
       active: pathname.startsWith("/account"),
     },
   ];
+  // Hover fills a soft peach tint and shifts the label to accent ink, so the
+  // pointer target is never signalled by color alone. The current tab keeps the
+  // fuller tint, which stays distinct from the hover wash.
   const navClass = (active: boolean) =>
     `rounded-lg px-3 py-2 text-sm font-medium transition duration-150 ${
       active
         ? "bg-accent-tint text-accent-ink"
-        : "text-ink-muted hover:text-ink"
+        : "text-ink-muted hover:bg-accent-tint-soft hover:text-accent-ink"
     }`;
 
   return (
