@@ -4,6 +4,11 @@ import { useParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useAppStore } from "@/store/useAppStore";
 import { DATA_DETAILS } from "@/data/seed";
+import Icon from "@/components/Icon";
+
+/** Digits with at most one decimal point, e.g. "8" or "4.5". */
+const NUMERIC_INPUT = /^\d*\.?\d*$/;
+const isValidNumber = (s: string) => /^\d+(\.\d+)?$/.test(s.trim());
 
 /**
  * Standalone Vibrancy Portal data form, opened in its own browser tab from the
@@ -51,9 +56,18 @@ export default function DataFormPage() {
   const savedValues = dataForms[dataKey];
   const fields = detail.formFields ?? [];
   const allFilled = fields.every((f) => (values[f.label] ?? "").trim() !== "");
+  // A number field is only valid once it holds an actual number. Typing is
+  // filtered to digits, so this catches an empty or half-typed value ("4.").
+  const invalidField = fields.find(
+    (f) =>
+      f.kind === "number" &&
+      (values[f.label] ?? "").trim() !== "" &&
+      !isValidNumber(values[f.label] ?? ""),
+  );
+  const canSubmit = allFilled && !invalidField;
 
   const submit = () => {
-    if (!allFilled) return;
+    if (!canSubmit) return;
     submitDataForm(dataKey, values);
     setSubmitted(true);
   };
@@ -77,7 +91,7 @@ export default function DataFormPage() {
       <div className="mx-auto max-w-xl animate-nc-rise px-8 pt-10 pb-20">
         <div className="mb-5 flex items-center gap-3">
           <div className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-success-bg text-xl text-success-ink">
-            ✓
+            <Icon name="check" size={20} />
           </div>
           <div>
             <h1 className="font-serif text-2xl leading-tight font-medium">
@@ -123,35 +137,57 @@ export default function DataFormPage() {
       </p>
 
       <div className="mb-6 flex flex-col gap-4 rounded-2xl border border-border bg-surface p-6">
-        {fields.map((f) => (
-          <div key={f.label}>
-            <label className="mb-1 block text-sm font-semibold" htmlFor={f.label}>
-              {f.label}
-            </label>
-            <input
-              id={f.label}
-              value={values[f.label] ?? ""}
-              onChange={(e) =>
-                setValues((v) => ({ ...v, [f.label]: e.target.value }))
-              }
-              placeholder={f.placeholder}
-              className="w-full rounded-xl border border-border-strong bg-white px-4 py-3 text-sm text-ink outline-none focus:border-accent"
-            />
-          </div>
-        ))}
+        {fields.map((f) => {
+          const isNumber = f.kind === "number";
+          return (
+            <div key={f.label}>
+              <label
+                className="mb-1 block text-sm font-semibold"
+                htmlFor={f.label}
+              >
+                {f.label}
+                {isNumber && (
+                  <span className="ml-1.5 font-medium text-ink-muted">
+                    numbers only
+                  </span>
+                )}
+              </label>
+              <input
+                id={f.label}
+                value={values[f.label] ?? ""}
+                // Number fields reject non-numeric keystrokes outright rather
+                // than letting the user type something they'd have to undo.
+                inputMode={isNumber ? "decimal" : undefined}
+                onChange={(e) => {
+                  const next = e.target.value;
+                  if (isNumber && !NUMERIC_INPUT.test(next)) return;
+                  setValues((v) => ({ ...v, [f.label]: next }));
+                }}
+                placeholder={f.placeholder}
+                className="w-full rounded-xl border border-border-strong bg-white px-4 py-3 text-sm text-ink outline-none focus:border-accent"
+              />
+            </div>
+          );
+        })}
       </div>
 
       <button
         onClick={submit}
-        disabled={!allFilled}
-        className="inline-flex items-center gap-2 rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-white shadow-cta transition duration-150 enabled:hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
+        disabled={!canSubmit}
+        className="inline-flex items-center gap-2 rounded-xl bg-accent-ink px-5 py-3 text-sm font-semibold text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
       >
         Submit form
       </button>
-      {!allFilled && (
-        <p className="mt-2.5 text-xs text-ink-muted">
-          Fill in every field to submit.
+      {invalidField ? (
+        <p className="mt-2.5 text-xs text-warning-ink">
+          {invalidField.label} needs to be a number.
         </p>
+      ) : (
+        !allFilled && (
+          <p className="mt-2.5 text-xs text-ink-muted">
+            Fill in every field to submit.
+          </p>
+        )
       )}
     </div>
   );

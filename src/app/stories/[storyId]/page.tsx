@@ -2,6 +2,7 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { STORIES } from "@/data/seed";
+import BackButton from "@/components/BackButton";
 
 export default function StoryDetailPage() {
   const { storyId } = useParams<{ storyId: string }>();
@@ -12,26 +13,16 @@ export default function StoryDetailPage() {
     return (
       <div className="animate-nc-rise mx-auto w-full px-8 pt-7 pb-20">
         <p className="leading-relaxed">Story not found.</p>
-        <button
-          onClick={() => router.push("/")}
-          className="mb-4 inline-block text-sm font-semibold text-ink-muted hover:text-ink"
-        >
-          ← Back to stories
-        </button>
+        <BackButton />
       </div>
     );
   }
 
   return (
     <div className="animate-nc-rise mx-auto w-full px-8 pt-7 pb-20">
-      <button
-        onClick={() => router.push("/")}
-        className="mb-4 inline-block text-sm font-semibold text-ink-muted hover:text-ink"
-      >
-        ← Back to stories
-      </button>
+      <BackButton />
       <div className="overflow-hidden rounded-2xl border border-border bg-surface">
-        <div className="flex h-48 items-center justify-center bg-radial from-accent-warm to-accent to-80% text-7xl">
+        <div className="flex h-48 items-center justify-center bg-accent text-7xl">
           <span aria-hidden>{story.emoji}</span>
         </div>
         <div className="p-8">
@@ -62,16 +53,11 @@ export default function StoryDetailPage() {
         <div className="mt-7 flex flex-wrap gap-2.5 border-t border-divider-2 pt-6">
           <button
             onClick={() => router.push("/search")}
-            className="inline-flex items-center gap-2 rounded-xl bg-accent px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-xl bg-accent-ink px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
           >
             Start your own →
           </button>
-          <button
-            onClick={() => router.push("/")}
-            className="inline-flex items-center gap-2 rounded-xl border border-border-strong bg-white px-5 py-3 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 enabled:hover:border-accent disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            Back to stories
-          </button>
+          <BackButton className="inline-flex items-center gap-2 rounded-xl border border-border-strong bg-white px-5 py-3 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 enabled:hover:border-accent" />
         </div>
         </div>
       </div>

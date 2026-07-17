@@ -8,6 +8,7 @@ import {
   GRANT_HEALTHY_NEIGHBORHOODS,
   GRANT_FOOD_ACCESS,
   GRANT_GREEN_SPACES,
+  GRANT_SENIOR_MOBILITY,
   GRANT_YOUTH_DIGITAL_WELLNESS,
 } from "./grants";
 import { REGION_PITTSBURGH, LOC_HILLTOP } from "./geo";
@@ -96,9 +97,26 @@ export const RECORD_GREEN_SPACES: GrantRecord = {
   reportingAnalyses: [],
 };
 
+// ---- Saved: Senior Mobility & Access Grant ---------------------------------
+// Saved before the window closed, so it demonstrates the closed-deadline state.
+
+export const RECORD_SENIOR_MOBILITY: GrantRecord = {
+  id: "gr-senior-mobility",
+  grant: GRANT_SENIOR_MOBILITY,
+  alignmentAnalysis:
+    "Strong fit on issue area and region, but the application window closed before this was picked up.",
+  stage: GrantLifecycleStage.Saved,
+  writingAnalyses: [],
+  reportingAnalyses: [],
+};
+
 INITIATIVE_HILLTOP_WELLNESS.grantRecords.set(
   GRANT_HEALTHY_NEIGHBORHOODS.id,
   RECORD_HEALTHY_NEIGHBORHOODS,
+);
+INITIATIVE_HILLTOP_WELLNESS.grantRecords.set(
+  GRANT_SENIOR_MOBILITY.id,
+  RECORD_SENIOR_MOBILITY,
 );
 INITIATIVE_HILLTOP_WELLNESS.grantRecords.set(
   GRANT_YOUTH_DIGITAL_WELLNESS.id,

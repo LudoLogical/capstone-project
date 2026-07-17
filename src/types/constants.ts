@@ -23,6 +23,14 @@ export const GRANTORS = [
   "Hunger-Free PA",
   "Grable Foundation",
   "Heinz Endowments",
+  "POISE Foundation",
+  "Allegheny County DHS",
+  "The Pittsburgh Foundation",
+  "Allegheny County Health Department",
+  "Richard King Mellon Foundation",
+  "Staunton Farm Foundation",
+  "New Sun Rising",
+  "PNC Foundation",
 ] as const;
 
 /**

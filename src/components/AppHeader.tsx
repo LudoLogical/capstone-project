@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useAppStore } from "@/store/useAppStore";
 import { useHydrated } from "@/store/useHydrated";
-import { SESSION_USER } from "@/data/seed";
+import { usePersonName } from "@/store/derived";
 
 /** Initials from a person's name, e.g. "Maya Torres" → "MT". */
 function initialsOf(name: string): string {
@@ -23,13 +23,13 @@ export default function AppHeader() {
   const signedIn = useAppStore((s) => s.signedIn);
   const onboarded = useAppStore((s) => s.onboarded);
   const signIn = useAppStore((s) => s.signIn);
-  const person = useAppStore((s) => s.onboardOrg.person);
+  const person = usePersonName();
 
   // Onboarding is the entry point and takes over the full screen; hide the app
   // chrome until it's finished.
   if (hydrated && !onboarded) return null;
 
-  const initials = person.trim() ? initialsOf(person) : SESSION_USER.initials;
+  const initials = initialsOf(person);
 
   // Highlight the nav item matching the current route.
   const navItems = [
@@ -61,7 +61,7 @@ export default function AppHeader() {
         title="Back to start"
         className="flex cursor-pointer items-center gap-3"
       >
-        <div className="h-8 w-8 rounded-full bg-radial from-accent-warm to-accent to-70% ring-4 ring-glow" />
+        <div className="h-8 w-8 rounded-full bg-accent ring-4 ring-glow" />
         <div className="leading-none">
           <div className="text-lg leading-tight font-bold">New Sun Rising</div>
           <div className="text-sm tracking-wide text-ink-muted">
@@ -93,7 +93,7 @@ export default function AppHeader() {
             href="/account"
             aria-label="Your profile"
             title="Your profile"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border-strong bg-radial from-accent-warm to-accent to-70% text-sm font-bold text-white no-underline ring-3 ring-glow"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border-strong bg-accent text-sm font-bold text-white no-underline ring-3 ring-glow"
           >
             {initials}
           </Link>

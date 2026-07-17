@@ -1,13 +1,17 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ReportQuestionStep } from "@/data/seed";
 import type { ReportChatState } from "@/store/useAppStore";
 import DeleteDataConfirmModal from "./DeleteDataConfirmModal";
+import Icon from "./Icon";
 
 type Props = {
   stepDef: ReportQuestionStep;
   chat: ReportChatState;
+  // The draft lives in the section's own chat state, so each page keeps its own
+  // unsent message.
+  onDraftChange: (text: string) => void;
   onTogglePick: (itemId: string) => void;
   onSend: (text: string) => void;
   onAttach: (fileName: string) => void;
@@ -20,6 +24,7 @@ type Props = {
 export default function ReportQuestionStep({
   stepDef,
   chat,
+  onDraftChange,
   onTogglePick,
   onSend,
   onAttach,
@@ -27,8 +32,18 @@ export default function ReportQuestionStep({
   skipDeleteConfirm,
   onSkipDeleteConfirm,
 }: Props) {
-  const [draft, setDraft] = useState("");
+  const draft = chat.draft ?? "";
+  const setDraft = onDraftChange;
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const threadRef = useRef<HTMLDivElement>(null);
+
+  // Keep the newest message in view as the conversation grows (including the
+  // assistant's reply, which lands a beat after the user's).
+  useEffect(() => {
+    const el = threadRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [chat.messages.length]);
   // The found item awaiting delete confirmation, or null when no dialog is open.
   const [pendingDelete, setPendingDelete] = useState<{
     id: string;
@@ -55,46 +70,108 @@ export default function ReportQuestionStep({
         {stepDef.question}
       </h2>
 
-      <div className="mb-4 rounded-2xl border border-border bg-surface-alt p-6">
-        <div className="mb-3 text-xs font-bold tracking-wider text-ink-muted uppercase">
-          Chat with the reporting assistant
+      {/* One chat window: a titled header, the thread, and the composer all live
+          inside a single frame so they read as one interface rather than three
+          stacked panels. */}
+      <div className="mb-4 overflow-hidden rounded-2xl border border-border bg-surface">
+        <div className="flex items-center gap-2.5 border-b border-divider bg-surface-alt px-5 py-3">
+          <div className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-accent-tint text-sm text-accent-ink">
+            <Icon name="bar-chart" size={15} />
+          </div>
+          <div className="text-sm font-bold">Reporting assistant</div>
+          <span className="rounded-full border border-accent-tint-border bg-accent-tint px-2 py-0.5 text-[10px] font-bold tracking-wider text-accent-ink uppercase">
+            AI
+          </span>
         </div>
-        {chat.messages.length > 0 && (
-          <div
-            className={`mb-3.5 flex flex-col gap-2.5 ${
-              chat.messages.length > 3
-                ? "max-h-72 overflow-y-auto rounded-xl border border-border bg-white/50 p-3"
-                : ""
-            }`}
-          >
-            {chat.messages.map((m, i) => (
-              <div
-                key={i}
-                className={`max-w-4/5 rounded-xl px-3.5 py-2.5 text-sm leading-normal ${
-                  m.from === "user"
-                    ? "self-end bg-accent text-white"
-                    : "self-start bg-white text-ink-body"
-                }`}
-              >
-                {m.text}
+
+        {/* The thread: tall enough to hold roughly ten back-and-forth exchanges
+            before it scrolls, and to give an empty chat open space. */}
+        <div
+          ref={threadRef}
+          className="flex max-h-[40rem] min-h-[26rem] flex-col gap-2.5 overflow-y-auto bg-white p-5"
+        >
+          {chat.messages.length === 0 ? (
+            <div className="m-auto max-w-sm px-6 text-center">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-accent-tint text-2xl text-accent-ink">
+                <Icon name="bar-chart" size={15} />
               </div>
-            ))}
-            {/* The assistant "types" between the user's message landing and its
-                reply arriving, giving the exchange a live feel. */}
-            {chat.messages[chat.messages.length - 1]?.from === "user" && (
-              <div className="max-w-4/5 self-start rounded-xl bg-white px-3.5 py-2.5 text-sm text-ink-muted">
-                <span className="inline-flex gap-1">
-                  <span className="animate-pulse">●</span>
-                  <span className="animate-pulse [animation-delay:0.15s]">●</span>
-                  <span className="animate-pulse [animation-delay:0.3s]">●</span>
-                </span>
+              <div className="text-sm font-bold text-ink">
+                You&apos;re chatting with an AI assistant
               </div>
-            )}
+              <p className="mt-1.5 text-sm leading-relaxed text-ink-muted">
+                Tell it about {stepDef.topic.toLowerCase()} in your own words, or
+                attach a file. Everything you share is saved below with a source
+                you can trace, and nothing is submitted for you.
+              </p>
+            </div>
+          ) : (
+            <>
+              {chat.messages.map((m, i) => (
+                <div
+                  key={i}
+                  className={`max-w-4/5 rounded-xl border px-3.5 py-2.5 text-sm leading-normal ${
+                    m.from === "user"
+                      ? "self-end border-accent bg-accent text-white"
+                      : "self-start border-border-strong bg-surface-alt text-ink-body"
+                  }`}
+                >
+                  {m.text}
+                </div>
+              ))}
+              {/* The assistant "types" between the user's message landing and
+                  its reply arriving, giving the exchange a live feel. */}
+              {chat.messages[chat.messages.length - 1]?.from === "user" && (
+                <div className="max-w-4/5 self-start rounded-xl border border-border-strong bg-surface-alt px-3.5 py-2.5 text-sm text-ink-muted">
+                  <span className="inline-flex gap-1">
+                    <span className="animate-pulse">●</span>
+                    <span className="animate-pulse [animation-delay:0.15s]">
+                      ●
+                    </span>
+                    <span className="animate-pulse [animation-delay:0.3s]">
+                      ●
+                    </span>
+                  </span>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
+        {/* Starter prompts sit on the same white surface as the thread, running
+            right up to the typing box. Clicking one drops it into the box (and
+            highlights it) for the user to finish in their own words. */}
+        {stepDef.suggestions.length > 0 && (
+          <div className="grid grid-cols-1 gap-2 bg-white px-5 pb-4 sm:grid-cols-2">
+            {stepDef.suggestions.map((s) => {
+              // Stays lit while its phrase is still in the box; delete the
+              // phrase and it unlights.
+              const chosen = draft.includes(s);
+              return (
+                <button
+                  key={s}
+                  onClick={() => {
+                    setDraft(s);
+                    inputRef.current?.focus();
+                  }}
+                  aria-pressed={chosen}
+                  className={`rounded-xl border px-4 py-3 text-left text-sm transition duration-150 ${
+                    chosen
+                      ? "border-accent bg-accent-tint font-semibold text-accent-ink"
+                      : "border-border-strong bg-white text-ink-muted hover:border-accent hover:text-ink"
+                  }`}
+                >
+                  {s}
+                </button>
+              );
+            })}
           </div>
         )}
 
-        <div className="flex gap-2.5">
+        <div className="flex gap-2.5 border-t border-border-strong bg-divider-2 px-5 py-4">
           <input
+            ref={inputRef}
+            // Focused on load so the user can just start typing.
+            autoFocus
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && send()}
@@ -118,11 +195,11 @@ export default function ReportQuestionStep({
             title="Attach a file"
             className="inline-flex flex-none items-center justify-center rounded-xl border border-border-strong bg-white px-4 py-3 text-base text-ink transition duration-150 hover:border-accent"
           >
-            <span aria-hidden>📎</span>
+            <Icon name="link" size={16} />
           </button>
           <button
             onClick={send}
-            className="inline-flex items-center gap-2 rounded-xl bg-accent px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-xl bg-accent-ink px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
           >
             Send
           </button>
@@ -131,7 +208,7 @@ export default function ReportQuestionStep({
 
       <div className="mb-4 rounded-2xl border border-border bg-surface-alt p-6">
         <div className="mb-3 text-sm font-bold">
-          Here&apos;s the data points I found for this one:
+          We found the following information:
         </div>
         <div className="flex max-h-96 flex-col gap-2 overflow-y-auto pr-1">
           {stepDef.items
@@ -142,7 +219,7 @@ export default function ReportQuestionStep({
                 id={item.id}
                 label={item.label}
                 source={item.source}
-                picked={!!chat.picks[item.id]}
+                picked={chat.picks[item.id] ?? true}
                 onTogglePick={() => onTogglePick(item.id)}
                 onDelete={() => requestDelete(item.id, item.label)}
               />
@@ -160,7 +237,7 @@ export default function ReportQuestionStep({
                     ? `From ${chat.customSources[i]}`
                     : "Added by you"
                 }
-                picked={!!chat.picks[id]}
+                picked={chat.picks[id] ?? true}
                 onTogglePick={() => onTogglePick(id)}
                 onDelete={() => requestDelete(id, text)}
               />
@@ -186,7 +263,7 @@ export default function ReportQuestionStep({
   );
 }
 
-/** One card in the "Here's what I found" list: left checkbox, content, and a
+/** One card in the found-data list: left checkbox, content, and a
  *  delete "×" in the upper right. */
 function FoundItem({
   label,
@@ -219,7 +296,7 @@ function FoundItem({
             picked ? "border-accent bg-accent" : "border-checkbox"
           }`}
         >
-          {picked ? "✓" : ""}
+          {picked ? <Icon name="check" size={14} /> : null}
         </span>
         <div>
           <div className="text-sm font-semibold">{label}</div>
@@ -230,9 +307,9 @@ function FoundItem({
         onClick={onDelete}
         aria-label={`Delete ${label}`}
         title="Delete"
-        className="absolute top-2.5 right-2.5 flex h-7 w-7 items-center justify-center rounded-lg text-base text-ink-faint transition duration-150 hover:bg-white hover:text-accent-ink"
+        className="absolute top-2.5 right-2.5 flex h-7 w-7 items-center justify-center rounded-lg text-base text-ink-muted transition duration-150 hover:bg-white hover:text-accent-ink"
       >
-        ✕
+        <Icon name="x" size={14} />
       </button>
     </div>
   );

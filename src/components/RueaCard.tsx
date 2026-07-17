@@ -1,7 +1,24 @@
 "use client";
 
-import type { RueaSection } from "@/data/seed";
+import type { RueaBar } from "@/data/seed";
 import CiteButton from "./CiteButton";
+import Icon from "./Icon";
+
+/**
+ * What the card actually needs to render. `RueaSection` satisfies this, and so
+ * does a data point analyzed without an authoritative datum behind it - those
+ * simply have no comparison bars and nothing to cite.
+ */
+export type AnalysisCardSection = {
+  id: string;
+  provenanceKey?: string;
+  analysis: {
+    datum: { content: string; citation?: string };
+    result: { understand: string[]; apply: string[] };
+  };
+  bars?: RueaBar[];
+  evalNote?: string;
+};
 
 const BAR_COLORS: Record<string, string> = {
   me: "bg-accent",
@@ -10,7 +27,7 @@ const BAR_COLORS: Record<string, string> = {
   other: "bg-info-ink",
 };
 
-function StatBars({ bars }: { bars: RueaSection["bars"] }) {
+function StatBars({ bars }: { bars: RueaBar[] }) {
   const max = Math.max(...bars.map((b) => b.value));
   return (
     <div className="flex flex-col gap-2.5">
@@ -38,7 +55,7 @@ function StatBars({ bars }: { bars: RueaSection["bars"] }) {
 }
 
 type RueaCardProps = {
-  section: RueaSection;
+  section: AnalysisCardSection;
   expanded: boolean;
   onToggle: () => void;
   onAdd?: () => void;
@@ -82,7 +99,7 @@ export default function RueaCard({
                 selected ? "border-accent bg-accent" : "border-checkbox"
               }`}
             >
-              {selected ? "✓" : ""}
+              {selected ? <Icon name="check" size={14} /> : null}
             </span>
           </button>
         )}
@@ -117,15 +134,20 @@ export default function RueaCard({
             </ul>
           </div>
 
-          <div className="my-4">
-            <div className="mb-2.5 text-xs font-bold tracking-wider text-ink-muted uppercase">
-              In context
+          {/* Only shown when there's a real comparison to draw. */}
+          {(section.bars?.length || section.evalNote) && (
+            <div className="my-4">
+              <div className="mb-2.5 text-xs font-bold tracking-wider text-ink-muted uppercase">
+                In context
+              </div>
+              {section.bars?.length ? <StatBars bars={section.bars} /> : null}
+              {section.evalNote && (
+                <p className="mt-2.5 text-sm leading-relaxed font-bold text-accent-ink">
+                  {section.evalNote}
+                </p>
+              )}
             </div>
-            <StatBars bars={section.bars} />
-            <p className="mt-2.5 text-sm leading-relaxed font-bold text-accent-ink">
-              {section.evalNote}
-            </p>
-          </div>
+          )}
 
           <div className="mb-4">
             <div className="mb-2 text-xs font-bold tracking-wider text-ink-muted uppercase">
@@ -141,7 +163,9 @@ export default function RueaCard({
           </div>
 
           <div className="flex flex-wrap gap-2.5">
-            <CiteButton provenanceKey={section.provenanceKey} />
+            {section.provenanceKey && (
+              <CiteButton provenanceKey={section.provenanceKey} />
+            )}
             {onAdd && (
               <button
                 onClick={onAdd}
@@ -149,7 +173,7 @@ export default function RueaCard({
                 className={`inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold whitespace-nowrap transition duration-150 disabled:cursor-default ${
                   added
                     ? "border border-success-border bg-success-bg text-success-ink"
-                    : "bg-accent text-white shadow-cta enabled:hover:brightness-105"
+                    : "bg-accent-ink text-white shadow-cta enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px"
                 }`}
               >
                 {added ? "Added to Data Analysis!" : "Add to Data Analysis"}

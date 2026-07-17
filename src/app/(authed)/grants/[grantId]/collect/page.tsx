@@ -12,13 +12,34 @@ import BackButton from "@/components/BackButton";
 import DataUploadField from "@/components/DataUploadField";
 import AddDataChatBox from "@/components/AddDataChatBox";
 import ResetAnalysisButton from "@/components/ResetAnalysisButton";
+import ShareModal from "@/components/ShareModal";
+import Icon from "@/components/Icon";
 
-// Progress-bar labels are kept identical to each step's page title.
-const STEP_LABELS = [
-  "Share Your Context",
-  "Review Your Data",
-  "Analyze Your Data",
-];
+/**
+ * The flow's shape depends on the grant: data collection is "share your context"
+ * plus one step per item on the funder's own application checklist, then Review,
+ * then Analysis. A grant asking for three things gets three steps to gather
+ * them.
+ */
+function stepPlan(checklist: string[]) {
+  const labels = ["Share Your Context", ...checklist, "Review", "Analysis"];
+  const reviewStep = 2 + checklist.length;
+  const analysisStep = 3 + checklist.length;
+  return {
+    labels,
+    reviewStep,
+    analysisStep,
+    total: labels.length,
+    groups: [
+      {
+        title: "Data collection",
+        steps: [1, ...checklist.map((_, i) => i + 2)],
+      },
+      { title: "Review your data", steps: [reviewStep] },
+      { title: "Data analysis", steps: [analysisStep] },
+    ],
+  };
+}
 
 export default function DataCollectionWizardPage() {
   const { grantId = "" } = useParams<{ grantId: string }>();
@@ -32,6 +53,10 @@ export default function DataCollectionWizardPage() {
   // Export controls on the Analyze step.
   const [exportMode, setExportMode] = useState<"selected" | "all">("selected");
   const [downloadOpen, setDownloadOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
+  // The ticks in place before "Export all cards" auto-selected everything, so
+  // switching back to "Export selected cards" can restore them.
+  const picksBeforeAllRef = useRef<Record<string, boolean> | null>(null);
 
   // Once a data form is completed, auto-check its "Share your context" box so
   // it's included by default. Tracked per key so a manual uncheck afterward
@@ -51,16 +76,26 @@ export default function DataCollectionWizardPage() {
   // Landing on the wizard records the current step as visited (and persists the
   // wizard), so the dashboard progress starts counting immediately. Also clamp
   // any step persisted from the old 4-step flow into the current 3-step range.
+  const totalSteps = view
+    ? 3 + view.grant.requirements.application.length
+    : 3;
   useEffect(() => {
     updateWizard(grantId, (w) => {
-      const step = Math.min(w.step, STEP_LABELS.length);
+      const step = Math.min(w.step, totalSteps);
       if (w.step === step && w.visited[step]) return w;
       return { ...w, step, visited: { ...w.visited, [step]: true } };
     });
-  }, [grantId, updateWizard]);
+  }, [grantId, updateWizard, totalSteps]);
 
   if (!view) return null;
   const { grant } = view;
+  const checklist = grant.requirements.application;
+  const {
+    labels: STEP_LABELS,
+    reviewStep: REVIEW_STEP,
+    analysisStep: ANALYSIS_STEP,
+    groups: STEP_GROUPS,
+  } = stepPlan(checklist);
 
   // Navigating to a step records it as visited, which drives the n/4 progress
   // shown on the dashboard.
@@ -134,6 +169,8 @@ export default function DataCollectionWizardPage() {
   const isExportSelected = (key: string) => !!wizard.analysisAdded[key];
   const setExportSelected = (key: string, value: boolean) => {
     if (!value) setExportMode("selected");
+    // A manual tick makes the pre-"all" snapshot stale: this is now their choice.
+    picksBeforeAllRef.current = null;
     updateWizard(grantId, (w) => ({
       ...w,
       analysisAdded: { ...w.analysisAdded, [key]: value },
@@ -146,6 +183,8 @@ export default function DataCollectionWizardPage() {
   const allExportSelected =
     exportKeys.length > 0 && exportKeys.every((k) => isExportSelected(k));
   const selectAllForExport = () => {
+    // Remember what was ticked so switching back to "selected" can restore it.
+    if (exportMode !== "all") picksBeforeAllRef.current = wizard.analysisAdded;
     setExportMode("all");
     updateWizard(grantId, (w) => ({
       ...w,
@@ -155,15 +194,40 @@ export default function DataCollectionWizardPage() {
       },
     }));
   };
+  // Switching back to "selected" undoes the automatic select-all, restoring the
+  // ticks the user had before.
+  const useSelectedExportMode = () => {
+    setExportMode("selected");
+    const snapshot = picksBeforeAllRef.current;
+    if (!snapshot) return;
+    picksBeforeAllRef.current = null;
+    updateWizard(grantId, (w) => ({ ...w, analysisAdded: snapshot }));
+  };
 
-  // Reset the whole analyze step back to its default state: nothing selected for
-  // export and expansion cleared.
+  // The Analysis step stays locked until the user unlocks it from Review, so
+  // they see their data before an analysis is built from it.
+  const analysisUnlocked = !!wizard.analysisUnlocked;
+  const unlockAnalysis = () => {
+    updateWizard(grantId, (w) => ({
+      ...w,
+      analysisUnlocked: true,
+      step: ANALYSIS_STEP,
+      visited: { ...w.visited, [ANALYSIS_STEP]: true },
+    }));
+  };
+
+  // Resetting starts the application over: back to Share Your Context, with the
+  // analysis cleared and locked again.
   const resetAnalysis = () => {
     setExportMode("selected");
+    picksBeforeAllRef.current = null;
     updateWizard(grantId, (w) => ({
       ...w,
       analysisAdded: {},
       rueaExpanded: {},
+      analysisUnlocked: false,
+      step: 1,
+      visited: { 1: true },
     }));
   };
 
@@ -181,49 +245,79 @@ export default function DataCollectionWizardPage() {
 
   return (
     <div className="mx-auto w-full animate-nc-rise px-8 pt-7 pb-20">
-      {wizard.step === 1 ? (
-        <BackButton fallback={`/grants/${grant.id}`} />
-      ) : (
-        <button
-          onClick={() => setStep(wizard.step - 1)}
-          className="mb-4 inline-flex items-center gap-1.5 text-sm font-semibold text-ink-muted hover:text-ink"
-        >
-          ← Back a step
-        </button>
-      )}
-
-      <div className="mb-6 flex gap-1">
-        {STEP_LABELS.map((label, i) => (
+      <BackButton fallback={`/grants/${grant.id}`} />
+      <div className="flex items-start gap-7">
+        {/* Same shell as the report flow: a sticky step rail beside the work. */}
+        <aside className="sticky top-22 w-56 flex-none rounded-2xl border border-border bg-surface p-4">
+          <div className="mb-1 text-sm font-bold">{grant.name}</div>
           <button
-            key={label}
-            onClick={() => setStep(i + 1)}
-            className="flex-1 cursor-pointer text-left"
-            aria-label={`Go to step ${i + 1}: ${label}`}
+            onClick={() => router.push("/account")}
+            className="mb-4 inline-block p-0 text-xs font-semibold text-accent-ink-2 underline"
           >
-            <div className="mb-1.5 h-2 overflow-hidden rounded-full bg-divider-2">
-              <div
-                className={`h-full rounded-full bg-linear-to-r from-accent-warm to-accent ${
-                  wizard.step > i
-                    ? "w-full"
-                    : wizard.step === i + 1
-                      ? "w-1/2"
-                      : "w-0"
-                }`}
-              />
-            </div>
-            <div
-              className={`text-xs ${
-                wizard.step === i + 1
-                  ? "font-bold text-ink"
-                  : "text-ink-muted"
-              }`}
-            >
-              {label}
-            </div>
+            Manage Your Data
           </button>
-        ))}
-      </div>
+          <div className="flex flex-col gap-3">
+            {STEP_GROUPS.map((group, gi) => (
+              <div
+                key={group.title}
+                className={gi > 0 ? "border-t border-divider-2 pt-3" : ""}
+              >
+                <div className="mb-1.5 px-1 text-[10px] font-bold tracking-wider text-ink-muted uppercase">
+                  {group.title}
+                </div>
+                <div className="flex flex-col gap-0.5">
+                  {group.steps.map((n) => {
+                    const label = STEP_LABELS[n - 1];
+                    const current = wizard.step === n;
+                    const visited = !!wizard.visited[n];
+                    // Analysis stays locked until unlocked from Review.
+                    const locked = n === ANALYSIS_STEP && !analysisUnlocked;
+                    return (
+                      <button
+                        key={n}
+                        onClick={() => {
+                          if (!locked) setStep(n);
+                        }}
+                        disabled={locked}
+                        aria-current={current ? "step" : undefined}
+                        className={`flex items-center gap-2.5 rounded-lg border px-2 py-2 text-left transition duration-150 ${
+                          current
+                            ? "border-accent bg-accent-tint"
+                            : "border-transparent hover:bg-surface-alt"
+                        } ${locked ? "cursor-not-allowed" : "cursor-pointer"}`}
+                      >
+                        <div
+                          className={`flex h-5 w-5 flex-none items-center justify-center rounded-full text-xs font-bold ${
+                            current
+                              ? "bg-accent text-white"
+                              : !locked && visited
+                                ? "bg-success-ink-2 text-white"
+                                : "bg-divider-2 text-ink-muted"
+                          }`}
+                        >
+                          {locked ? <Icon name="bookmark" size={11} /> : !current && visited ? <Icon name="check" size={12} /> : n}
+                        </div>
+                        <span
+                          className={`text-sm ${
+                            current
+                              ? "font-bold text-ink"
+                              : locked
+                                ? "font-medium text-ink-muted"
+                                : "font-medium text-ink-muted"
+                          }`}
+                        >
+                          {label}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        </aside>
 
+        <div className="min-w-0 flex-1">
       {wizard.step === 1 && (
         <div>
           <h1 className="mb-2 font-serif text-2xl leading-tight font-medium">
@@ -295,24 +389,75 @@ export default function DataCollectionWizardPage() {
             />
           </div>
 
-          <div className="flex gap-2.5">
+          <div className="flex items-center justify-between gap-2.5">
+            <div />
             <button
               onClick={() => setStep(2)}
-              className="inline-flex items-center gap-2 rounded-xl bg-accent px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-xl bg-accent-ink px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Next →
-            </button>
-            <button
-              onClick={() => setStep(2)}
-              className="inline-flex items-center gap-2 rounded-xl border border-border-strong bg-white px-5 py-3 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 enabled:hover:border-accent disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              Skip this step
+              Save and Continue →
             </button>
           </div>
         </div>
       )}
 
-      {wizard.step === 2 && (
+      {/* One step per item on the funder's checklist: the requirement is the
+          heading, and the step exists to gather exactly what it asks for. */}
+      {wizard.step > 1 && wizard.step < REVIEW_STEP && (
+        <div>
+          <div className="mb-2 text-xs font-bold tracking-wider text-ink-muted uppercase">
+            Requirement {wizard.step - 1} of {checklist.length} ·{" "}
+            {grant.grantor}
+          </div>
+          <h1 className="mb-2 font-serif text-2xl leading-tight font-medium">
+            {checklist[wizard.step - 2]}
+          </h1>
+          <p className="mb-5 text-sm leading-relaxed text-ink-muted">
+            Add anything you already have for this requirement. Whatever you put
+            here is saved to your profile, so the next grant that asks for it
+            starts from what you&apos;ve got.
+          </p>
+
+          <div className="mb-6 rounded-2xl border border-border bg-surface p-6">
+            <div className="mb-3 text-xs font-bold tracking-wider text-ink-muted uppercase">
+              Attach what you have
+            </div>
+            <DataUploadField
+              uploads={wizard.uploads}
+              onAddFiles={addUploads}
+              onAddLink={(link) => addUploads([link])}
+              onRemove={removeUpload}
+            />
+          </div>
+
+          <div className="mb-6 rounded-2xl border border-border bg-surface p-6">
+            <div className="mb-3 text-xs font-bold tracking-wider text-ink-muted uppercase">
+              Or tell us in your own words
+            </div>
+            <AddDataChatBox
+              onAdd={addCustomFound}
+              placeholder="e.g. we have last year's budget in a spreadsheet..."
+            />
+          </div>
+
+          <div className="flex items-center justify-between gap-2.5">
+            <button
+              onClick={() => setStep(wizard.step - 1)}
+              className="inline-flex items-center gap-2 rounded-xl border border-border-strong bg-white px-5 py-3 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 enabled:hover:border-accent"
+            >
+              Back
+            </button>
+            <button
+              onClick={() => setStep(wizard.step + 1)}
+              className="inline-flex items-center gap-2 rounded-xl bg-accent-ink px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px"
+            >
+              Save and Continue →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {wizard.step === REVIEW_STEP && (
         <div>
           <h1 className="mb-2 font-serif text-2xl leading-tight font-medium">
             Review Your Data
@@ -327,7 +472,7 @@ export default function DataCollectionWizardPage() {
               onClick={toggleAllFound}
               className="inline-flex flex-none items-center gap-2 rounded-lg border border-border-strong bg-white px-4 py-2 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 hover:border-accent"
             >
-              {allFound ? "✕ Remove all" : "✓ Add all"}
+              {allFound ? "Remove all" : "Add all"}
             </button>
           </div>
 
@@ -354,7 +499,7 @@ export default function DataCollectionWizardPage() {
                       selected ? "border-accent bg-accent" : "border-checkbox"
                     }`}
                   >
-                    {selected ? "✓" : ""}
+                    {selected ? <Icon name="check" size={14} /> : null}
                   </span>
                   <div>
                     <div className="text-sm font-semibold">
@@ -400,7 +545,7 @@ export default function DataCollectionWizardPage() {
                             : "border-checkbox"
                         }`}
                       >
-                        {selected ? "✓" : ""}
+                        {selected ? <Icon name="check" size={14} /> : null}
                       </span>
                       <div>
                         <div className="text-sm font-semibold">{text}</div>
@@ -413,9 +558,9 @@ export default function DataCollectionWizardPage() {
                       onClick={() => removeCustomFound(i)}
                       aria-label={`Delete ${text}`}
                       title="Delete"
-                      className="absolute top-3 right-3 flex h-7 w-7 items-center justify-center rounded-lg text-base text-ink-faint transition duration-150 hover:bg-accent-tint hover:text-accent-ink"
+                      className="absolute top-3 right-3 flex h-7 w-7 items-center justify-center rounded-lg text-base text-ink-muted transition duration-150 hover:bg-accent-tint hover:text-accent-ink"
                     >
-                      ✕
+                      <Icon name="x" size={13} />
                     </button>
                   </div>
                 );
@@ -430,22 +575,24 @@ export default function DataCollectionWizardPage() {
           </div>
           <div className="flex gap-2.5">
             <button
-              onClick={() => setStep(1)}
+              onClick={() => setStep(REVIEW_STEP - 1)}
               className="inline-flex items-center gap-2 rounded-xl border border-border-strong bg-white px-5 py-3 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 enabled:hover:border-accent disabled:cursor-not-allowed disabled:opacity-50"
             >
               Back
             </button>
             <button
-              onClick={() => setStep(3)}
-              className="inline-flex items-center gap-2 rounded-xl bg-accent px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
+              onClick={unlockAnalysis}
+              className="inline-flex items-center gap-2 rounded-xl bg-accent-ink px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Analyze my data →
+              {analysisUnlocked
+                ? "See updated analysis →"
+                : "Unlock your analysis →"}
             </button>
           </div>
         </div>
       )}
 
-      {wizard.step === 3 && (
+      {wizard.step === ANALYSIS_STEP && (
         <div>
           <h1 className="mb-2 font-serif text-2xl leading-tight font-medium">
             Analyze Your Data
@@ -505,7 +652,7 @@ export default function DataCollectionWizardPage() {
                               : "border-checkbox"
                           }`}
                         >
-                          {selected ? "✓" : ""}
+                          {selected ? <Icon name="check" size={14} /> : null}
                         </span>
                       </button>
                       <div>
@@ -526,7 +673,7 @@ export default function DataCollectionWizardPage() {
               {/* Selected / all segmented toggle */}
               <div className="mb-4 inline-flex rounded-lg border border-border-strong bg-surface-alt p-1">
                 <button
-                  onClick={() => setExportMode("selected")}
+                  onClick={useSelectedExportMode}
                   aria-pressed={exportMode === "selected"}
                   className={`rounded-md px-3.5 py-1.5 text-sm font-semibold transition duration-150 ${
                     exportMode === "selected"
@@ -555,7 +702,7 @@ export default function DataCollectionWizardPage() {
                   <button
                     onClick={() => setDownloadOpen((v) => !v)}
                     aria-expanded={downloadOpen}
-                    className="inline-flex items-center gap-2 rounded-lg bg-accent px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 hover:brightness-105"
+                    className="inline-flex items-center gap-2 rounded-lg bg-accent-ink px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 hover:bg-accent-ink-2 active:translate-y-px"
                   >
                     Download <span aria-hidden>▾</span>
                   </button>
@@ -576,7 +723,10 @@ export default function DataCollectionWizardPage() {
                     </div>
                   )}
                 </div>
-                <button className="inline-flex items-center gap-2 rounded-lg border border-border-strong bg-white px-5 py-3 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 hover:border-accent">
+                <button
+                  onClick={() => setShareOpen(true)}
+                  className="inline-flex items-center gap-2 rounded-lg border border-border-strong bg-white px-5 py-3 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 hover:border-accent"
+                >
                   Share link
                 </button>
               </div>
@@ -585,14 +735,14 @@ export default function DataCollectionWizardPage() {
 
           <div className="flex gap-2.5">
             <button
-              onClick={() => setStep(2)}
+              onClick={() => setStep(REVIEW_STEP)}
               className="inline-flex items-center gap-2 rounded-xl border border-border-strong bg-white px-5 py-3 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 enabled:hover:border-accent disabled:cursor-not-allowed disabled:opacity-50"
             >
               Back
             </button>
             <button
               onClick={() => router.push("/")}
-              className="inline-flex items-center gap-2 rounded-xl bg-accent px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-xl bg-accent-ink px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
             >
               Save and exit →
             </button>
@@ -604,6 +754,21 @@ export default function DataCollectionWizardPage() {
             </div>
           )}
         </div>
+      )}
+        </div>
+      </div>
+
+      {shareOpen && (
+        <ShareModal
+          title="Share this data analysis"
+          name={`${grant.name} - Data Analysis`}
+          link={
+            typeof window !== "undefined"
+              ? window.location.href
+              : `/grants/${grant.id}/collect`
+          }
+          onClose={() => setShareOpen(false)}
+        />
       )}
 
       {usageKey && DATA_DETAILS[usageKey] && (
@@ -641,6 +806,7 @@ export default function DataCollectionWizardPage() {
                 <div key={f.label}>
                   <div className="mb-1 text-xs text-ink-muted">{f.label}</div>
                   <input
+                    inputMode={f.kind === "number" ? "decimal" : undefined}
                     className="w-full rounded-xl border border-border-strong bg-white px-4 py-3 text-sm text-ink outline-none"
                     placeholder={f.placeholder}
                   />

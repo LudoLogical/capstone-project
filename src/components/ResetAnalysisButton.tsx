@@ -5,7 +5,7 @@ import Modal from "./Modal";
 
 /**
  * A red "Reset this analysis" button shown under the export controls. It clears
- * the whole analysis step, so it confirms first — the reset can't be undone.
+ * the whole analysis step, so it confirms first - the reset can't be undone.
  */
 export default function ResetAnalysisButton({
   onReset,

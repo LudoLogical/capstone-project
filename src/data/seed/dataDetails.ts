@@ -10,7 +10,12 @@ export type DataDetailEntry = {
   // shown behind the "How is this used?" button.
   usage: string;
   summary?: { question: string; answer: string }[];
-  formFields?: { label: string; placeholder: string }[];
+  // `kind` drives input validation: "number" fields accept digits only.
+  formFields?: {
+    label: string;
+    placeholder: string;
+    kind?: "text" | "number";
+  }[];
 };
 
 export const DATA_DETAILS: Record<string, DataDetailEntry> = {
@@ -48,9 +53,9 @@ export const DATA_DETAILS: Record<string, DataDetailEntry> = {
     usage:
       "Your Organizational Assessment tells the AI about your capacity - years of operation, board and staff size. It uses this to establish your organization's readiness and stability, which reviewers weigh heavily when deciding who can deliver.",
     formFields: [
-      { label: "Years of operation", placeholder: "e.g. 8" },
-      { label: "Board size", placeholder: "e.g. 7" },
-      { label: "Staff size (FTE)", placeholder: "e.g. 4.5" },
+      { label: "Years of operation", placeholder: "e.g. 8", kind: "number" },
+      { label: "Board size", placeholder: "e.g. 7", kind: "number" },
+      { label: "Staff size (FTE)", placeholder: "e.g. 4.5", kind: "number" },
     ],
   },
 };

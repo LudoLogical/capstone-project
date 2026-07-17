@@ -1,5 +1,7 @@
 "use client";
 
+import Icon from "./Icon";
+
 export default function CheckboxRow({
   checked,
   onToggle,
@@ -33,7 +35,7 @@ export default function CheckboxRow({
           checked ? "border-accent bg-accent" : "border-checkbox"
         }`}
       >
-        {checked ? "✓" : ""}
+        {checked ? <Icon name="check" size={14} /> : null}
       </div>
       <div className="flex-1">
         <div className="text-sm leading-tight font-semibold text-ink-body">

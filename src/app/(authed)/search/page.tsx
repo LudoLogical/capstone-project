@@ -33,6 +33,9 @@ const FUND_MAX = DEFAULT_FILTERS.fundMax;
 // How many options to show before the "+ Show N more" expander.
 const COLLAPSED_COUNT = 4;
 
+// Results per page in the Explore list.
+const RESULTS_PER_PAGE = 5;
+
 function ShowMoreButton({
   expanded,
   hiddenCount,
@@ -60,29 +63,37 @@ export default function SearchPage() {
   const clearFilters = useAppStore((s) => s.clearFilters);
   const sortBy = useAppStore((s) => s.sortBy);
   const setSortBy = useAppStore((s) => s.setSortBy);
-  const addToast = useAppStore((s) => s.addToast);
 
+  const [page, setPage] = useState(0);
   const [issuesExpanded, setIssuesExpanded] = useState(false);
   const [locationsExpanded, setLocationsExpanded] = useState(false);
-  // Issue tags are a UI-only refinement, so their selection lives here rather
-  // than in the grant filter state.
-  const [selectedIssues, setSelectedIssues] = useState<string[]>([]);
+  const selectedIssues = draftFilters.issues;
 
   const views = useAllGrantViews();
   const fundingAmounts = views.map((v) => v.grant.award.totalAmount);
+  // Explore only lists grants you could still apply to; a closed window is not
+  // an opportunity. Closed grants you already saved stay on your dashboard.
   const filtered = filterGrants(
-    views.map((v) => v.grant),
+    views.filter((v) => !v.isClosed).map((v) => v.grant),
     appliedFilters,
   );
   const sorted = sortGrants(filtered, sortBy);
+  // Results are paged so the list stays scannable rather than endless.
+  const pageCount = Math.max(1, Math.ceil(sorted.length / RESULTS_PER_PAGE));
+  // Keep the page in range as filters narrow the results under it.
+  const safePage = Math.min(page, pageCount - 1);
+  const pageResults = sorted.slice(
+    safePage * RESULTS_PER_PAGE,
+    safePage * RESULTS_PER_PAGE + RESULTS_PER_PAGE,
+  );
   const viewById = new Map(views.map((v) => [v.grant.id, v]));
 
   const toggleIssue = (issue: string) => {
-    setSelectedIssues((prev) =>
-      prev.includes(issue)
-        ? prev.filter((i) => i !== issue)
-        : [...prev, issue],
-    );
+    const next = selectedIssues.includes(issue)
+      ? selectedIssues.filter((i) => i !== issue)
+      : [...selectedIssues, issue];
+    setDraftFilters({ issues: next });
+    applyFilters();
   };
 
   const selectOrgType = (id: string) => {
@@ -99,17 +110,9 @@ export default function SearchPage() {
     applyFilters();
   };
 
-  const applyRange = () => {
-    applyFilters();
-    addToast("Funding filter applied.");
-  };
-
   const selectedOrgType = draftFilters.orgTypes[0] ?? "";
 
-  const clearAll = () => {
-    clearFilters();
-    setSelectedIssues([]);
-  };
+  const clearAll = () => clearFilters();
 
   // "Clear" only does something when the draft differs from the defaults.
   const hasChanges =
@@ -140,7 +143,7 @@ export default function SearchPage() {
             <button
               onClick={clearAll}
               disabled={!hasChanges}
-              className="p-0 text-xs font-semibold underline transition-colors duration-150 enabled:text-accent disabled:cursor-not-allowed disabled:text-ink-faint disabled:no-underline"
+              className="p-0 text-xs font-semibold underline transition-colors duration-150 enabled:text-accent disabled:cursor-not-allowed disabled:text-ink-muted disabled:no-underline"
             >
               Clear
             </button>
@@ -247,9 +250,10 @@ export default function SearchPage() {
               <input
                 type="date"
                 value={draftFilters.deadlineFrom}
-                onChange={(e) =>
-                  setDraftFilters({ deadlineFrom: e.target.value })
-                }
+                onChange={(e) => {
+                  setDraftFilters({ deadlineFrom: e.target.value });
+                  applyFilters();
+                }}
                 aria-label="Deadline from"
                 className="w-full rounded-lg border border-border-strong bg-surface-alt px-3 py-2.5 text-sm text-ink outline-none"
               />
@@ -259,9 +263,10 @@ export default function SearchPage() {
               <input
                 type="date"
                 value={draftFilters.deadlineTo}
-                onChange={(e) =>
-                  setDraftFilters({ deadlineTo: e.target.value })
-                }
+                onChange={(e) => {
+                  setDraftFilters({ deadlineTo: e.target.value });
+                  applyFilters();
+                }}
                 aria-label="Deadline to"
                 className="w-full rounded-lg border border-border-strong bg-surface-alt px-3 py-2.5 text-sm text-ink outline-none"
               />
@@ -279,17 +284,12 @@ export default function SearchPage() {
               valueMin={draftFilters.fundMin}
               valueMax={draftFilters.fundMax}
               amounts={fundingAmounts}
-              onChange={(fundMin, fundMax) =>
-                setDraftFilters({ fundMin, fundMax })
-              }
+              onChange={(fundMin, fundMax) => {
+                setDraftFilters({ fundMin, fundMax });
+                applyFilters();
+              }}
             />
           </div>
-          <button
-            onClick={applyRange}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-border-strong bg-white px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 enabled:hover:border-accent disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            Apply
-          </button>
         </aside>
 
         <div className="min-w-0 flex-1">
@@ -304,7 +304,7 @@ export default function SearchPage() {
             />
             <button
               onClick={applyFilters}
-              className="inline-flex items-center gap-2 rounded-xl bg-accent px-6 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-xl bg-accent-ink px-6 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
             >
               Search
             </button>
@@ -333,28 +333,64 @@ export default function SearchPage() {
 
           {sorted.length === 0 ? (
             <EmptyState
-              icon="🔍"
+              icon="search"
               title="No grants match your filters"
               body="Try removing an issue tag or organization type."
               action={
                 <button
                   onClick={clearFilters}
-                  className="inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex items-center gap-2 rounded-lg bg-accent-ink px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Clear filters
                 </button>
               }
             />
           ) : (
-            <div className="flex flex-col gap-3.5">
-              {sorted.map((grant) => (
-                <GrantCard
-                  key={grant.id}
-                  grant={grant}
-                  saved={viewById.get(grant.id)!.isSaved}
-                />
-              ))}
-            </div>
+            <>
+              <div className="flex flex-col gap-3.5">
+                {pageResults.map((grant) => (
+                  <GrantCard
+                    key={grant.id}
+                    grant={grant}
+                    saved={viewById.get(grant.id)!.isSaved}
+                  />
+                ))}
+              </div>
+
+              {pageCount > 1 && (
+                <div className="mt-6 flex items-center justify-center gap-2">
+                  <button
+                    onClick={() => setPage(Math.max(0, safePage - 1))}
+                    disabled={safePage === 0}
+                    className="rounded-lg border border-border-strong bg-white px-3 py-2 text-sm font-semibold text-ink transition duration-150 enabled:hover:border-accent disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    ← Prev
+                  </button>
+                  {Array.from({ length: pageCount }).map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setPage(i)}
+                      aria-current={i === safePage ? "page" : undefined}
+                      aria-label={`Page ${i + 1}`}
+                      className={`min-w-9 rounded-lg border px-3 py-2 text-sm font-bold transition duration-150 ${
+                        i === safePage
+                          ? "border-ink bg-ink text-white"
+                          : "border-border-strong bg-white text-ink-secondary hover:border-accent"
+                      }`}
+                    >
+                      {i + 1}
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => setPage(Math.min(pageCount - 1, safePage + 1))}
+                    disabled={safePage === pageCount - 1}
+                    className="rounded-lg border border-border-strong bg-white px-3 py-2 text-sm font-semibold text-ink transition duration-150 enabled:hover:border-accent disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    Next →
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

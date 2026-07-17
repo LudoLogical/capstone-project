@@ -6,6 +6,7 @@ import { ACCOUNT_ORG_NAME } from "@/data/seed";
 import CiteButton from "@/components/CiteButton";
 import JargonTerm from "@/components/JargonTerm";
 import BackButton from "@/components/BackButton";
+import Icon from "@/components/Icon";
 
 const PROS = [
   "You work in the exact neighborhoods this funder targets.",
@@ -31,7 +32,8 @@ export default function FitAnalysisPage() {
       <BackButton fallback={`/grants/${grant.id}`} />
 
       <div className="mb-3 inline-flex items-center gap-1 rounded-full border border-accent-tint-border bg-accent-tint px-3 py-1 text-xs font-bold text-accent-ink">
-        ✦ AI-ASSISTED
+        <Icon name="bar-chart" size={12} />
+          AI-ASSISTED
       </div>
       <h1 className="mb-3.5 font-serif text-3xl leading-tight font-medium">
         How {grant.name} fits {ACCOUNT_ORG_NAME}
@@ -64,7 +66,7 @@ export default function FitAnalysisPage() {
       <div className="mb-6 grid grid-cols-2 gap-3.5">
         <div className="rounded-xl border border-success-border-2 bg-success-bg-2 p-4">
           <div className="mb-2.5 text-sm font-bold text-success-ink">
-            ✓ Why it&apos;s a good fit
+            Why it&apos;s a good fit
           </div>
           <ul className="flex list-disc flex-col gap-2 pl-4">
             {PROS.map((p) => (
@@ -91,15 +93,15 @@ export default function FitAnalysisPage() {
       <div className="flex flex-wrap gap-2.5">
         <button
           onClick={() => router.push(`/grants/${grant.id}/collect`)}
-          className="inline-flex items-center gap-2 rounded-xl bg-accent px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex items-center gap-2 rounded-xl bg-accent-ink px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
         >
-          ✦ Start collecting supporting data
+          Start collecting supporting data
         </button>
         <button
           onClick={() => router.push(`/grants/${grant.id}/collaborate`)}
           className="inline-flex items-center gap-2 rounded-xl border border-border-strong bg-white px-5 py-3 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 enabled:hover:border-accent disabled:cursor-not-allowed disabled:opacity-50"
         >
-          🤝 Find a partner
+          Find a partner
         </button>
       </div>
     </div>

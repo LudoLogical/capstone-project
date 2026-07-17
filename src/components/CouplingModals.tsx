@@ -6,6 +6,7 @@ import { useAppStore } from "@/store/useAppStore";
 import { useGrantView, isSavedStage } from "@/store/derived";
 import type { CouplingModal } from "@/store/useAppStore";
 import JargonTerm from "./JargonTerm";
+import Icon from "./Icon";
 
 /** The "also do the coupled action" checkbox each prompt offers. */
 function CoupledCheckbox({
@@ -32,7 +33,7 @@ function CoupledCheckbox({
           checked ? "border-accent bg-accent" : "border-checkbox"
         }`}
       >
-        {checked ? "✓" : ""}
+        {checked ? <Icon name="check" size={14} /> : null}
       </div>
       <div>
         <div className="text-sm leading-tight font-bold">{label}</div>
@@ -95,7 +96,7 @@ function CouplingPrompt({ modal }: { modal: NonNullable<CouplingModal> }) {
               confirmSave(modal.grantId, true);
               addToast("Saved and listed as open to collaborate.");
             }}
-            className="rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-white shadow-cta transition duration-150 enabled:hover:brightness-105"
+            className="rounded-lg bg-accent-ink px-4 py-2.5 text-sm font-semibold text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px"
           >
             Save &amp; list us
           </button>
@@ -190,7 +191,7 @@ function CouplingPrompt({ modal }: { modal: NonNullable<CouplingModal> }) {
                   : "Listed as open to collaborate.",
               );
             }}
-            className="rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-white shadow-cta transition duration-150 enabled:hover:brightness-105"
+            className="rounded-lg bg-accent-ink px-4 py-2.5 text-sm font-semibold text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px"
           >
             List us
           </button>

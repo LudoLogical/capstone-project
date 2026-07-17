@@ -14,22 +14,26 @@
  * ------------------------------------------------------------------------ */
 @theme {
   /* Fonts - wired to the next/font/google variables set in layout.tsx */
-  --font-ui: var(--font-hanken-grotesk), sans-serif;
-  --font-serif: var(--font-source-serif), serif;
+  --font-ui: var(--font-lato), sans-serif;
+  /* Oswald: semi-condensed display face for page titles, modal titles, and grant
+     names. `font-serif` stays as a legacy alias so call sites keep working. */
+  --font-display: var(--font-oswald), sans-serif;
+  --font-serif: var(--font-oswald), sans-serif;
 
   /* Surfaces */
-  --color-canvas: #f5ede4;
+  --color-canvas: #f3e2cf;
   --color-surface: #ffffff;
-  --color-surface-alt: #fbf4ec;
-  --color-surface-alt-2: #fdfbf8;
-  --color-header-bg: rgba(251, 246, 240, 0.9);
+  --color-surface-alt: #faf0e2;
+  --color-surface-alt-2: #fcf7ef;
+  --color-header-bg: rgba(250, 240, 228, 0.92);
 
-  /* Borders */
-  --color-border: #eee3d8;
-  --color-border-strong: #e0d2c4;
-  --color-border-soft: #e9dfd4;
-  --color-divider: #f3eae0;
-  --color-divider-2: #efe6dc;
+  /* Borders. Warm tinted neutrals: borders (not shadows) do the separating, so
+     every card and panel reads as a bounded object. */
+  --color-border: #ecdcc9;
+  --color-border-strong: #d9c5ac;
+  --color-border-soft: #e6d4bd;
+  --color-divider: #f2e4d0;
+  --color-divider-2: #ecdcc3;
 
   /* Text ("ink" - the vocabulary the accent tokens already use) */
   --color-ink: #2b2422;
@@ -40,52 +44,52 @@
 
   /* Accent (brand orange) */
   --color-accent: #e8633f;
-  --color-accent-warm: #f2a93b; /* gradient partner for --color-accent */
+  --color-accent-warm: #f2a93b;
   --color-accent-ink: #c8482a;
   --color-accent-ink-2: #7a4a38;
   --color-accent-tint: #fdede7;
-  --color-accent-tint-soft: #fff7f1; /* card-ai gradient start */
+  --color-accent-tint-soft: #fff7f1;
   --color-accent-tint-border: #f6d2c5;
   --color-accent-tint-2: #f8e6d8;
 
   /* Success / green */
-  --color-success-ink: #2f7a4e;
-  --color-success-ink-2: #3e8e5a;
-  --color-success-bg: #eaf5ee;
-  --color-success-bg-2: #f4faf6;
-  --color-success-border: #cce5d6;
-  --color-success-border-2: #d7ebdd;
+  --color-success-ink: #4a7247;
+  --color-success-ink-2: #5b8354;
+  --color-success-bg: #edf3e3;
+  --color-success-bg-2: #f6f9ee;
+  --color-success-border: #d5e2c2;
+  --color-success-border-2: #dfe9cf;
 
   /* Warning / amber */
   --color-warning-ink: #9a6a1e;
-  --color-warning-bg: #fbefd9;
-  --color-warning-bg-2: #fbf6ef;
-  --color-warning-border: #efd9ae;
-  --color-warning-border-2: #efe0cd;
+  --color-warning-bg: #f9ead0;
+  --color-warning-bg-2: #faf3e6;
+  --color-warning-border: #eed5a4;
+  --color-warning-border-2: #eddec3;
 
   /* Info / blue */
-  --color-info-ink: #2f6f8f;
-  --color-info-bg: #e9f1f5;
-  --color-info-bg-2: #f4fafc;
-  --color-info-border: #dce9ef;
-  --color-info-border-2: #cfe0e8;
+  --color-info-ink: #3f6785;
+  --color-info-bg: #eaf0f2;
+  --color-info-bg-2: #f4f8f9;
+  --color-info-border: #d6e2e6;
+  --color-info-border-2: #c9d9df;
 
-  /* Error / red — destructive actions */
+  /* Error / red - destructive actions */
   --color-error-ink: #c0392b;
   --color-error-bg: #fbeae7;
   --color-error-border: #ecc8c1;
 
   /* Neutral / declined */
-  --color-neutral-ink: #9a8c80;
-  --color-neutral-bg: #f1ece6;
+  --color-neutral-ink: #8b7a69;
+  --color-neutral-bg: #efe4d4;
 
   /* Focus ring (WCAG 2.4.7) */
   --color-focus: #1e5c7a;
 
   /* One-off hues that only ever appeared as raw hex in the source */
-  --color-glow: #fbefe3; /* avatar halo ring */
+  --color-glow: #f9e8d3; /* avatar halo ring */
   --color-selection: #f8d6c8; /* ::selection */
-  --color-checkbox: #cdbfb2; /* unchecked checkbox border */
+  --color-checkbox: #cdbfb2; /* deprecated: control borders use ink-muted for 3:1 non-text contrast */
   --color-scrim: rgba(43, 36, 34, 0.35); /* modal backdrop */
   --color-bar-average: #c4a882; /* RUEA bar: peer average */
   --color-bar-max: #7a6548; /* RUEA bar: peer max */
@@ -140,6 +144,10 @@
 
   a {
     color: inherit;
+  }
+
+  a:hover {
+    color: var(--color-accent);
   }
 
   button,

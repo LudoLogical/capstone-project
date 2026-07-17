@@ -2,6 +2,7 @@
 
 import { useEffect, type ReactNode } from "react";
 import { createPortal } from "react-dom";
+import Icon from "./Icon";
 
 type ModalProps = {
   open: boolean;
@@ -74,7 +75,7 @@ export default function Modal({
                 aria-label="Close"
                 className="p-1 text-lg leading-none text-ink-muted enabled:hover:text-ink"
               >
-                ✕
+                <Icon name="x" size={16} />
               </button>
             </div>
             <div className={title ? "mt-4" : ""}>{children}</div>

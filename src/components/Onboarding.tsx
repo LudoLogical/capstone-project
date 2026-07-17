@@ -2,20 +2,21 @@
 
 import { useAppStore } from "@/store/useAppStore";
 import { ISSUE_TAGS, LOCATION_OPTIONS } from "@/data/selectors";
+import Icon from "./Icon";
 
 const FEATURES = [
   {
-    icon: "🔎",
+    icon: "search",
     title: "Find Matching Grants",
     body: "Describe your work in plain language and let AI rank grants by how well they fit - no more scrolling directories sorted by deadline.",
   },
   {
-    icon: "📊",
+    icon: "bar-chart",
     title: "Storytell Your Impact",
     body: "Turn the numbers you already have into grant-ready framing, every figure traceable to its source. Reporting becomes gathering, not scrambling.",
   },
   {
-    icon: "🤝",
+    icon: "users",
     title: "Find Grant Collaborators",
     body: "See other New Sun Rising organizations open to teaming up - then ask NSR for a warm introduction. You always decide who to reach.",
   },
@@ -50,7 +51,7 @@ export default function Onboarding() {
         {/* brand + step dots */}
         <div className="mb-5 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-full bg-radial from-accent-warm to-accent to-70% ring-4 ring-glow" />
+            <div className="h-8 w-8 rounded-full bg-accent ring-4 ring-glow" />
             <div className="leading-none">
               <div className="text-sm font-bold">New Sun Rising</div>
               <div className="text-xs tracking-wide text-ink-muted">
@@ -139,7 +140,7 @@ export default function Onboarding() {
 
               <div className="mb-2 text-sm font-bold">
                 What issues do you work on?{" "}
-                <span className="font-medium text-ink-faint">
+                <span className="font-medium text-ink-muted">
                   pick all that apply
                 </span>
               </div>
@@ -158,7 +159,7 @@ export default function Onboarding() {
 
               <div className="mb-2 text-sm font-bold">
                 Where do you serve?{" "}
-                <span className="font-medium text-ink-faint">
+                <span className="font-medium text-ink-muted">
                   pick all that apply
                 </span>
               </div>
@@ -177,10 +178,11 @@ export default function Onboarding() {
 
               {matchCount > 0 && (
                 <div className="mt-6 flex items-center gap-2.5 rounded-xl border border-warning-border bg-warning-bg px-4 py-3">
-                  <span className="text-base">✦</span>
+                  <Icon name="bar-chart" size={16} className="flex-none text-warning-ink" />
                   <p className="text-sm leading-normal text-warning-ink">
-                    <strong>{matchCount} grants</strong> in the New Sun Rising
-                    network already look relevant - we&apos;ll have them ready on
+                    <strong>{matchCount} grants</strong>{" "}
+                    in the New Sun Rising network already look relevant -
+                    we&apos;ll have them ready on
                     your dashboard.
                   </p>
                 </div>
@@ -192,7 +194,7 @@ export default function Onboarding() {
           {step === 2 && (
             <div className="text-center">
               <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-success-bg text-2xl">
-                ✓
+                <Icon name="check" size={24} />
               </div>
               <h1 className="mb-2 font-serif text-3xl leading-tight font-medium">
                 You&apos;re all set.
@@ -213,7 +215,7 @@ export default function Onboarding() {
                     key={line}
                     className="flex items-center gap-3 border-b border-border-soft py-3 last:border-b-0"
                   >
-                    <span className="text-success-ink-2">✓</span>
+                    <Icon name="check" size={14} className="flex-none text-success-ink-2" />
                     <span className="text-sm text-ink-secondary">{line}</span>
                   </div>
                 ))}
@@ -226,7 +228,7 @@ export default function Onboarding() {
             {step === 0 ? (
               <button
                 onClick={complete}
-                className="text-sm font-semibold text-ink-faint hover:text-ink-muted"
+                className="text-sm font-semibold text-ink-muted hover:text-ink"
               >
                 Skip setup
               </button>
@@ -242,14 +244,14 @@ export default function Onboarding() {
             {step < STEP_COUNT - 1 ? (
               <button
                 onClick={() => setStep(step + 1)}
-                className="inline-flex items-center gap-2 rounded-xl bg-accent px-6 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:brightness-105"
+                className="inline-flex items-center gap-2 rounded-xl bg-accent-ink px-6 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px"
               >
                 {step === 0 ? "Get started" : "Continue"} →
               </button>
             ) : (
               <button
                 onClick={complete}
-                className="inline-flex items-center gap-2 rounded-xl bg-accent px-6 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:brightness-105"
+                className="inline-flex items-center gap-2 rounded-xl bg-accent-ink px-6 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px"
               >
                 Go to my dashboard →
               </button>

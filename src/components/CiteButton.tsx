@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Modal from "./Modal";
 import { PROVENANCE } from "@/data/seed";
+import Icon from "./Icon";
 
 export default function CiteButton({
   provenanceKey,
@@ -42,7 +43,7 @@ export default function CiteButton({
           rel="noopener noreferrer"
           className="mb-4 flex items-center gap-2.5 rounded-xl border border-border-strong bg-surface-alt px-4 py-3 text-sm font-semibold text-accent no-underline transition duration-150 hover:border-accent"
         >
-          <span aria-hidden>{entry.linkKind === "file" ? "📄" : "🔗"}</span>
+          <Icon name={entry.linkKind === "file" ? "file-text" : "link"} size={13} />
           <span className="min-w-0 flex-1 truncate">{entry.linkLabel}</span>
           <span aria-hidden className="flex-none text-ink-muted">
             {entry.linkKind === "file" ? "Open ↓" : "Open ↗"}

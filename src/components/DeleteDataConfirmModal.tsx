@@ -27,7 +27,7 @@ export default function DeleteDataConfirmModal({
       <div className="mb-4 flex flex-wrap gap-2.5">
         <button
           onClick={onConfirm}
-          className="inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 hover:brightness-105"
+          className="inline-flex items-center gap-2 rounded-lg bg-accent-ink px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 hover:bg-accent-ink-2 active:translate-y-px"
         >
           Yes, delete
         </button>

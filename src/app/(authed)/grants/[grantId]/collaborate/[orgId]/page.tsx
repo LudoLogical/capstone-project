@@ -42,7 +42,7 @@ export default function OrgProfilePage() {
       <BackButton fallback={`/grants/${grantId}/collaborate`} />
       <div className="rounded-2xl border border-border bg-surface p-8">
         <div className="mb-6 flex flex-wrap items-center gap-5">
-          <div className="h-16 w-16 rounded-full bg-radial from-accent-warm to-accent to-70%" />
+          <div className="h-16 w-16 rounded-full bg-accent" />
           <div className="min-w-50 flex-1">
             <div className="mb-1 flex items-center gap-2">
               <h1 className="font-serif text-2xl leading-tight font-medium">
@@ -101,17 +101,17 @@ export default function OrgProfilePage() {
         {profile.contactConsent ? (
           <div className="mb-5 rounded-xl border border-success-border-2 bg-success-bg-2 p-4">
             <div className="mb-2.5 text-xs font-bold text-success-ink">
-              ✓ SHARED WITH CONSENT
+              SHARED WITH CONSENT
             </div>
             <div className="text-sm">
               <strong>{profile.contactName}</strong>
             </div>
-            <div className="text-sm">📞 {profile.contactPhone}</div>
+            <div className="text-sm">{profile.contactPhone}</div>
           </div>
         ) : (
           <div className="mb-5 rounded-xl border border-info-border-2 bg-info-bg-2 p-4">
             <div className="mb-2 text-xs font-bold text-info-ink">
-              🔒 CONTACT KEPT PRIVATE
+              CONTACT KEPT PRIVATE
             </div>
             <p className="mb-3 text-sm leading-normal">
               This organization hasn&apos;t made their contact details public.
@@ -156,9 +156,9 @@ export default function OrgProfilePage() {
         <div className="flex flex-wrap items-center gap-2.5 border-t border-divider-2 pt-5">
           <button
             onClick={() => setEmailOpen(true)}
-            className="inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-lg bg-accent-ink px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
           >
-            ✉ Send a warm introduction
+            Send a warm introduction
           </button>
         </div>
       </div>
