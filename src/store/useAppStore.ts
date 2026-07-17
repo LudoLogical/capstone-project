@@ -311,17 +311,10 @@ type AppState = {
   draftFilters: SearchFilters;
   appliedFilters: SearchFilters;
   sortBy: SortOption;
-  relevanceMode: boolean;
 
   wizard: Record<string, WizardState>;
   report: Record<string, ReportState>;
-  collabPicks: Record<string, string[]>;
-  collabSent: Record<string, boolean>;
-  collabSorted: Record<string, boolean>;
   contactRequested: Record<string, boolean>;
-
-  accountEdits: Record<string, string>;
-  accountExpanded: Record<string, boolean>;
 
   // Vibrancy Portal data forms the user has filled out, keyed by data-detail
   // key (e.g. "orgAssess"). Presence of an entry means the form is completed;
@@ -354,9 +347,7 @@ type AppState = {
   toggleOnboardIssue: (issue: string) => void;
   toggleOnboardArea: (area: string) => void;
   completeOnboarding: () => void;
-  restartOnboarding: () => void;
   setStage: (grantId: string, stage: GrantLifecycleStage) => void;
-  toggleDiscoverable: (grantId: string) => void;
   setDiscoverable: (grantId: string, on: boolean) => void;
 
   // Move a grant to a lifecycle status, or clear it back to saved-only. Every
@@ -391,7 +382,6 @@ type AppState = {
   applyFilters: () => void;
   clearFilters: () => void;
   setSortBy: (sortBy: SortOption) => void;
-  setRelevanceMode: (on: boolean) => void;
 
   getWizard: (grantId: string) => WizardState;
   updateWizard: (
@@ -405,17 +395,7 @@ type AppState = {
     updater: (r: ReportState) => ReportState,
   ) => void;
 
-  toggleCollabPick: (
-    grantId: string,
-    initiativeId: string,
-    cap: number,
-  ) => void;
-  sendCollabRequest: (grantId: string) => void;
-  toggleCollabSort: (grantId: string) => void;
   requestContact: (initiativeId: string) => void;
-
-  setAccountEdit: (factId: string, body: string | null) => void;
-  toggleAccountSection: (sectionId: string) => void;
 
   submitDataForm: (key: string, values: Record<string, string>) => void;
 
@@ -463,17 +443,10 @@ export const useAppStore = create<AppState>()(
       draftFilters: DEFAULT_FILTERS,
       appliedFilters: DEFAULT_FILTERS,
       sortBy: "relevance",
-      relevanceMode: false,
 
       wizard: {},
       report: {},
-      collabPicks: {},
-      collabSent: {},
-      collabSorted: {},
       contactRequested: {},
-
-      accountEdits: {},
-      accountExpanded: {},
 
       dataForms: {},
 
@@ -537,20 +510,12 @@ export const useAppStore = create<AppState>()(
       // separate landing/sign-in step - so it also signs the user in.
       completeOnboarding: () =>
         set({ onboarded: true, onboardStep: 0, signedIn: true }),
-      restartOnboarding: () => set({ onboarded: false, onboardStep: 0 }),
 
       setStage: (grantId, stage) =>
         set((state) => ({
           stageOverrides: { ...state.stageOverrides, [grantId]: stage },
         })),
 
-      toggleDiscoverable: (grantId) =>
-        set((state) => ({
-          discoverable: {
-            ...state.discoverable,
-            [grantId]: !state.discoverable[grantId],
-          },
-        })),
       setDiscoverable: (grantId, on) =>
         set((state) => ({
           discoverable: { ...state.discoverable, [grantId]: on },
@@ -649,7 +614,6 @@ export const useAppStore = create<AppState>()(
       clearFilters: () =>
         set({ draftFilters: DEFAULT_FILTERS, appliedFilters: DEFAULT_FILTERS }),
       setSortBy: (sortBy) => set({ sortBy }),
-      setRelevanceMode: (on) => set({ relevanceMode: on }),
 
       getWizard: (grantId) => hydrateWizard(get().wizard[grantId]),
       updateWizard: (grantId, updater) =>
@@ -669,54 +633,9 @@ export const useAppStore = create<AppState>()(
           },
         })),
 
-      toggleCollabPick: (grantId, initiativeId, cap) =>
-        set((state) => {
-          const current = state.collabPicks[grantId] ?? [];
-          const has = current.includes(initiativeId);
-          if (!has && current.length >= cap) {
-            return state;
-          }
-          const next = has
-            ? current.filter((id) => id !== initiativeId)
-            : [...current, initiativeId];
-          return { collabPicks: { ...state.collabPicks, [grantId]: next } };
-        }),
-
-      sendCollabRequest: (grantId) =>
-        set((state) => ({
-          collabSent: { ...state.collabSent, [grantId]: true },
-        })),
-
-      toggleCollabSort: (grantId) =>
-        set((state) => ({
-          collabSorted: {
-            ...state.collabSorted,
-            [grantId]: !state.collabSorted[grantId],
-          },
-        })),
-
       requestContact: (initiativeId) =>
         set((state) => ({
           contactRequested: { ...state.contactRequested, [initiativeId]: true },
-        })),
-
-      setAccountEdit: (factId, body) =>
-        set((state) => {
-          const next = { ...state.accountEdits };
-          if (body === null) {
-            delete next[factId];
-          } else {
-            next[factId] = body;
-          }
-          return { accountEdits: next };
-        }),
-
-      toggleAccountSection: (sectionId) =>
-        set((state) => ({
-          accountExpanded: {
-            ...state.accountExpanded,
-            [sectionId]: !state.accountExpanded[sectionId],
-          },
         })),
 
       submitDataForm: (key, values) =>
@@ -770,12 +689,7 @@ export const useAppStore = create<AppState>()(
         deletedGrants: state.deletedGrants,
         wizard: state.wizard,
         report: state.report,
-        collabPicks: state.collabPicks,
-        collabSent: state.collabSent,
-        collabSorted: state.collabSorted,
         contactRequested: state.contactRequested,
-        accountEdits: state.accountEdits,
-        accountExpanded: state.accountExpanded,
         dataForms: state.dataForms,
       }),
     },

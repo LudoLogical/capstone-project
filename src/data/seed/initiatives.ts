@@ -51,7 +51,7 @@ export const INITIATIVE_HILLTOP_WELLNESS: Initiative = {
   programs: ["Neighborhood walking groups", "Nutrition workshops"],
   contactEmail: "maya@hilltopwellness.org",
   // Started as a fiscally sponsored project of NSR in 2017; independent
-  // 501(c)(3) since 2021 (see ACCOUNT_SECTIONS in ./accountFacts).
+  // 501(c)(3) since 2021.
   type: InitiativeType.RegisteredNonProfitOrganization,
   issues: ["Health", "Community"],
   serviceAreas: [REGION_PITTSBURGH],
@@ -109,10 +109,3 @@ export const INITIATIVE_ALLEGHENY_COMMONS: Initiative = {
   averageAnnualBudget: 310000,
   sources: [],
 };
-
-export const ALL_INITIATIVES: Initiative[] = [
-  INITIATIVE_HILLTOP_WELLNESS,
-  INITIATIVE_HILLTOP_HARVEST,
-  INITIATIVE_RIVERSIDE_YOUTH_STUDIO,
-  INITIATIVE_ALLEGHENY_COMMONS,
-];

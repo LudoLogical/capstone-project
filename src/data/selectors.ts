@@ -1,13 +1,5 @@
 import type Grant from "@/types/grant";
-import type Initiative from "@/types/initiative";
 import GrantRecord, { GrantLifecycleStage } from "@/types/grantRecord";
-
-export function getGrantRecord(
-  initiative: Initiative,
-  grantId: string,
-): GrantRecord | undefined {
-  return initiative.grantRecords.get(grantId);
-}
 
 export function isSaved(record: GrantRecord | undefined): boolean {
   if (!record) return false;

@@ -8,8 +8,8 @@ import { InitiativeSourceKind } from "@/types/data";
 import type { DatumAnalysis } from "@/types/analysis";
 import { REGION_HILLTOP_TRACT } from "./geo";
 
-// The signed-in user (Maya Torres of Hilltop Wellness Collective; see
-// SESSION_USER in ./index) uploaded every InitiativeSource in this seed.
+// The signed-in user (Maya Torres of Hilltop Wellness Collective) uploaded
+// every InitiativeSource in this seed.
 export const USER_MAYA_ID = "user-maya-torres";
 
 export const SRC_ANNUAL_IMPACT_SURVEY: DocumentSource = {
@@ -75,32 +75,6 @@ export const DATUM_PRODUCE_ACCESS: AuthoritativeDatum = {
   issues: ["Food Security", "Health"],
 };
 
-export const DATUM_MEDIAN_INCOME: AuthoritativeDatum = {
-  id: 3,
-  content: "Median household income",
-  citation: "US Census ACS 5-Year Estimates, 2024",
-  evaluateMethod: "bar",
-  indicator: "household income",
-  region: REGION_HILLTOP_TRACT,
-  value: 38200,
-  unit: "USD / year",
-  context: { minimum: 21400, average: 52100, maximum: 118700 },
-  issues: ["Community"],
-};
-
-export const DATUM_PHYSICAL_ACTIVITY: AuthoritativeDatum = {
-  id: 4,
-  content: "Adults meeting the CDC physical activity guideline",
-  citation: "Vibrancy Index, Health & Wellness Layer, 2025",
-  evaluateMethod: "bar",
-  indicator: "physical activity",
-  region: REGION_HILLTOP_TRACT,
-  value: 71,
-  unit: "% of adults",
-  context: { minimum: 39, average: 58, maximum: 82 },
-  issues: ["Health", "Community"],
-};
-
 // ---- NSR-managed data ----------------------------------------------
 
 export const DATUM_OAT_RESOURCES: NSRServiceDatum = {
@@ -160,34 +134,6 @@ export const ANALYSIS_PRODUCE_ACCESS: DatumAnalysis = {
     apply: [
       "Use this to frame the remaining 39% of households as your target population, not the whole neighborhood.",
       "Combine with your distribution-site map to show exactly where the gap is.",
-    ],
-  },
-};
-
-export const ANALYSIS_MEDIAN_INCOME: DatumAnalysis = {
-  datum: DATUM_MEDIAN_INCOME,
-  relevance:
-    "Several funders ask applicants to establish economic need for the target area.",
-  result: {
-    understand: [
-      "Median household income in Hilltop is $38,200, about 27% below the county average of $52,100.",
-    ],
-    apply: [
-      "Use this figure to justify why a no-cost or low-cost program model matters for this community.",
-    ],
-  },
-};
-
-export const ANALYSIS_PHYSICAL_ACTIVITY: DatumAnalysis = {
-  datum: DATUM_PHYSICAL_ACTIVITY,
-  relevance:
-    "Directly relevant to any grant asking about health-behavior outcomes.",
-  result: {
-    understand: [
-      "71% of Hilltop adults meet the CDC's physical activity guideline, above the county average of 58%.",
-    ],
-    apply: [
-      "A strong candidate for your 'why here' section - this community is already primed to engage with wellness programming.",
     ],
   },
 };

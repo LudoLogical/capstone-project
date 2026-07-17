@@ -1,13 +1,7 @@
 import { GrantLifecycleStage } from "@/types/grantRecord";
 import type GrantRecord from "@/types/grantRecord";
 import type Grant from "@/types/grant";
-import {
-  ALL_GRANTS,
-  INITIATIVE_HILLTOP_WELLNESS,
-  ACCOUNT_SECTIONS,
-  ORG_PROFILES,
-  type AccountSection,
-} from "@/data/seed";
+import { ALL_GRANTS, INITIATIVE_HILLTOP_WELLNESS } from "@/data/seed";
 import {
   useAppStore,
   isTerminalStatus,
@@ -290,53 +284,3 @@ export function useDashboardGroups() {
   return { inProgress, saved, awarded, collaborating, archived };
 }
 
-/** A short, human-readable name for a route, used in "Back to ..." controls. */
-export function labelForPath(path: string | null | undefined): string {
-  if (!path || path === "/" || path.startsWith("/dashboard"))
-    return "dashboard";
-  if (path.startsWith("/search")) return "search";
-  if (path.startsWith("/account")) return "profile";
-  const m = path.match(/^\/grants\/([^/]+)(?:\/([^/]+))?(?:\/([^/]+))?/);
-  if (m) {
-    const grant = ALL_GRANTS.find((g) => g.id === m[1]);
-    const sub = m[2];
-    const orgId = m[3];
-    if (sub === "collaborate" && orgId)
-      return ORG_PROFILES[orgId]?.name ?? "collaborators";
-    if (sub === "collaborate") return "collaborators";
-    if (sub === "report") return "report";
-    if (sub === "collect") return "data collection";
-    if (sub === "fit") return "fit analysis";
-    return grant?.name ?? "grant";
-  }
-  return "previous page";
-}
-
-/**
- * Resolve where a Back control should go: the page the user actually came
- * from, falling back to a sensible default when there's no history (e.g. a
- * fresh load or a deep link). `href` is the target, `label` names it.
- */
-export function useBackTarget(fallback: string): {
-  href: string;
-  label: string;
-} {
-  const navStack = useAppStore((s) => s.navStack);
-  // The entry before the current one is where Back goes; fall back when there's
-  // no history (fresh load or deep link).
-  const prev = navStack.length >= 2 ? navStack[navStack.length - 2] : null;
-  const href = prev ?? fallback;
-  return { href, label: labelForPath(href) };
-}
-
-export function useAccountSectionsView(): (AccountSection & {
-  factsResolved: AccountSection["facts"];
-})[] {
-  const edits = useAppStore((s) => s.accountEdits);
-  return ACCOUNT_SECTIONS.map((section) => ({
-    ...section,
-    factsResolved: section.facts.map((fact) =>
-      edits[fact.id] !== undefined ? { ...fact, body: edits[fact.id] } : fact,
-    ),
-  }));
-}

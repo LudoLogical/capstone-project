@@ -14,10 +14,3 @@ export * from "./repository";
 export * from "./rueaContent";
 export * from "./dataDetails";
 export * from "./reportQuestions";
-
-export const SESSION_USER = {
-  firstName: "Maya",
-  fullName: "Maya Torres",
-  orgName: "Hilltop Wellness Collective",
-  initials: "MT",
-};

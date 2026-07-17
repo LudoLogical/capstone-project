@@ -8,30 +8,6 @@ export const LOC_HILLTOP: Location = {
   longitude: -79.9889,
 };
 
-export const LOC_BELTZHOOVER: Location = {
-  name: "Beltzhoover, Pittsburgh, PA",
-  latitude: 40.4142,
-  longitude: -79.9928,
-};
-
-export const LOC_HOMEWOOD: Location = {
-  name: "Homewood, Pittsburgh, PA",
-  latitude: 40.4489,
-  longitude: -79.8944,
-};
-
-export const LOC_EAST_LIBERTY: Location = {
-  name: "East Liberty, Pittsburgh, PA",
-  latitude: 40.4614,
-  longitude: -79.9225,
-};
-
-export const LOC_NORTHVIEW_HEIGHTS: Location = {
-  name: "Northview Heights, Pittsburgh, PA",
-  latitude: 40.4816,
-  longitude: -80.0219,
-};
-
 function ring(...points: Array<[number, number, string]>): Location[][] {
   const coords = points.map(([latitude, longitude, name]) => ({
     name,
