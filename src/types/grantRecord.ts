@@ -62,8 +62,6 @@ export enum GrantLifecycleStage {
  * A record of a single instance in which one Initiative contacted
  * another Initiative to express interest in collaborating with them
  * on a specific Grant.
- *
- * TODO: Re-align on whether this is necessary
  */
 export type CollabContactRecord = {
   /**
@@ -94,21 +92,63 @@ type GrantRecord = {
   grant: Grant;
 
   /**
-   * An AI-generated analysis of the alignment between the User and Grant
-   * associated with this GrantRecord.
-   *
-   * @deprecated
-   * Needs to be split into three properties: estimated fit (percentage w/
-   * semantic cutoffs? ask for alignment on this), reasons why it's a good
-   * fit, and concerns worth considering (see feedback figjam)
-   */
-  alignmentAnalysis: string;
-
-  /**
    * The stage of the Grant lifecycle that the associated Initiative is
    * currently in with the associated Grant.
    */
   stage: GrantLifecycleStage;
+
+  /**
+   * An AI-generated analysis of the alignment between the associated
+   * Initiative and the associated Grant.
+   */
+  alignmentAnalysis: {
+    /**
+     * An approximation of the strength of the alignment between the
+     * associated Initiative and the associated Grant on a scale
+     * from 0 (no alignment) to 100 (perfect alignment).
+     *
+     * @alpha
+     * The semantic names that are given to the possible values of this
+     * property in the UI have yet to be fully enumerated.
+     */
+    estimatedFit: number;
+
+    /**
+     * A list of reasons why the associated Grant might be a good fit
+     * for the associated Initiative.
+     */
+    pros: string[];
+
+    /**
+     * A list of potential concerns that the associated Initiative might want
+     * to consider before persuing the associated Grant.
+     */
+    cons: string[];
+  };
+
+  /**
+   * True if the Initiative associated with this GrantRecord has expressed
+   * interest in collaborating with other Initiatives on the associated Grant;
+   * false otherwise.
+   *
+   * @remarks
+   * If this value is true, the Initiative associated with this GrantRecord
+   * will be discoverable by and able to receive warm self-introductions
+   * via email from other Initiatives who are also subscribed to the
+   * associated Grant.
+   *
+   * However, Initiatives that have already applied for a Grant are made
+   * undiscoverable and thus ineligible to receive such emails regardless of
+   * whether they subscribed to it in the past.
+   */
+  subscribed: boolean;
+
+  /**
+   * A complete log of the occassions on which the Initiative associated with
+   * this GrantRecord contacted another Initiative to express interest in
+   * collaborating with them on the associated Grant.
+   */
+  collabContactRecords: CollabContactRecord[];
 
   /**
    * The grant writing analyses that the associated Initiative has started

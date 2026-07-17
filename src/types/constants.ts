@@ -16,6 +16,24 @@ export const ISSUES = [
 export type Issue = (typeof ISSUES)[number];
 
 /**
+ * The categories of data points present in the Vibrancy Index dataset.
+ */
+export const INDICATORS = [
+  "air quality",
+  "business",
+  "carbon footprint",
+  "employment",
+  "green infrastructure",
+  "homeownership",
+  "internet",
+] as const;
+
+/**
+ * A category of data points present in the Vibrancy Index dataset.
+ */
+export type Indicator = (typeof INDICATORS)[number];
+
+/**
  * The entities that publish and manage Grants.
  */
 export const GRANTORS = [

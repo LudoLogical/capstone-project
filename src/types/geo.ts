@@ -46,4 +46,10 @@ export type Region = {
    * whole is also known as a "MultiPolygon."
    */
   coordinates: GeoPolygon | GeoPolygon[];
+
+  /**
+   * The name of the census tract that this Region represents,
+   * or null if this Region does not represent a census tract.
+   */
+  censusTract: string | null;
 };

@@ -2,12 +2,32 @@ import "server-only";
 
 import path from "node:path";
 import { readFileSync } from "node:fs";
-import { Content, GoogleGenAI } from "@google/genai";
+import { Content, GenerateContentResponse, GoogleGenAI } from "@google/genai";
 import Grant, { ReportingRequirement } from "@/types/grant";
 import Initiative from "@/types/initiative";
 import { AIFailureReason } from "@/types/ai";
+import { formatCurrencyFull, formatDate } from "@/utils/format";
 import validateAIResponse from "./validation";
-import { formatCurrencyFull } from "@/utils/format";
+import {
+  AuthoritativeDatum,
+  Datum,
+  InitiativeSource,
+  InitiativeSourceKind,
+  NSRServiceDatum,
+} from "@/types/data";
+import { Region } from "@/types/geo";
+import { INDICATORS } from "@/types/constants";
+import {
+  getAuthoritativeDatum,
+  getCensusTracts,
+  getNSRServiceData,
+} from "@/data/external";
+
+/**
+ * Iff true, verbose details about AI invocations are logged to the console.
+ * @internal
+ */
+const DEBUG = true;
 
 const AI_DIR = path.join(process.cwd(), "src", "ai");
 
@@ -33,6 +53,32 @@ for (const integration in AIIntegration) {
       readFileSync(path.join(AI_DIR, integration + ".json"), "utf-8"),
     ),
   });
+}
+
+/**
+ * Logs detailed information about the specified
+ * GenerateContentResponse to the console if and only if DEBUG is true.
+ * @param response the GenerateContentResponse to log
+ * @internal
+ */
+function logVerboseResponse(response: GenerateContentResponse): void {
+  if (DEBUG) {
+    console.log("+++ BEGIN VERBOSE RESPONSE LOG +++");
+    console.log("--- RAW RESPONSE OBJECT ---\n" + response + "\n");
+    if (response.candidates) {
+      console.log(
+        "--- CONTENT PARTS (x" +
+          (response.candidates[0].content?.parts?.length ?? 0) +
+          ") ---\n" +
+          response +
+          "\n",
+      );
+      for (const part of response.candidates[0].content?.parts ?? []) {
+        console.log(part.text ?? part.thoughtSignature);
+      }
+    }
+    console.log("+++ END VERBOSE RESPONSE LOG +++");
+  }
 }
 
 /**
@@ -96,6 +142,8 @@ export async function ingestGrant(
       tools: [{ urlContext: {} }, { googleSearch: {} }],
     },
   });
+
+  logVerboseResponse(response);
   const aiFailureReason = validateAIResponse(response);
   if (aiFailureReason) {
     return aiFailureReason;
@@ -135,16 +183,87 @@ function _formatGrantDetails(grant: Grant): string {
 }
 
 /**
+ * A helper function for _formatReportWorkflowInputData that converts
+ * Datum instance arrays to strings in the appropriate format.
+ * @param accumulator
+ */
+function _formatDatumList(data: Datum[]): string {
+  return data.reduce(
+    (acc, datum) =>
+      acc +
+      "\nID number: " +
+      datum.id +
+      "\nDescription: " +
+      datum.content +
+      "\nSource: " +
+      datum.citation +
+      "\n",
+    "",
+  );
+}
+
+/**
  * A helper function for multiple AI tasks used in the report data gathering
  * workflow that stringifies all AuthoritativeDatum instance *types*
  * (not the instances themselves because those are geo-specific),
  * all of the specified Initiative's NSRServiceDatum instances, and
  * all of their InitiativeDatum instances for system prompt injection.
  * @internal
- * TODO: seek team alignment on AuthoritativeDatum strategy and implement function
  */
-function _formatAllAccessibleData(initiative: Initiative): string {
-  return "" + initiative;
+async function _formatReportInputData(
+  initiative: Initiative,
+  grantRegions: Region[],
+): Promise<string> {
+  // Set used to remove duplicates
+  const censusTracts = new Set<Region>([
+    ...getCensusTracts(initiative.serviceAreas),
+    ...getCensusTracts(grantRegions),
+  ]);
+
+  const authoritativeData: AuthoritativeDatum[] = [];
+  for (const indicator of INDICATORS) {
+    for (const censusTract of censusTracts) {
+      authoritativeData.push(getAuthoritativeDatum(indicator, censusTract));
+    }
+  }
+
+  const nsrServiceData: NSRServiceDatum[] = getNSRServiceData(initiative);
+  const initiativeSources: InitiativeSource[] = initiative.sources;
+
+  const maxID = Math.max(
+    authoritativeData[authoritativeData.length - 1].id,
+    ...nsrServiceData.map((datum) => datum.id),
+  );
+  let initiativeSourceID = maxID;
+
+  return (
+    "## Authoritative data\n" +
+    _formatDatumList(authoritativeData) +
+    "\n## NSR service data\n" +
+    _formatDatumList(nsrServiceData) +
+    "\n## Initiative data\n" +
+    (await Promise.all(
+      initiativeSources
+        .map(async (source) => {
+          const content =
+            source.kind !== InitiativeSourceKind.Document
+              ? source.content
+              : await source.file.text();
+          return (
+            "\nID number: " +
+            ++initiativeSourceID +
+            "\nDescription: " +
+            content +
+            "\nSource: " +
+            initiative.name +
+            ", " +
+            formatDate(source.creationTime)
+          );
+        })
+        .join("\n") + "\n",
+    )) +
+    "\n"
+  );
 }
 
 /**
@@ -175,45 +294,26 @@ export async function generateInitialReportSuggestions(
     contents: instructions!.prompt
       .replace(/<0>/gi, requirement.question)
       .replace(/<1>/gi, _formatGrantDetails(grant))
-      .replace(/<2>/gi, _formatAllAccessibleData(initiative)),
+      .replace(
+        /<2>/gi,
+        await _formatReportInputData(initiative, grant.targetRegions),
+      ),
     config: {
       enableEnhancedCivicAnswers: true,
       responseMimeType: "application/json",
       responseSchema: instructions!.schema,
       thinkingConfig: {
-        includeThoughts: true,
+        includeThoughts: DEBUG,
       },
     },
   });
 
+  logVerboseResponse(response);
   return (
     validateAIResponse(response) ??
     (JSON.parse(response.text!).suggestions as number[])
   );
 }
-
-/**
- * The AI-generated content created by a single invocation of
- * generateReportConversationTurn().
- */
-export type ReportConversationResponse = {
-  /**
-   * The response to the user message.
-   */
-  message: string;
-
-  /**
-   * The sorted list of Datum instance IDs.
-   */
-  suggestions: number[];
-
-  /**
-   * For AI system use only; do not modify.
-   * @internal
-   * @readonly
-   */
-  is_sufficient: boolean;
-};
 
 /**
  * Responds to a user message from a data gathering workflow conversation for
@@ -261,15 +361,19 @@ export async function generateReportConversationTurn(
       responseMimeType: "application/json",
       responseSchema: instructions!.schema,
       thinkingConfig: {
-        includeThoughts: true,
+        includeThoughts: DEBUG,
       },
       systemInstruction: instructions!.prompt
         .replace(/<0>/gi, requirement.question)
         .replace(/<1>/gi, _formatGrantDetails(grant))
-        .replace(/<2>/gi, _formatAllAccessibleData(initiative)),
+        .replace(
+          /<2>/gi,
+          await _formatReportInputData(initiative, grant.targetRegions),
+        ),
     },
   });
 
+  logVerboseResponse(response);
   const aiFailureReason = validateAIResponse(response);
   if (aiFailureReason) {
     return aiFailureReason;

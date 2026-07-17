@@ -2,6 +2,7 @@ import type {
   AuthoritativeDatum,
   InitiativeDatum,
   DocumentSource,
+  NSRServiceDatum,
 } from "@/types/data";
 import type { DatumAnalysis } from "@/types/analysis";
 import { LOC_HILLTOP } from "./geo";
@@ -91,10 +92,20 @@ export const DATUM_PHYSICAL_ACTIVITY: AuthoritativeDatum = {
   issues: ["Health", "Community"],
 };
 
+// ---- NSR-managed data ----------------------------------------------
+
+export const DATUM_OAT_RESOURCES: NSRServiceDatum = {
+  id: 5,
+  content: "Hilltop Wellness Collective scored 3/4 on Resources.",
+  citation: "Hilltop Wellness Collective Organizational Assessment, 2025",
+  evaluateMethod: "bar",
+  service: "OAT",
+};
+
 // ---- Initiative-supplied data ----------------------------------------------
 
 export const DATUM_RESIDENTS_REACHED: InitiativeDatum = {
-  id: 5,
+  id: 6,
   content:
     "1,240 unique residents served by Hilltop Wellness Collective programs in 2025",
   citation: "Hilltop Wellness Collective, 2025 Annual Impact Survey",
@@ -103,7 +114,7 @@ export const DATUM_RESIDENTS_REACHED: InitiativeDatum = {
 };
 
 export const DATUM_PROGRAM_RETENTION: InitiativeDatum = {
-  id: 6,
+  id: 7,
   content: "68% of program participants returned for a second season",
   citation: "Hilltop Wellness Collective, 2025 Annual Impact Survey",
   evaluateMethod: "bar",

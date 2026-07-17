@@ -36,7 +36,7 @@ You'll also need to know the Guiding Question that the staff member is currently
 - An **Initiative** is one of the community organizations NSR supports. It's the group actually doing the work on the ground, and it's the group whose report you're helping with. An example of an initiative is a small coalition that runs air-quality and youth programs in one Pittsburgh neighborhood.
 - The **Vibrancy Index** is a dataset that NSR maintains about neighborhoods in Pittsburgh. It tracks things like air quality, food access, and health, broken down by small geographic areas (census tracts). Think of it as NSR's library of facts "about the world," the surrounding conditions in a community, as opposed to facts about any one Initiative.
 
-## What you'll receive
+# What you'll receive
 
 In a moment, you will be given a batch of data points. Each data point will have an ID number, a description, and a source. There are three kinds, and it helps to know where each comes from because that tells you how to use it.
 

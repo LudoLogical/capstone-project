@@ -6,16 +6,35 @@ import { BlockedReason, FinishReason } from "@google/genai";
  * exactly one of its immediate child properties.
  *
  * @remarks
- * User-initiated invocations of functions that leverage artificial
- * intelligence should take care to gracefully handle each of the following:
+ * For user-initiated (i.e., interactive) invocations of functions that
+ * leverage artificial intelligence, consider surfacing explanations for
+ * the following AIFailureReasons in the UI.
+ *
+ * Group 1
+ *
  * - BlockedReason.SAFETY
  * - BlockedReason.PROHIBITED_CONTENT
  * - FinishReason.SAFETY
  * - FinishReason.PROHIBITED_CONTENT
+ *
+ * Group 2
+ *
  * - FinishReason.SPII
+ *
+ * Group 3
+ *
  * - FinishReason.MAX_TOKENS
  *
- * TODO: Seek alignment about UI implementation for relevant failure cases
+ * Group 4
+ *
+ * - HTTP 403 PERMISSION_DENIED
+ * - HTTP 429 RESOURCE_EXHAUSTED
+ *
+ * Group 5
+ *
+ * - HTTP 500 INTERNAL
+ * - HTTP 503 UNAVAILABLE
+ * - HTTP 504 DEADLINE_EXCEEDED
  */
 export type AIFailureReason = {
   /**

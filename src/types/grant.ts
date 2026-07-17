@@ -1,6 +1,5 @@
 import { Grantor, Issue } from "./constants";
 import { Region } from "./geo";
-import Initiative from "./initiative";
 
 /**
  * A requirement that the recipient(s) of a specific Grant must satisfy
@@ -229,20 +228,6 @@ type Grant = {
      */
     reportFrequency: number;
   };
-
-  /**
-   * The Initiatives that have asked to be notified when another Initiative
-   * expresses interest in collaborating on this Grant.
-   *
-   * Note: Initiatives that have already applied for a Grant are considered
-   * ineligible to receive such notifications regardless of whether they
-   * appear in this list.
-   *
-   * @deprecated
-   * This property needs review following the decision to keep
-   * save and collaborate functionality separate.
-   */
-  collabOpportunitySubscribers: Initiative[];
 
   /**
    * True iff this Grant has been recommended by NSR; false otherwise.

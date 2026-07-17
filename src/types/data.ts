@@ -13,8 +13,8 @@
  * @example NSR's Annual Financial Report for Fiscal Year 2025
  */
 
-import { Issue } from "./constants";
-import { Location } from "./geo";
+import { Indicator, Issue } from "./constants";
+import { Region } from "./geo";
 
 /**
  * An abstract type that defines the properties shared by all Datum variants.
@@ -49,10 +49,16 @@ export type BaseDatum = {
  */
 export type AuthoritativeDatum = BaseDatum & {
   /**
-   * The Location that is the subject of this AuthoritativeDatum.
-   * TODO: Location *or Region*? Seek team alignment on this.
+   * The Vibrancy Index indicator from which this AuthoritativeDatum
+   * was derived.
    */
-  location: Location;
+  indicator: Indicator;
+
+  /**
+   * The Region (in this case, census tract) that is
+   * the subject of this AuthoritativeDatum.
+   */
+  region: Region;
 
   /**
    * The quantitative value of this AuthoritativeDatum.
@@ -123,16 +129,35 @@ export type NSRServiceDatum = BaseDatum & {
 };
 
 /**
+ * Defines the kinds (i.e., subtypes) of InitiativeSources that exist.
+ */
+export enum InitiativeSourceKind {
+  Chat = "CHAT",
+  Document = "DOCUMENT",
+  Webpage = "WEBPAGE",
+}
+
+/**
  * An abstract type that defines the properties shared by
  * all InitiativeSources.
  */
 export type BaseInitiativeSource = {
+  /**
+   * The InitiativeSourceKind of this InitiativeSource.
+   */
+  kind: InitiativeSourceKind;
+
   /**
    * The name of the folder into which this InitiativeSource has been
    * organized by the Initiative that uploaded it,
    * or `null` if there is no such folder.
    */
   folder: string | null;
+
+  /**
+   * The date and time (in UTC) at which this InitiativeSource was created.
+   */
+  creationTime: Date;
 
   /**
    * The ID of the user who uploaded/added this InitiativeSource.
@@ -147,31 +172,41 @@ export type BaseInitiativeSource = {
 };
 
 /**
- * An InitiativeSource that is a message in a GrantReportingConversation.
+ * An InitiativeSource that an AI system identified in
+ * and extracted from a GrantReportingConversation.
+ *
+ * @remarks
+ * ChatSources are unique in that their content is definitionally
+ * identical to that of any Datum instances created from them.
  */
 export type ChatSource = BaseInitiativeSource & {
   /**
-   * A short AI-generated summary of the content of this ChatSource.
+   * @override
+   * This InitiativeSource is a ChatSource.
    */
-  contentSummary: string;
+  kind: InitiativeSourceKind.Chat;
 
   /**
-   * The unique ID of the GrantReportingConversation from which this
-   * ChatSource originates.
+   * A AI-generated statement of this ChatSource.
+   *
+   * @remarks
+   * This approach is preferred over simply referencing the original
+   * GrantReportConversation because users are able to delete GrantAnalysis
+   * instances without deleting any corresponding ChatSources.
    */
-  conversationID: string;
-
-  /**
-   * The index within the content of the GrantReportingConversation from which
-   * this ChatSource originates at which this ChatSource is located.
-   */
-  messageIndex: number;
+  content: string;
 };
 
 /**
  * An InitiativeSource that is a file.
  */
 export type DocumentSource = BaseInitiativeSource & {
+  /**
+   * @override
+   * This InitiativeSource is a DocumentSource.
+   */
+  kind: InitiativeSourceKind.Document;
+
   /**
    * The file that is this DocumentSource.
    */
@@ -193,16 +228,32 @@ export type DocumentSource = BaseInitiativeSource & {
  */
 export type WebpageSource = BaseInitiativeSource & {
   /**
+   * @override
+   * This InitiativeSource is a WebpageSource.
+   */
+  kind: InitiativeSourceKind.Webpage;
+
+  /**
    * The URL at which this WebpageSource is located.
    */
   link: string;
+
+  /**
+   * The HTML content of this WebpageSource.
+   *
+   * @remarks
+   * This content is to be retrieved when this WebpageSource is created,
+   * cached in the database, and optionally given a time to live if periodic
+   * updates are desired.
+   */
+  content: string;
 };
 
 /**
  * A source of information about an Initiative that was supplied directly to
  * this tool (i.e., not retrieved from another NSR-managed service).
  */
-export type InitiativeSource = WebpageSource | DocumentSource | ChatSource;
+export type InitiativeSource = ChatSource | DocumentSource | WebpageSource;
 
 /**
  * A Datum that originates from an InitiativeSource.
