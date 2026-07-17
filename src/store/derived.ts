@@ -165,7 +165,7 @@ function buildGrantView(
     (c) => c.markedComplete,
   ).length;
   const liveReportDone = reportState
-    ? Object.values(reportState.stepStatus).filter((s) => s === "complete")
+    ? Object.values(reportState.stepStatus ?? {}).filter((s) => s === "complete")
         .length
     : 0;
   const reportDone = Math.min(
