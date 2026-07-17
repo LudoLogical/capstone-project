@@ -4,15 +4,18 @@ import type {
   DocumentSource,
   NSRServiceDatum,
 } from "@/types/data";
+import { InitiativeSourceKind } from "@/types/data";
 import type { DatumAnalysis } from "@/types/analysis";
-import { LOC_HILLTOP } from "./geo";
+import { REGION_HILLTOP_TRACT } from "./geo";
 
 // The signed-in user (Maya Torres of Hilltop Wellness Collective; see
 // SESSION_USER in ./index) uploaded every InitiativeSource in this seed.
 export const USER_MAYA_ID = "user-maya-torres";
 
 export const SRC_ANNUAL_IMPACT_SURVEY: DocumentSource = {
+  kind: InitiativeSourceKind.Document,
   folder: "Impact Surveys",
+  creationTime: new Date("2026-06-06T14:12:00Z"),
   creator: USER_MAYA_ID,
   isDeleted: false,
   file: new File(
@@ -27,7 +30,9 @@ export const SRC_ANNUAL_IMPACT_SURVEY: DocumentSource = {
 };
 
 export const SRC_BUDGET_RECORDS: DocumentSource = {
+  kind: InitiativeSourceKind.Document,
   folder: "Budget Records",
+  creationTime: new Date("2026-06-16T09:35:00Z"),
   creator: USER_MAYA_ID,
   isDeleted: false,
   file: new File(
@@ -49,7 +54,8 @@ export const DATUM_CVD_RATE: AuthoritativeDatum = {
   citation:
     "Allegheny County Health Department, 2025 Community Health Assessment",
   evaluateMethod: "bar",
-  location: LOC_HILLTOP,
+  indicator: "chronic disease",
+  region: REGION_HILLTOP_TRACT,
   value: 8.4,
   unit: "% of adults",
   context: { minimum: 4.1, average: 13.2, maximum: 21.6 },
@@ -61,7 +67,8 @@ export const DATUM_PRODUCE_ACCESS: AuthoritativeDatum = {
   content: "Households within a 10-minute walk of fresh produce",
   citation: "Vibrancy Index, Food Access Layer, 2025",
   evaluateMethod: "bar",
-  location: LOC_HILLTOP,
+  indicator: "food access",
+  region: REGION_HILLTOP_TRACT,
   value: 61,
   unit: "% of households",
   context: { minimum: 22, average: 48, maximum: 89 },
@@ -73,7 +80,8 @@ export const DATUM_MEDIAN_INCOME: AuthoritativeDatum = {
   content: "Median household income",
   citation: "US Census ACS 5-Year Estimates, 2024",
   evaluateMethod: "bar",
-  location: LOC_HILLTOP,
+  indicator: "household income",
+  region: REGION_HILLTOP_TRACT,
   value: 38200,
   unit: "USD / year",
   context: { minimum: 21400, average: 52100, maximum: 118700 },
@@ -85,7 +93,8 @@ export const DATUM_PHYSICAL_ACTIVITY: AuthoritativeDatum = {
   content: "Adults meeting the CDC physical activity guideline",
   citation: "Vibrancy Index, Health & Wellness Layer, 2025",
   evaluateMethod: "bar",
-  location: LOC_HILLTOP,
+  indicator: "physical activity",
+  region: REGION_HILLTOP_TRACT,
   value: 71,
   unit: "% of adults",
   context: { minimum: 39, average: 58, maximum: 82 },

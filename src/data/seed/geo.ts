@@ -1,8 +1,7 @@
 import type { Location, Region } from "@/types/geo";
 
 // A handful of real neighborhood/landmark coordinates around Pittsburgh, PA,
-// used as the `location` for AuthoritativeDatum entries and Initiative
-// service areas.
+// used as the `locations` of GrantAnalysis entries.
 export const LOC_HILLTOP: Location = {
   name: "Hilltop, Pittsburgh, PA",
   latitude: 40.4179,
@@ -53,6 +52,24 @@ export const REGION_PITTSBURGH: Region = {
       [40.3763, -80.0356, "SW corner"],
     ),
   },
+  censusTract: null,
+};
+
+// The census tract covering the Hilltop neighborhoods that Hilltop Wellness
+// Collective serves. Every AuthoritativeDatum in this seed is reported at
+// tract granularity, so this is the `region` all of them are drawn from.
+export const REGION_HILLTOP_TRACT: Region = {
+  name: "Census Tract 3010, Allegheny County, PA",
+  isContiguous: true,
+  coordinates: {
+    coordinates: ring(
+      [40.4231, -79.9942, "NW corner"],
+      [40.4231, -79.9831, "NE corner"],
+      [40.4124, -79.9831, "SE corner"],
+      [40.4124, -79.9942, "SW corner"],
+    ),
+  },
+  censusTract: "3010",
 };
 
 export const REGION_ALLEGHENY_COUNTY: Region = {
@@ -66,6 +83,7 @@ export const REGION_ALLEGHENY_COUNTY: Region = {
       [40.21, -80.2, "SW corner"],
     ),
   },
+  censusTract: null,
 };
 
 export const REGION_WESTMORELAND_COUNTY: Region = {
@@ -79,4 +97,5 @@ export const REGION_WESTMORELAND_COUNTY: Region = {
       [40.05, -79.7, "SW corner"],
     ),
   },
+  censusTract: null,
 };

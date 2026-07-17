@@ -1,4 +1,5 @@
 import { GrantLifecycleStage } from "@/types/grantRecord";
+import type GrantRecord from "@/types/grantRecord";
 import type Grant from "@/types/grant";
 import {
   ALL_GRANTS,
@@ -29,7 +30,7 @@ export type GrantView = {
   // awarded grant is not shown as "saved" until the user actually saves it, and
   // unsaving reliably clears the saved state everywhere.
   isSaved: boolean;
-  alignmentAnalysis: string | null;
+  alignmentAnalysis: GrantRecord["alignmentAnalysis"] | null;
   hasWritingProgress: boolean;
   hasReportingProgress: boolean;
   // Coarse completion signals used by the dashboard cards. `writingProgress`
@@ -73,7 +74,7 @@ function buildGrantView(
   const reportConversations =
     record?.reportingAnalyses[0]?.conversations ?? [];
   const seededReportDone = reportConversations.filter(
-    (c) => c.content !== undefined,
+    (c) => c.markedComplete,
   ).length;
   const liveReportDone = reportState
     ? Object.values(reportState.stepStatus).filter((s) => s === "complete")

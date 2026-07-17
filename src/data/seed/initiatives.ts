@@ -1,5 +1,6 @@
 import type Initiative from "@/types/initiative";
 import type { WebpageSource, ChatSource } from "@/types/data";
+import { InitiativeSourceKind } from "@/types/data";
 import { REGION_PITTSBURGH, REGION_ALLEGHENY_COUNTY } from "./geo";
 import {
   SRC_ANNUAL_IMPACT_SURVEY,
@@ -9,20 +10,33 @@ import {
 import { InitiativeType } from "@/types/initiative";
 
 const SRC_WEBSITE: WebpageSource = {
+  kind: InitiativeSourceKind.Webpage,
   folder: null,
+  creationTime: new Date("2026-06-06T14:03:00Z"),
   creator: USER_MAYA_ID,
   isDeleted: false,
   link: "https://hilltopwellness.org",
+  content:
+    "<!doctype html><html><head><title>Hilltop Wellness Collective</title></head>" +
+    "<body><h1>Hilltop Wellness Collective</h1>" +
+    "<p>We build resident-led health and wellness programming in Pittsburgh's " +
+    "Hilltop neighborhoods.</p>" +
+    "<h2>Programs</h2>" +
+    "<ul><li>Neighborhood walking groups</li><li>Nutrition workshops</li></ul>" +
+    "<p>Contact us at <a href=\"mailto:maya@hilltopwellness.org\">maya@hilltopwellness.org</a>.</p>" +
+    "</body></html>",
 };
 
-const SRC_CHAT_STUB: ChatSource = {
+// Captured by the AI system from Maya's onboarding conversation; the same fact
+// surfaces in the Profile screen's conversation collection (see ./repository).
+const SRC_CHAT_WORKSHOP_REACH: ChatSource = {
+  kind: InitiativeSourceKind.Chat,
   folder: null,
+  creationTime: new Date("2026-06-06T15:41:00Z"),
   creator: USER_MAYA_ID,
   isDeleted: false,
-  contentSummary:
-    "You shared that 100% of people have Awesome Individual Syndrome.",
-  conversationID: "conv-onboarding-1",
-  messageIndex: 0,
+  content:
+    "Your chronic-disease workshops reached 240 residents last quarter.",
 };
 
 // Grant-readiness ID of the org that is signed in to the portal in this
@@ -47,7 +61,7 @@ export const INITIATIVE_HILLTOP_WELLNESS: Initiative = {
     SRC_ANNUAL_IMPACT_SURVEY,
     SRC_BUDGET_RECORDS,
     SRC_WEBSITE,
-    SRC_CHAT_STUB,
+    SRC_CHAT_WORKSHOP_REACH,
   ],
 };
 

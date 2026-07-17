@@ -22,10 +22,14 @@ export const INDICATORS = [
   "air quality",
   "business",
   "carbon footprint",
+  "chronic disease",
   "employment",
+  "food access",
   "green infrastructure",
   "homeownership",
+  "household income",
   "internet",
+  "physical activity",
 ] as const;
 
 /**

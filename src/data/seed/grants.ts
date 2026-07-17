@@ -5,12 +5,6 @@ import {
   REGION_WESTMORELAND_COUNTY,
 } from "./geo";
 
-// Grant.collabOpportunitySubscribers is marked @deprecated / "under review" on
-// the type itself (see types/grant.ts) - left empty here rather than wiring
-// up a circular Grant <-> Initiative reference for a field that isn't
-// currently exercised by any UI.
-const NO_COLLAB_SUBSCRIBERS: Grant["collabOpportunitySubscribers"] = [];
-
 export const GRANT_HEALTHY_NEIGHBORHOODS: Grant = {
   id: "g-healthy-neighborhoods",
   name: "Healthy Neighborhoods Mini-Grant",
@@ -76,7 +70,6 @@ export const GRANT_HEALTHY_NEIGHBORHOODS: Grant = {
     firstReportDeadline: new Date("2027-04-15T00:00:00Z"),
     reportFrequency: 6,
   },
-  collabOpportunitySubscribers: NO_COLLAB_SUBSCRIBERS,
   isRecommended: true,
 };
 
@@ -110,11 +103,28 @@ export const GRANT_FOOD_ACCESS: Grant = {
     ],
     reporting: [
       {
-        shortName: "Annual impact report",
+        shortName: "Funded commitments",
         statement:
-          "Submit one annual impact report at the end of the award term.",
-        question:
-          "Have you submitted one annual impact report at the end of the award term?",
+          "State in your annual impact report the program activities you committed to delivering with this award.",
+        question: "What did you commit to doing with this grant?",
+      },
+      {
+        shortName: "Distribution activity",
+        statement:
+          "List in your annual impact report the distribution events and activities you ran during the award term.",
+        question: "What events or activities did you run?",
+      },
+      {
+        shortName: "Households reached",
+        statement:
+          "Report in your annual impact report the number of households your distribution reached and the neighborhoods in which they live.",
+        question: "Who did this work reach?",
+      },
+      {
+        shortName: "Access outcomes",
+        statement:
+          "Report in your annual impact report the change in fresh food access that resulted from the funded work.",
+        question: "What changed as a result of this work?",
       },
     ],
   },
@@ -136,7 +146,6 @@ export const GRANT_FOOD_ACCESS: Grant = {
     firstReportDeadline: new Date("2027-12-01T00:00:00Z"),
     reportFrequency: 12,
   },
-  collabOpportunitySubscribers: NO_COLLAB_SUBSCRIBERS,
   isRecommended: true,
 };
 
@@ -192,7 +201,6 @@ export const GRANT_YOUTH_DIGITAL_WELLNESS: Grant = {
     firstReportDeadline: new Date("2027-01-15T00:00:00Z"),
     reportFrequency: -1,
   },
-  collabOpportunitySubscribers: NO_COLLAB_SUBSCRIBERS,
   isRecommended: false,
 };
 
@@ -260,7 +268,6 @@ export const GRANT_GREEN_SPACES: Grant = {
     firstReportDeadline: new Date("2027-05-01T00:00:00Z"),
     reportFrequency: 6,
   },
-  collabOpportunitySubscribers: NO_COLLAB_SUBSCRIBERS,
   isRecommended: false,
 };
 
