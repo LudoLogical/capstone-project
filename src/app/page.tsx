@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { STORIES } from "@/data/seed";
 import {
@@ -24,6 +24,8 @@ import Onboarding from "@/components/Onboarding";
 import DaysLeftChip from "@/components/DaysLeftChip";
 import Icon from "@/components/Icon";
 import ResolvePastDueModal from "@/components/ResolvePastDueModal";
+import Modal from "@/components/Modal";
+import CheckboxRow from "@/components/CheckboxRow";
 
 type Tone = "accent" | "success" | "neutral";
 
@@ -51,6 +53,7 @@ function GrantMiniCard({
   secondary,
   tertiary,
   remove,
+  menu,
   closed = false,
   onClosedClick,
   badge,
@@ -66,19 +69,23 @@ function GrantMiniCard({
   tertiary?: { label: string; to?: string; onClick?: () => void };
   /** A small action in the card's upper right. */
   remove?: { label: string; onClick: () => void; icon?: string };
+  /** A kebab (three-dot) menu in the upper right, in place of `remove`. */
+  menu?: { label: string; onClick: () => void; danger?: boolean }[];
   /** Past its deadline: the primary action greys out and explains itself. */
   closed?: boolean;
   onClosedClick?: () => void;
 }) {
   const router = useRouter();
+  const [menuOpen, setMenuOpen] = useState(false);
   const go = (to?: string, onClick?: () => void) => () => {
     if (onClick) onClick();
     else if (to) router.push(to);
   };
+  const hasCorner = !!remove || !!menu;
 
   return (
     <div className="relative rounded-xl bg-surface p-4">
-      {remove && (
+      {remove && !menu && (
         <button
           onClick={remove.onClick}
           aria-label={remove.label}
@@ -88,10 +95,52 @@ function GrantMiniCard({
           <Icon name={remove.icon ?? "trash"} size={15} />
         </button>
       )}
+      {menu && (
+        <div className="absolute top-3 right-3">
+          <button
+            onClick={() => setMenuOpen((v) => !v)}
+            aria-label="More actions"
+            aria-expanded={menuOpen}
+            title="More actions"
+            className="flex h-7 w-7 items-center justify-center rounded-lg text-sm text-ink-muted transition duration-150 hover:bg-surface-alt hover:text-ink"
+          >
+            <Icon name="more-vertical" size={16} />
+          </button>
+          {menuOpen && (
+            <>
+              {/* Click-away layer closes the menu. */}
+              <button
+                aria-hidden
+                tabIndex={-1}
+                onClick={() => setMenuOpen(false)}
+                className="fixed inset-0 z-10 cursor-default"
+              />
+              <div className="absolute right-0 z-20 mt-1 w-48 overflow-hidden rounded-xl border border-border-strong bg-white shadow-float">
+                {menu.map((item) => (
+                  <button
+                    key={item.label}
+                    onClick={() => {
+                      setMenuOpen(false);
+                      item.onClick();
+                    }}
+                    className={`block w-full px-4 py-2.5 text-left text-sm font-semibold transition duration-150 ${
+                      item.danger
+                        ? "text-error-ink hover:bg-error-bg"
+                        : "text-ink hover:bg-surface-alt"
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      )}
       <button
         onClick={() => router.push(`/grants/${view.grant.id}`)}
         className={`mb-1 line-clamp-2 block text-left font-serif text-base leading-snug transition duration-150 hover:text-accent ${
-          remove ? "pr-8" : ""
+          hasCorner ? "pr-8" : ""
         }`}
       >
         {view.grant.name}
@@ -281,9 +330,42 @@ export default function HomePage() {
   const setGrantStatus = useAppStore((s) => s.setGrantStatus);
   const submitReport = useAppStore((s) => s.submitReport);
   const deleteGrant = useAppStore((s) => s.deleteGrant);
+  const startApplication = useAppStore((s) => s.startApplication);
   const reportsSubmitted = useAppStore((s) => s.reportsSubmitted);
   // The closed grant whose "you can't work on this" prompt is open.
   const [closedGrantId, setClosedGrantId] = useState<string | null>(null);
+  // Archived-grant permanent delete: confirmation + a 5-minute "don't ask"
+  // window (kept in a ref so it survives re-renders without persisting).
+  const [pendingDeleteGrant, setPendingDeleteGrant] = useState<string | null>(
+    null,
+  );
+  const [dontAskDelete, setDontAskDelete] = useState(false);
+  // While true, deletes skip the confirmation; a timeout clears it after 5 min.
+  const suppressDeleteRef = useRef(false);
+  const requestDeleteGrant = (grantId: string) => {
+    if (suppressDeleteRef.current) {
+      deleteGrant(grantId);
+      addToast("Deleted from your board.");
+    } else {
+      setDontAskDelete(false);
+      setPendingDeleteGrant(grantId);
+    }
+  };
+  const confirmDeleteGrant = () => {
+    if (!pendingDeleteGrant) return;
+    if (dontAskDelete) {
+      suppressDeleteRef.current = true;
+      setTimeout(
+        () => {
+          suppressDeleteRef.current = false;
+        },
+        5 * 60 * 1000,
+      );
+    }
+    deleteGrant(pendingDeleteGrant);
+    addToast("Deleted from your board.");
+    setPendingDeleteGrant(null);
+  };
   const { inProgress, awarded, saved, collaborating, archived } =
     useDashboardGroups();
   // Which archived reason the user is filtering to, or "all".
@@ -407,20 +489,23 @@ export default function HomePage() {
                     to: `/grants/${v.grant.id}/collect`,
                   }}
                   deadline={v.grant.timeline.applicationWindowEnd}
-                  secondary={{
-                    label: "Mark as submitted",
-                    onClick: () => {
-                      setGrantStatus(v.grant.id, "submitted");
-                      addToast("Marked as submitted. Moved to Archived.");
+                  menu={[
+                    {
+                      label: "Mark as submitted",
+                      onClick: () => {
+                        setGrantStatus(v.grant.id, "submitted");
+                        addToast("Marked as submitted. Moved to Archived.");
+                      },
                     },
-                  }}
-                  remove={{
-                    label: "Withdraw application",
-                    onClick: () => {
-                      setGrantStatus(v.grant.id, "withdrawn");
-                      addToast("Application withdrawn. Moved to Archived.");
+                    {
+                      label: "Delete application",
+                      danger: true,
+                      onClick: () => {
+                        setGrantStatus(v.grant.id, "withdrawn");
+                        addToast("Application deleted. Moved to Archived.");
+                      },
                     },
-                  }}
+                  ]}
                 />
               )}
             />
@@ -446,20 +531,30 @@ export default function HomePage() {
                     label: v.reportStarted ? "Continue Report" : "Start Report",
                     to: `/grants/${v.grant.id}/report`,
                   }}
-                  secondary={{
-                    label: "Mark report completed",
-                    onClick: () => {
-                      setGrantStatus(v.grant.id, "reported");
-                      addToast("Report completed. Moved to Archived.");
+                  menu={[
+                    {
+                      label: "Mark report completed",
+                      onClick: () => {
+                        setGrantStatus(v.grant.id, "reported");
+                        addToast("Report completed. Moved to Archived.");
+                      },
                     },
-                  }}
-                  tertiary={{
-                    label: "Move back to Submitted",
-                    onClick: () => {
-                      setGrantStatus(v.grant.id, "submitted");
-                      addToast("Moved back to Submitted.");
+                    {
+                      label: "Move back to Grant Applications",
+                      onClick: () => {
+                        setGrantStatus(v.grant.id, "applying");
+                        addToast("Moved back to Grant Applications.");
+                      },
                     },
-                  }}
+                    {
+                      label: "Delete report",
+                      danger: true,
+                      onClick: () => {
+                        setGrantStatus(v.grant.id, "withdrawn");
+                        addToast("Report deleted. Moved to Archived.");
+                      },
+                    },
+                  ]}
                 />
               )}
             />
@@ -483,6 +578,13 @@ export default function HomePage() {
                   closed={v.isClosed}
                   onClosedClick={() => setClosedGrantId(v.grant.id)}
                   primary={{
+                    label: "Start Gathering Data for Application",
+                    onClick: () => {
+                      startApplication(v.grant.id);
+                      router.push(`/grants/${v.grant.id}/collect`);
+                    },
+                  }}
+                  secondary={{
                     label: "Grant Details",
                     to: `/grants/${v.grant.id}`,
                   }}
@@ -570,10 +672,7 @@ export default function HomePage() {
                     }}
                     remove={{
                       label: "Delete from board",
-                      onClick: () => {
-                        deleteGrant(v.grant.id);
-                        addToast("Deleted from your board.");
-                      },
+                      onClick: () => requestDeleteGrant(v.grant.id),
                     }}
                     secondary={
                       back
@@ -670,6 +769,38 @@ export default function HomePage() {
           }}
         />
       )}
+
+      <Modal
+        open={pendingDeleteGrant !== null}
+        onClose={() => setPendingDeleteGrant(null)}
+        title="Delete this grant for good?"
+      >
+        <p className="mb-4 text-sm leading-relaxed text-ink-body">
+          This permanently removes the grant from your board. It can&apos;t be
+          undone.
+        </p>
+        <div className="mb-4">
+          <CheckboxRow
+            checked={dontAskDelete}
+            onToggle={() => setDontAskDelete((v) => !v)}
+            label="Don't ask me again for 5 minutes"
+          />
+        </div>
+        <div className="flex flex-wrap gap-2.5">
+          <button
+            onClick={confirmDeleteGrant}
+            className="inline-flex items-center gap-2 rounded-lg bg-error-ink px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-white transition duration-150 hover:brightness-110"
+          >
+            Yes, delete
+          </button>
+          <button
+            onClick={() => setPendingDeleteGrant(null)}
+            className="inline-flex items-center gap-2 rounded-lg border border-border-strong bg-white px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 hover:border-accent"
+          >
+            No
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 }

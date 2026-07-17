@@ -16,27 +16,19 @@ import ShareModal from "@/components/ShareModal";
 import Icon from "@/components/Icon";
 
 /**
- * The flow's shape depends on the grant: data collection is "share your context"
- * plus one step per item on the funder's own application checklist, then Review,
- * then Analysis. A grant asking for three things gets three steps to gather
- * them.
+ * The application flow is three steps: share your context, review the data we
+ * found, then analyze it.
  */
-function stepPlan(checklist: string[]) {
-  const labels = ["Share Your Context", ...checklist, "Review", "Analysis"];
-  const reviewStep = 2 + checklist.length;
-  const analysisStep = 3 + checklist.length;
+function stepPlan() {
   return {
-    labels,
-    reviewStep,
-    analysisStep,
-    total: labels.length,
+    labels: ["Share Your Context", "Review", "Analysis"],
+    reviewStep: 2,
+    analysisStep: 3,
+    total: 3,
     groups: [
-      {
-        title: "Data collection",
-        steps: [1, ...checklist.map((_, i) => i + 2)],
-      },
-      { title: "Review your data", steps: [reviewStep] },
-      { title: "Data analysis", steps: [analysisStep] },
+      { title: "Data collection", steps: [1] },
+      { title: "Review your data", steps: [2] },
+      { title: "Data analysis", steps: [3] },
     ],
   };
 }
@@ -76,9 +68,7 @@ export default function DataCollectionWizardPage() {
   // Landing on the wizard records the current step as visited (and persists the
   // wizard), so the dashboard progress starts counting immediately. Also clamp
   // any step persisted from the old 4-step flow into the current 3-step range.
-  const totalSteps = view
-    ? 3 + view.grant.requirements.application.length
-    : 3;
+  const totalSteps = 3;
   useEffect(() => {
     updateWizard(grantId, (w) => {
       const step = Math.min(w.step, totalSteps);
@@ -89,13 +79,12 @@ export default function DataCollectionWizardPage() {
 
   if (!view) return null;
   const { grant } = view;
-  const checklist = grant.requirements.application;
   const {
     labels: STEP_LABELS,
     reviewStep: REVIEW_STEP,
     analysisStep: ANALYSIS_STEP,
     groups: STEP_GROUPS,
-  } = stepPlan(checklist);
+  } = stepPlan();
 
   // Navigating to a step records it as visited, which drives the n/4 progress
   // shown on the dashboard.
@@ -329,7 +318,7 @@ export default function DataCollectionWizardPage() {
           </p>
 
           <div className="mb-2.5 text-xs font-bold tracking-wider text-ink-muted uppercase">
-            From Surveys by New Sun Rising
+            From the Vibrancy Portal
           </div>
           <div className="mb-5 flex flex-col gap-3.5 rounded-2xl border border-border bg-surface p-6">
             {(["surveys", "budget", "orgAssess"] as const).map((key) => {
@@ -392,64 +381,8 @@ export default function DataCollectionWizardPage() {
           <div className="flex items-center justify-between gap-2.5">
             <div />
             <button
-              onClick={() => setStep(2)}
+              onClick={() => setStep(REVIEW_STEP)}
               className="inline-flex items-center gap-2 rounded-xl bg-accent-ink px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              Save and Continue →
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* One step per item on the funder's checklist: the requirement is the
-          heading, and the step exists to gather exactly what it asks for. */}
-      {wizard.step > 1 && wizard.step < REVIEW_STEP && (
-        <div>
-          <div className="mb-2 text-xs font-bold tracking-wider text-ink-muted uppercase">
-            Requirement {wizard.step - 1} of {checklist.length} ·{" "}
-            {grant.grantor}
-          </div>
-          <h1 className="mb-2 font-serif text-2xl leading-tight font-medium">
-            {checklist[wizard.step - 2]}
-          </h1>
-          <p className="mb-5 text-sm leading-relaxed text-ink-muted">
-            Add anything you already have for this requirement. Whatever you put
-            here is saved to your profile, so the next grant that asks for it
-            starts from what you&apos;ve got.
-          </p>
-
-          <div className="mb-6 rounded-2xl border border-border bg-surface p-6">
-            <div className="mb-3 text-xs font-bold tracking-wider text-ink-muted uppercase">
-              Attach what you have
-            </div>
-            <DataUploadField
-              uploads={wizard.uploads}
-              onAddFiles={addUploads}
-              onAddLink={(link) => addUploads([link])}
-              onRemove={removeUpload}
-            />
-          </div>
-
-          <div className="mb-6 rounded-2xl border border-border bg-surface p-6">
-            <div className="mb-3 text-xs font-bold tracking-wider text-ink-muted uppercase">
-              Or tell us in your own words
-            </div>
-            <AddDataChatBox
-              onAdd={addCustomFound}
-              placeholder="e.g. we have last year's budget in a spreadsheet..."
-            />
-          </div>
-
-          <div className="flex items-center justify-between gap-2.5">
-            <button
-              onClick={() => setStep(wizard.step - 1)}
-              className="inline-flex items-center gap-2 rounded-xl border border-border-strong bg-white px-5 py-3 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 enabled:hover:border-accent"
-            >
-              Back
-            </button>
-            <button
-              onClick={() => setStep(wizard.step + 1)}
-              className="inline-flex items-center gap-2 rounded-xl bg-accent-ink px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px"
             >
               Save and Continue →
             </button>
@@ -464,7 +397,8 @@ export default function DataCollectionWizardPage() {
           </h1>
           <div className="mb-4 flex items-center justify-between gap-3">
             <p className="text-sm leading-relaxed text-ink-muted">
-              Based on the data sources you approved, we identified{" "}
+              Based on the data sources you approved and data from the Vibrancy
+              Portal, we identified{" "}
               {RUEA_SECTIONS.length + wizard.customFound.length} data points that
               are relevant to this grant.
             </p>
@@ -477,7 +411,7 @@ export default function DataCollectionWizardPage() {
           </div>
 
           <div className="mb-2.5 text-xs font-bold tracking-wider text-ink-muted uppercase">
-            From Surveys by New Sun Rising
+            From the Vibrancy Portal
           </div>
           <div className="mb-5 flex flex-col gap-2.5">
             {RUEA_SECTIONS.map((s) => {

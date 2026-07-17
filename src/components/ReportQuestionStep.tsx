@@ -195,7 +195,7 @@ export default function ReportQuestionStep({
             title="Attach a file"
             className="inline-flex flex-none items-center justify-center rounded-xl border border-border-strong bg-white px-4 py-3 text-base text-ink transition duration-150 hover:border-accent"
           >
-            <Icon name="link" size={16} />
+            <Icon name="paperclip" size={16} />
           </button>
           <button
             onClick={send}
@@ -219,7 +219,7 @@ export default function ReportQuestionStep({
                 id={item.id}
                 label={item.label}
                 source={item.source}
-                picked={chat.picks[item.id] ?? true}
+                picked={!!chat.picks[item.id]}
                 onTogglePick={() => onTogglePick(item.id)}
                 onDelete={() => requestDelete(item.id, item.label)}
               />
@@ -237,7 +237,7 @@ export default function ReportQuestionStep({
                     ? `From ${chat.customSources[i]}`
                     : "Added by you"
                 }
-                picked={chat.picks[id] ?? true}
+                picked={!!chat.picks[id]}
                 onTogglePick={() => onTogglePick(id)}
                 onDelete={() => requestDelete(id, text)}
               />

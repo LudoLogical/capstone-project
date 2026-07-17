@@ -60,6 +60,7 @@ export default function DataUploadField({
           onClick={() => fileInputRef.current?.click()}
           className="inline-flex items-center gap-2 rounded-xl bg-accent-ink px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px"
         >
+          <Icon name="paperclip" size={15} />
           Upload files
         </button>
       </div>

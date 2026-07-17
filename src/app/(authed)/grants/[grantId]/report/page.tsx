@@ -52,10 +52,10 @@ const REQUIREMENT_SUGGESTIONS = [
 ];
 
 /**
- * Every data point we gather is analyzed by default; an explicit `false` is the
- * user opting one out. Unset therefore reads as checked, not unchecked.
+ * Data points start unchecked: the user opts each one in. Unset therefore reads
+ * as unchecked.
  */
-const isPicked = (picks: Record<string, boolean>, id: string) => picks[id] ?? true;
+const isPicked = (picks: Record<string, boolean>, id: string) => !!picks[id];
 
 type QuestionStepId = keyof ReportState["chat"];
 
@@ -567,7 +567,7 @@ export default function ReportFlowPage() {
                 information below will be used without your permission.
               </p>
               <div className="mb-2.5 text-xs font-bold tracking-wider text-ink-muted uppercase">
-                From Surveys by New Sun Rising
+                From the Vibrancy Portal
               </div>
               <div className="mb-5 flex flex-col gap-3.5 rounded-2xl border border-border bg-surface p-6">
                 {(["surveys", "budget", "orgAssess"] as const).map((key) => {

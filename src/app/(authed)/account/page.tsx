@@ -50,7 +50,7 @@ export default function AccountProfilePage() {
         kind="file"
         description="Files you've uploaded while working on applications and outcome reports. We save them and pull from them the next time you apply or report."
         addLabel="Upload new file"
-        addIcon="plus"
+        addIcon="paperclip"
         fileUpload
         verb="Uploaded"
         items={REPOSITORY_FILES}
