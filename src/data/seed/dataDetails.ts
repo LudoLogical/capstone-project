@@ -1,6 +1,7 @@
-// Content behind the "View summary" / "Open form" data-detail modal in the
-// "Share your context" step of both the Data Collection Wizard and the
-// Repository Report Flow.
+// Content behind the source rows in the "Share your context" step of both the
+// Data Collection Wizard and the Repository Report Flow. Each row's action
+// button is wired to the corresponding Vibrancy Portal flow at deployment; in
+// this app the button performs no navigation.
 export type DataDetailEntry = {
   key: string;
   label: string;
@@ -9,13 +10,6 @@ export type DataDetailEntry = {
   // Plain-language explanation of how this data source feeds the analysis,
   // shown behind the "How is this used?" button.
   usage: string;
-  summary?: { question: string; answer: string }[];
-  // `kind` drives input validation: "number" fields accept digits only.
-  formFields?: {
-    label: string;
-    placeholder: string;
-    kind?: "text" | "number";
-  }[];
 };
 
 export const DATA_DETAILS: Record<string, DataDetailEntry> = {
@@ -26,11 +20,6 @@ export const DATA_DETAILS: Record<string, DataDetailEntry> = {
     completed: true,
     usage:
       "Your Annual Impact Surveys are the backbone of your outcome data. The AI pulls the figures you reported - residents served, retention, program reach - and turns them into cited evidence, then compares each one against county and peer benchmarks so your numbers land in context.",
-    summary: [
-      { question: "How many unique residents did you serve in 2025?", answer: "1,240" },
-      { question: "What percentage of participants returned for a second season?", answer: "68%" },
-      { question: "What was your biggest program challenge this year?", answer: "Winter attendance drop-off in the walking groups." },
-    ],
   },
   budget: {
     key: "budget",
@@ -39,11 +28,6 @@ export const DATA_DETAILS: Record<string, DataDetailEntry> = {
     completed: true,
     usage:
       "Your Budget Records let the AI ground your work in dollars. It uses your operating budget, grant-funded share, and largest expense categories to show funders the efficiency and scale of your programs, and to frame a realistic funding ask.",
-    summary: [
-      { question: "Total annual operating budget", answer: "$420,000" },
-      { question: "Percentage grant-funded", answer: "~60%" },
-      { question: "Largest single expense category", answer: "Program staff salaries" },
-    ],
   },
   orgAssess: {
     key: "orgAssess",
@@ -52,10 +36,24 @@ export const DATA_DETAILS: Record<string, DataDetailEntry> = {
     completed: false,
     usage:
       "Your Organizational Assessment tells the AI about your capacity - years of operation, board and staff size. It uses this to establish your organization's readiness and stability, which reviewers weigh heavily when deciding who can deliver.",
-    formFields: [
-      { label: "Years of operation", placeholder: "e.g. 8", kind: "number" },
-      { label: "Board size", placeholder: "e.g. 7", kind: "number" },
-      { label: "Staff size (FTE)", placeholder: "e.g. 4.5", kind: "number" },
-    ],
   },
 };
+
+/**
+ * The label for a source row's action button in the "Share your context" step.
+ * It depends on the source and, for some, on whether it has been completed yet.
+ * The button itself does nothing in this app - the deployment integration wires
+ * each one to the matching Vibrancy Portal flow.
+ */
+export function dataActionLabel(key: string, completed: boolean): string {
+  switch (key) {
+    case "surveys":
+      return completed ? "Review your answers" : "Take the survey";
+    case "budget":
+      return "Open the BMS";
+    case "orgAssess":
+      return completed ? "Review your scores" : "Take the assessment";
+    default:
+      return completed ? "Review" : "Open form";
+  }
+}

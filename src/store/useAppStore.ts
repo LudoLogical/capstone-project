@@ -315,13 +315,6 @@ type AppState = {
   report: Record<string, ReportState>;
   contactRequested: Record<string, boolean>;
 
-  // Vibrancy Portal data forms the user has filled out, keyed by data-detail
-  // key (e.g. "orgAssess"). Presence of an entry means the form is completed;
-  // the map holds the submitted field values so the summary view can show them.
-  // Submitted from a separate browser tab, so this is synced across tabs via
-  // the storage event in StoreHydrator.
-  dataForms: Record<string, Record<string, string>>;
-
   couplingModal: CouplingModal;
 
   // Lightweight navigation history stack (transient, not persisted). The last
@@ -395,8 +388,6 @@ type AppState = {
 
   requestContact: (initiativeId: string) => void;
 
-  submitDataForm: (key: string, values: Record<string, string>) => void;
-
   addToast: (text: string) => void;
   removeToast: (id: number) => void;
 };
@@ -444,8 +435,6 @@ export const useAppStore = create<AppState>()(
       wizard: {},
       report: {},
       contactRequested: {},
-
-      dataForms: {},
 
       couplingModal: null,
 
@@ -633,11 +622,6 @@ export const useAppStore = create<AppState>()(
           contactRequested: { ...state.contactRequested, [initiativeId]: true },
         })),
 
-      submitDataForm: (key, values) =>
-        set((state) => ({
-          dataForms: { ...state.dataForms, [key]: values },
-        })),
-
       addToast: (text) => {
         const id = ++toastCounter;
         set((state) => ({ toasts: [...state.toasts, { id, text }] }));
@@ -684,7 +668,6 @@ export const useAppStore = create<AppState>()(
         wizard: state.wizard,
         report: state.report,
         contactRequested: state.contactRequested,
-        dataForms: state.dataForms,
       }),
     },
   ),

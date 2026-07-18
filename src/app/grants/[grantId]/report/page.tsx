@@ -10,6 +10,7 @@ import {
   POINT_ANALYSES,
   REPORT_QUESTION_STEPS,
   RUEA_SECTIONS,
+  dataActionLabel,
 } from "@/data/seed";
 import CheckboxRow from "@/components/CheckboxRow";
 import ReportQuestionStep from "@/components/ReportQuestionStep";
@@ -27,7 +28,6 @@ import {
   X,
   ChevronDown,
   ArrowRight,
-  ArrowUpRight,
 } from "lucide-react";
 
 const STEP_NAV = [
@@ -97,11 +97,9 @@ export default function ReportFlowPage() {
   const view = useGrantView(grantId);
   const report = useAppStore((s) => s.getReport(grantId));
   const updateReport = useAppStore((s) => s.updateReport);
-  const dataForms = useAppStore((s) => s.dataForms);
   const addToast = useAppStore((s) => s.addToast);
   const dontAskDeleteFound = useAppStore((s) => s.dontAskDeleteFound);
   const setDontAskDeleteFound = useAppStore((s) => s.setDontAskDeleteFound);
-  const [dataModalKey, setDataModalKey] = useState<string | null>(null);
   const [usageKey, setUsageKey] = useState<string | null>(null);
   const [reqDraft, setReqDraft] = useState("");
   // Inline edit state for a user-added analysis on the Analysis step.
@@ -126,14 +124,14 @@ export default function ReportFlowPage() {
   const autoCheckedRef = useRef<Record<string, boolean>>({});
   useEffect(() => {
     (["surveys", "budget", "orgAssess"] as const).forEach((key) => {
-      const completed = DATA_DETAILS[key].completed || !!dataForms[key];
+      const completed = DATA_DETAILS[key].completed;
       if (!completed || autoCheckedRef.current[key]) return;
       autoCheckedRef.current[key] = true;
       updateReport(grantId, (r) =>
         r.share[key] ? r : { ...r, share: { ...r.share, [key]: true } },
       );
     });
-  }, [dataForms, report.share, grantId, updateReport]);
+  }, [report.share, grantId, updateReport]);
 
   if (!view) return null;
   const { grant } = view;
@@ -194,17 +192,6 @@ export default function ReportFlowPage() {
     }));
 
   const questionStepId = QUESTION_STEP_ID_BY_INDEX[report.step];
-  const dataModal = dataModalKey ? DATA_DETAILS[dataModalKey] : null;
-  // A data form completed from the new-tab form has no seed summary; fall back
-  // to showing the values the user submitted.
-  const dataModalSummary =
-    dataModal?.summary ??
-    (dataModalKey && dataForms[dataModalKey]
-      ? Object.entries(dataForms[dataModalKey]).map(([question, answer]) => ({
-          question,
-          answer,
-        }))
-      : null);
 
   // The analysis always tracks the review: every data point still selected there
   // gets a card here, and unselecting one drops its card. Points backed by an
@@ -580,7 +567,7 @@ export default function ReportFlowPage() {
               <div className="mb-5 flex flex-col gap-3.5 rounded-2xl border border-border bg-surface p-6">
                 {(["surveys", "budget", "orgAssess"] as const).map((key) => {
                   const d = DATA_DETAILS[key];
-                  const completed = d.completed || !!dataForms[key];
+                  const completed = d.completed;
                   return (
                     <div
                       key={key}
@@ -600,25 +587,12 @@ export default function ReportFlowPage() {
                           How is this used?
                         </button>
                         <button
-                          onClick={() =>
-                            completed
-                              ? setDataModalKey(key)
-                              : window.open(
-                                  `/data/${key}`,
-                                  "_blank",
-                                  "noopener,noreferrer",
-                                )
-                          }
+                          // Intentionally inert: the deployment integration
+                          // wires this to the matching Vibrancy Portal flow.
+                          onClick={() => {}}
                           className="inline-flex items-center gap-2 rounded-lg border border-border-strong bg-white px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 enabled:hover:border-accent disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                          {completed ? (
-                            "View summary"
-                          ) : (
-                            <>
-                              Open form{" "}
-                              <ArrowUpRight size={14} className="shrink-0" />
-                            </>
-                          )}
+                          {dataActionLabel(key, completed)}
                         </button>
                       </div>
                     </div>
@@ -1205,39 +1179,6 @@ export default function ReportFlowPage() {
         </Modal>
       )}
 
-      {dataModal && (
-        <Modal
-          open
-          onClose={() => setDataModalKey(null)}
-          title={dataModal.label}
-        >
-          {dataModalSummary ? (
-            <div className="flex flex-col gap-3">
-              {dataModalSummary.map((row) => (
-                <div key={row.question}>
-                  <div className="mb-0.5 text-xs text-ink-muted">
-                    {row.question}
-                  </div>
-                  <div className="text-sm font-semibold">{row.answer}</div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-col gap-3">
-              {dataModal.formFields?.map((f) => (
-                <div key={f.label}>
-                  <div className="mb-1 text-xs text-ink-muted">{f.label}</div>
-                  <input
-                    inputMode={f.kind === "number" ? "decimal" : undefined}
-                    className="w-full rounded-xl border border-border-strong bg-white px-4 py-3 text-sm text-ink outline-none"
-                    placeholder={f.placeholder}
-                  />
-                </div>
-              ))}
-            </div>
-          )}
-        </Modal>
-      )}
     </div>
   );
 }
