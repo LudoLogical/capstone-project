@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import AppHeader from "./AppHeader";
+import NavTracker from "./NavTracker";
 import CouplingModals from "./CouplingModals";
 import ToastHost from "./ToastHost";
 
@@ -20,6 +21,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
         Skip to main content
       </a>
       <AppHeader />
+      <NavTracker />
       <main id="nc-main" className="flex-1 px-4 pb-8 sm:px-8">
         {children}
       </main>

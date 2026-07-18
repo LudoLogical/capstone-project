@@ -20,9 +20,7 @@ export default function AppHeader() {
   const router = useRouter();
   const pathname = usePathname();
   const hydrated = useHydrated();
-  const signedIn = useAppStore((s) => s.signedIn);
   const onboarded = useAppStore((s) => s.onboarded);
-  const signIn = useAppStore((s) => s.signIn);
   const person = usePersonName();
 
   // Onboarding is the entry point and takes over the full screen; hide the app
@@ -73,42 +71,31 @@ export default function AppHeader() {
         </div>
       </div>
 
-      {signedIn && (
-        <nav className="ml-2 flex gap-1">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              aria-current={item.active ? "page" : undefined}
-              className={navClass(item.active)}
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-      )}
+      <nav className="ml-2 flex gap-1">
+        {navItems.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            aria-current={item.active ? "page" : undefined}
+            className={navClass(item.active)}
+          >
+            {item.label}
+          </Link>
+        ))}
+      </nav>
 
       <div className="flex-1" />
 
-      {signedIn ? (
-        <div className="flex items-center gap-2.5">
-          <Link
-            href="/account"
-            aria-label="Your profile"
-            title="Your profile"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border-strong bg-accent text-sm font-bold text-white no-underline ring-3 ring-glow"
-          >
-            {initials}
-          </Link>
-        </div>
-      ) : (
-        <button
-          onClick={() => signIn()}
-          className="px-2.5 py-2 text-sm font-medium text-ink-muted enabled:hover:text-ink"
+      <div className="flex items-center gap-2.5">
+        <Link
+          href="/account"
+          aria-label="Your profile"
+          title="Your profile"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border-strong bg-accent text-sm font-bold text-white no-underline ring-3 ring-glow"
         >
-          Sign in
-        </button>
-      )}
+          {initials}
+        </Link>
+      </div>
     </header>
   );
 }

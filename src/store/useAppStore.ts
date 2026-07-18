@@ -274,14 +274,13 @@ export type CouplingModal = {
 } | null;
 
 type AppState = {
-  signedIn: boolean;
   privacyAcked: boolean;
   // Set once the user picks "Yes, don't ask again" when deleting a found data
   // point in the report flow; suppresses the confirmation afterward.
   dontAskDeleteFound: boolean;
 
-  // First-run onboarding: a signed-in user who has not finished onboarding is
-  // shown the welcome + org-details flow before the dashboard.
+  // First-run onboarding: a user who has not finished onboarding is shown the
+  // welcome + org-details flow before the dashboard.
   onboarded: boolean;
   onboardStep: number;
   onboardOrg: OnboardOrg;
@@ -338,7 +337,6 @@ type AppState = {
 
   // actions
   recordNav: (path: string) => void;
-  signIn: () => void;
   ackPrivacy: () => void;
   setDontAskDeleteFound: () => void;
 
@@ -408,7 +406,6 @@ let toastCounter = 0;
 export const useAppStore = create<AppState>()(
   persist(
     (set, get) => ({
-      signedIn: false,
       privacyAcked: false,
       dontAskDeleteFound: false,
       onboarded: false,
@@ -475,7 +472,6 @@ export const useAppStore = create<AppState>()(
           return { navStack: [...stack, path], navCount };
         }),
 
-      signIn: () => set({ signedIn: true }),
       setDontAskDeleteFound: () => set({ dontAskDeleteFound: true }),
       ackPrivacy: () => set({ privacyAcked: true }),
 
@@ -506,10 +502,9 @@ export const useAppStore = create<AppState>()(
             },
           };
         }),
-      // Finishing (or skipping) onboarding is now the entry point - there's no
-      // separate landing/sign-in step - so it also signs the user in.
-      completeOnboarding: () =>
-        set({ onboarded: true, onboardStep: 0, signedIn: true }),
+      // Finishing (or skipping) onboarding is the entry point - there's no
+      // separate landing step - so it drops the user straight onto the dashboard.
+      completeOnboarding: () => set({ onboarded: true, onboardStep: 0 }),
 
       setStage: (grantId, stage) =>
         set((state) => ({
@@ -656,8 +651,8 @@ export const useAppStore = create<AppState>()(
 
       // localStorage does not exist on the server. Without this, zustand would
       // rehydrate during module init on the client and the very first client
-      // render would disagree with the server-rendered HTML (signedIn: true vs
-      // false), which React reports as a hydration mismatch. Deferring
+      // render would disagree with the server-rendered HTML (e.g. onboarded:
+      // true vs false), which React reports as a hydration mismatch. Deferring
       // rehydration to <StoreHydrator/> keeps that first render identical to
       // the server's; the persisted state then lands as an ordinary update.
       skipHydration: true,
@@ -676,7 +671,6 @@ export const useAppStore = create<AppState>()(
       },
 
       partialize: (state) => ({
-        signedIn: state.signedIn,
         privacyAcked: state.privacyAcked,
         dontAskDeleteFound: state.dontAskDeleteFound,
         onboarded: state.onboarded,

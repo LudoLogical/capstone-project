@@ -334,9 +334,7 @@ export default function HomePage() {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const hydrated = useHydrated();
-  const signedIn = useAppStore((s) => s.signedIn);
   const onboarded = useAppStore((s) => s.onboarded);
-  const signIn = useAppStore((s) => s.signIn);
   const openCouplingModal = useAppStore((s) => s.openCouplingModal);
   const onboardOrg = useAppStore((s) => s.onboardOrg);
   const personName = usePersonName();
@@ -389,7 +387,6 @@ export default function HomePage() {
   const applyFilters = useAppStore((s) => s.applyFilters);
 
   const goSearch = () => {
-    signIn();
     setDraftFilters({ query });
     applyFilters();
     router.push("/search");
@@ -705,28 +702,6 @@ export default function HomePage() {
             />
           </div>
         </div>
-      )}
-
-      {/* ── Signed-out prompt to reveal the personal board ────── */}
-      {hydrated && !signedIn && (
-        <section className="mb-10 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border bg-surface-alt p-6">
-          <div className="min-w-60 flex-1">
-            <div className="mb-1 text-base font-bold">
-              Sign in to your portal
-            </div>
-            <p className="text-sm leading-normal text-ink-muted">
-              See the applications you&apos;re writing, your awarded grant
-              reports, and your saved grants - all in one place.
-            </p>
-          </div>
-          <button
-            onClick={() => signIn()}
-            className="inline-flex items-center gap-2 rounded-xl bg-accent-ink px-6 py-3.5 text-base font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px"
-          >
-            Sign in to your portal{" "}
-            <ArrowRight size={18} className="shrink-0" />
-          </button>
-        </section>
       )}
 
       {/* ── Success stories: always visible ──────────────────── */}

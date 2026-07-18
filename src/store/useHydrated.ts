@@ -13,9 +13,9 @@ import { useAppStore } from "./useAppStore";
  * hydration mismatch. <StoreHydrator/> then triggers rehydration one commit
  * later, `onFinishHydration` fires, and this flips to `true` as a normal update.
  *
- * Anything that branches on persisted state - above all `RequireAuth`, which
- * would otherwise see `signedIn: false` and bounce a signed-in user back to the
- * landing page on every refresh - must wait for this before acting.
+ * Anything that branches on persisted state - above all the onboarding gate,
+ * which would otherwise see `onboarded: false` and flash the welcome flow at a
+ * returning user on every refresh - must wait for this before acting.
  */
 export function useHydrated(): boolean {
   return useSyncExternalStore(
