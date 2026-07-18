@@ -57,7 +57,6 @@ export const RECORD_HEALTHY_NEIGHBORHOODS: GrantRecord = {
   id: "gr-healthy-neighborhoods",
   grant: GRANT_HEALTHY_NEIGHBORHOODS,
   alignmentAnalysis: {
-    estimatedFit: 88,
     pros: [
       "Hilltop Wellness Collective's service area sits entirely within Pittsburgh city limits, satisfying the grant's location requirement.",
       "The collective's health-equity focus lines up with the grant's target of neighborhoods carrying the highest rates of chronic disease.",
@@ -98,7 +97,6 @@ export const RECORD_YOUTH_DIGITAL_WELLNESS: GrantRecord = {
   id: "gr-youth-digital-wellness",
   grant: GRANT_YOUTH_DIGITAL_WELLNESS,
   alignmentAnalysis: {
-    estimatedFit: 54,
     pros: [
       "The collective's youth programming overlaps with the grant's focus on digital literacy outside the classroom.",
       "The collective is a Pittsburgh 501(c)(3), which satisfies the grant's entity-type criterion.",
@@ -199,7 +197,6 @@ export const RECORD_FOOD_ACCESS: GrantRecord = {
   id: "gr-food-access",
   grant: GRANT_FOOD_ACCESS,
   alignmentAnalysis: {
-    estimatedFit: 82,
     pros: [
       "Hilltop Wellness Collective's fresh-food distribution program matched this grant's food-desert eligibility criteria.",
       "39% of households in the collective's tract sit outside a 10-minute walk of fresh produce, establishing the access gap the grant targets.",
@@ -226,7 +223,6 @@ export const RECORD_GREEN_SPACES: GrantRecord = {
   id: "gr-green-spaces",
   grant: GRANT_GREEN_SPACES,
   alignmentAnalysis: {
-    estimatedFit: 41,
     pros: [
       "The collective works within Allegheny County, one of the grant's target regions.",
       "Community is both a stated issue area for the collective and a focus of this grant.",
@@ -256,7 +252,6 @@ export const RECORD_SENIOR_MOBILITY: GrantRecord = {
   id: "gr-senior-mobility",
   grant: GRANT_SENIOR_MOBILITY,
   alignmentAnalysis: {
-    estimatedFit: 76,
     pros: [
       "Health and Community are stated issue areas for both the collective and this grant.",
       "The collective's neighborhood walking groups already address exactly the kind of mobility barrier the grant funds.",

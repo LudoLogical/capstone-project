@@ -4,7 +4,11 @@ import type {
   DocumentSource,
   NSRServiceDatum,
 } from "@/types/data";
-import { InitiativeSourceKind } from "@/types/data";
+import {
+  InitiativeSourceKind,
+  NSRService,
+  VisualizationMethod,
+} from "@/types/data";
 import type { DatumAnalysis } from "@/types/analysis";
 import { REGION_HILLTOP_TRACT } from "./geo";
 
@@ -53,7 +57,7 @@ export const DATUM_CVD_RATE: AuthoritativeDatum = {
   content: "Cardiovascular disease rate among Hilltop adults",
   citation:
     "Allegheny County Health Department, 2025 Community Health Assessment",
-  evaluateMethod: "bar",
+  visualizationMethod: VisualizationMethod.BarChart,
   indicator: "chronic disease",
   region: REGION_HILLTOP_TRACT,
   value: 8.4,
@@ -66,7 +70,7 @@ export const DATUM_PRODUCE_ACCESS: AuthoritativeDatum = {
   id: 2,
   content: "Households within a 10-minute walk of fresh produce",
   citation: "Vibrancy Index, Food Access Layer, 2025",
-  evaluateMethod: "bar",
+  visualizationMethod: VisualizationMethod.BarChart,
   indicator: "food access",
   region: REGION_HILLTOP_TRACT,
   value: 61,
@@ -81,8 +85,11 @@ export const DATUM_OAT_RESOURCES: NSRServiceDatum = {
   id: 5,
   content: "Hilltop Wellness Collective scored 3/4 on Resources.",
   citation: "Hilltop Wellness Collective Organizational Assessment, 2025",
-  evaluateMethod: "bar",
-  service: "OAT",
+  visualizationMethod: VisualizationMethod.BulletChart,
+  service: NSRService.OrganizationalAssessmentTool,
+  numerator: 3,
+  denominator: 4,
+  unit: "points",
 };
 
 // ---- Initiative-supplied data ----------------------------------------------
@@ -92,7 +99,7 @@ export const DATUM_RESIDENTS_REACHED: InitiativeDatum = {
   content:
     "1,240 unique residents served by Hilltop Wellness Collective programs in 2025",
   citation: "Hilltop Wellness Collective, 2025 Annual Impact Survey",
-  evaluateMethod: "bar",
+  visualizationMethod: VisualizationMethod.None,
   source: SRC_ANNUAL_IMPACT_SURVEY,
 };
 
@@ -100,7 +107,7 @@ export const DATUM_PROGRAM_RETENTION: InitiativeDatum = {
   id: 7,
   content: "68% of program participants returned for a second season",
   citation: "Hilltop Wellness Collective, 2025 Annual Impact Survey",
-  evaluateMethod: "bar",
+  visualizationMethod: VisualizationMethod.None,
   source: SRC_ANNUAL_IMPACT_SURVEY,
 };
 

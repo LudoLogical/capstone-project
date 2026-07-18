@@ -17,9 +17,52 @@ import { Indicator, Issue } from "./constants";
 import { Region } from "./geo";
 
 /**
+ * Defines the methods by which a Datum can be visually contextualized.
+ */
+export enum VisualizationMethod {
+  /**
+   * Compares Datum.value against Datum.context.average on a horizontal bar
+   * chart in which the axis is scaled to Datum.context.maximum.
+   *
+   * Required for (and only works with) AuthoritativeDatum instances.
+   */
+  BarChart = "BAR_CHART",
+
+  /**
+   * Visualizes Datum.numerator as a fraction of Datum.denominator
+   * on a single horizontal bar.
+   *
+   * Required for (and only works with) BMSDatum instances and
+   * OATDatum instances.
+   */
+  BulletChart = "BULLET_CHART",
+
+  /**
+   * If Datum.samples.length > 1, plots the value properties of each sample
+   * in Datum.samples on a line chart arranged vertically by their relative
+   * magnitude and horizontally by their corresponding year properties.
+   *
+   * If Datum.samples.length = 1, prominently displays the value property
+   * of the singleton sample in Datum.samples and labels it with its
+   * corresponding year property.
+   *
+   * Required for (and only works with) quantitative AISDatum instances.
+   */
+  LineChartOrBigNumberDisplay = "LINE_CHART_OR_BIG_NUMBER_DISPLAY",
+
+  /**
+   * Indicates that no contextualizing visual should be produced.
+   *
+   * Required for qualitative AISDatum instances
+   * and all InitiativeDatum instances.
+   */
+  None = "NONE",
+}
+
+/**
  * An abstract type that defines the properties shared by all Datum variants.
  */
-export type BaseDatum = {
+type BaseDatum = {
   /**
    * The unique ID of this Datum.
    */
@@ -27,6 +70,9 @@ export type BaseDatum = {
 
   /**
    * A short, descriptive statement of this Datum.
+   *
+   * Generated using artificial intelligence if and only if this Datum
+   * is an InitiativeDatum; created from a template string otherwise.
    */
   content: string;
 
@@ -36,12 +82,9 @@ export type BaseDatum = {
   citation: string;
 
   /**
-   * The method by which this Datum should be visualized.
-   *
-   * @alpha
-   * *The feature associated with this property is currently under review.*
+   * The method by which this Datum should be visually contextualized, if any.
    */
-  evaluateMethod: "bar" /* | "other" | "things" | ... */;
+  visualizationMethod: VisualizationMethod;
 };
 
 /**
@@ -107,26 +150,144 @@ export type AuthoritativeDatum = BaseDatum & {
    * The method by which this AuthoritativeDatum should be visualized.
    *
    * @override
-   * An AuthoritativeDatum must be visualized using a bar chart.
+   * AuthoritativeDatum instances must be visualized using bar charts.
    */
-  evaluateMethod: "bar";
+  visualizationMethod: VisualizationMethod.BarChart;
+};
+
+/**
+ * Defines the NSR services from which an NSRServiceDatum may originate.
+ */
+export enum NSRService {
+  AnnualImpactSurvey = "ANNUAL_IMPACT_SURVEY",
+  BudgetManagementSystem = "BUDGET_MANAGEMENT_SYSTEM",
+  OrganizationalAssessmentTool = "ORGANIZATIONAL_ASSESSMENT_TOOL",
+}
+
+/**
+ * An abstract type that defines the properties shared by all
+ * NSRServiceDatum instances.
+ */
+type BaseNSRServiceDatum = BaseDatum & {
+  /**
+   * The NSR service from which this NSRServiceDatum originates.
+   */
+  service: NSRService;
+};
+
+/**
+ * An NSRServiceDatum that originates from one or more completed
+ * Annual Impact Surveys. Can be either quantitative or qualitative.
+ */
+export type AISDatum = BaseNSRServiceDatum & {
+  /**
+   * A complete list of the responses for this AISDatum across all of the
+   * Annual Impact Surveys completed by the Initiative that it describes.
+   * Each response value is accompanied by the year to which it applies.
+   *
+   * This property must be defined in only and all
+   * quantitative AISDatum instances.
+   */
+  samples?: {
+    /**
+     * The quantitative value of this sample.
+     */
+    value: number;
+
+    /**
+     * The year to which this sample corresopnds.
+     */
+    year: number;
+  }[];
+
+  /**
+   * The unit in which the value(s) that
+   * comprise this AISDatum is/are expressed.
+   *
+   * This property must be defined in only and all
+   * quantitative AISDatum instances.
+   */
+  unit?: string;
+
+  /**
+   * The method by which this AISDatum should be visualized.
+   *
+   * @override
+   * Quantitative AISDatum instances must be visualized using either
+   * line charts or big number displays depending on the number of
+   * samples available. Qualitative AISDatum instances cannot be
+   * visually contextualized.
+   */
+  visualizationMethod:
+    | VisualizationMethod.LineChartOrBigNumberDisplay
+    | VisualizationMethod.None;
+};
+
+/**
+ * An NSRServiceDatum that originates from
+ * one or more Budget Management Service records.
+ */
+export type BMSDatum = BaseNSRServiceDatum & {
+  /**
+   * The quantitative value of this BMSDatum.
+   */
+  numerator: number;
+
+  /**
+   * The hypothetical maximum value of this BMSDatum against
+   * which its numerator will be visually contextualized.
+   */
+  denominator: number;
+
+  /**
+   * The unit in which the value of this BMSDatum is expressed.
+   */
+  unit: string;
+
+  /**
+   * The method by which this BMSDatum should be visualized.
+   *
+   * @override
+   * BMSDatum instances must be visualized using bullet charts.
+   */
+  visualizationMethod: VisualizationMethod.BulletChart;
+};
+
+/**
+ * An NSRServiceDatum that originates from
+ * an Initiative's most recent Organizational Assessment results.
+ */
+export type OATDatum = BaseNSRServiceDatum & {
+  /**
+   * The quantitative value of this OATDatum.
+   */
+  numerator: number;
+
+  /**
+   * The hypothetical maximum value of this OATDatum against
+   * which its numerator will be visually contextualized.
+   */
+  denominator: number;
+
+  /**
+   * The unit in which the value of this OATDatum is expressed.
+   */
+  unit: string;
+
+  /**
+   * The method by which this OATDatum should be visualized.
+   *
+   * @override
+   * OAT instances must be visualized using bullet charts.
+   */
+  visualizationMethod: VisualizationMethod.BulletChart;
 };
 
 /**
  * A Datum that originates from another service that is
  * operated and managed by NSR.
- *
- * @alpha
- * *The feature associated with this type is currently under review.
- * Outstanding details include an enumeration of the desired inputs, outputs,
- * and evaluateMethods for each NSRServiceDatum that will be supported.*
  */
-export type NSRServiceDatum = BaseDatum & {
-  /**
-   * The NSR service from which this NSRServiceDatum originates.
-   */
-  service: "BMS" | "AIS" | "OAT";
-};
+export type NSRServiceDatum = AISDatum | BMSDatum | OATDatum;
 
 /**
  * Defines the kinds (i.e., subtypes) of InitiativeSources that exist.
@@ -141,7 +302,7 @@ export enum InitiativeSourceKind {
  * An abstract type that defines the properties shared by
  * all InitiativeSources.
  */
-export type BaseInitiativeSource = {
+type BaseInitiativeSource = {
   /**
    * The InitiativeSourceKind of this InitiativeSource.
    */
@@ -257,19 +418,20 @@ export type InitiativeSource = ChatSource | DocumentSource | WebpageSource;
 
 /**
  * A Datum that originates from an InitiativeSource.
- *
- * @alpha
- * *A feature associated with this type is currently under review.
- * Outstanding details include an enumeration of the evaluateMethod(s) that
- * will be supported and, if there is more than one of them, the strategy/ies
- * that will be employed to determine which one should be applied to a given
- * InitiativeDatum.*
  */
 export type InitiativeDatum = BaseDatum & {
   /**
    * The source from which this InitiativeDatum originates.
    */
   source: InitiativeSource;
+
+  /**
+   * The method by which this InitiativeDatum should be visualized.
+   *
+   * @override
+   * InitiativeDatum instances cannot be visually contextualized.
+   */
+  visualizationMethod: VisualizationMethod.None;
 };
 
 /**

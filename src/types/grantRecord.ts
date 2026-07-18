@@ -103,17 +103,6 @@ type GrantRecord = {
    */
   alignmentAnalysis: {
     /**
-     * An approximation of the strength of the alignment between the
-     * associated Initiative and the associated Grant on a scale
-     * from 0 (no alignment) to 100 (perfect alignment).
-     *
-     * @alpha
-     * The semantic names that are given to the possible values of this
-     * property in the UI have yet to be fully enumerated.
-     */
-    estimatedFit: number;
-
-    /**
      * A list of reasons why the associated Grant might be a good fit
      * for the associated Initiative.
      */

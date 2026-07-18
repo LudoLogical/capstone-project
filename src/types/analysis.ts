@@ -21,9 +21,6 @@ export type DatumAnalysis = {
 
   /**
    * The actual content of this DatumAnalysis.
-   *
-   * @alpha
-   * *The feature associated with this property is currently under review.*
    */
   result: {
     /**
