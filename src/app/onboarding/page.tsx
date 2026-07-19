@@ -16,18 +16,18 @@ import {
 const FEATURES: { icon: LucideIcon; title: string; body: string }[] = [
   {
     icon: Search,
-    title: "Find Matching Grants",
-    body: "Describe your work in plain language and let AI rank grants by how well they fit - no more scrolling directories sorted by deadline.",
+    title: "Explore Matching Grants",
+    body: "Sort grants by relevance and get help from AI to assess how well they align with your work. No more skimming through dozens of dead ends.",
   },
   {
     icon: BarChart3,
-    title: "Storytell Your Impact",
-    body: "Turn the numbers you already have into grant-ready framing, every figure traceable to its source. Reporting becomes gathering, not scrambling.",
+    title: "Prove Your Impact",
+    body: "Supercharge your storytelling with local statistics and data you already have into your narratives and pitches. Put your best foot forward and get from applicant to awardee.",
   },
   {
     icon: Users,
-    title: "Find Grant Collaborators",
-    body: "See other New Sun Rising organizations open to teaming up - then ask NSR for a warm introduction. You always decide who to reach.",
+    title: "Meet Potential Collaborators",
+    body: "See other New Sun Rising organizations that are open to teaming up on the grants that interest you and secure warm introductions. You're always in control when and where you're visible.",
   },
 ];
 
@@ -64,7 +64,6 @@ export default function OnboardingPage() {
 
   const matchCount = org.issues.length * 4 + org.areas.length * 3;
   const orgLabel = org.name.trim() || "your organization";
-  const areaLabel = org.areas.length ? org.areas.join(", ") : "Pittsburgh, PA";
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-canvas px-6 py-10">
@@ -101,13 +100,12 @@ export default function OnboardingPage() {
           {step === 0 && (
             <div>
               <h1 className="mb-2 font-serif text-3xl leading-tight font-bold">
-                Everything you need to find and win grants, in one place
+                Find and win the perfect grant
               </h1>
               <p className="mb-6 text-sm leading-relaxed text-ink-muted">
-                The Vibrancy Portal helps your organization find the right
-                grants, tell your impact story with the data you already have,
-                and connect with organizations around you. Here&apos;s the quick
-                rundown.
+                This tool helps your organization discover grants that align
+                with your work, leverage data to enhance your applications and
+                reports, and connect with organizations that share your goals.
               </p>
               <div className="flex flex-col gap-3.5">
                 {FEATURES.map((f) => (
@@ -137,11 +135,14 @@ export default function OnboardingPage() {
                 Tell us about your organization
               </h1>
               <p className="mb-6 text-sm leading-relaxed text-ink-muted">
-                Just the basics - you can change any of this later. It&apos;s
-                what lets us find grants that fit.
+                This info helps us recommend the best grants, data, and
+                collaborators for your organization. You can change it at any
+                time from your profile page.
               </p>
 
-              <label className="mb-2 block text-sm font-bold">Your name</label>
+              <label className="mb-2 block text-sm font-bold">
+                What&apos;s your name?
+              </label>
               <input
                 value={org.person}
                 onChange={(e) => patchOrg({ person: e.target.value })}
@@ -150,7 +151,7 @@ export default function OnboardingPage() {
               />
 
               <label className="mb-2 block text-sm font-bold">
-                Organization name
+                What&apos;s the name of your organization?
               </label>
               <input
                 value={org.name}
@@ -160,9 +161,9 @@ export default function OnboardingPage() {
               />
 
               <div className="mb-2 text-sm font-bold">
-                What issues do you work on?{" "}
-                <span className="font-medium text-ink-muted">
-                  pick all that apply
+                What issues are relevant to your work?
+                <span className="pl-1 font-medium text-ink-muted">
+                  Select all that apply.
                 </span>
               </div>
               <div className="mb-5 flex flex-wrap gap-2">
@@ -179,9 +180,9 @@ export default function OnboardingPage() {
               </div>
 
               <div className="mb-2 text-sm font-bold">
-                Where do you serve?{" "}
-                <span className="font-medium text-ink-muted">
-                  pick all that apply
+                What communities do you serve?
+                <span className="pl-1 font-medium text-ink-muted">
+                  Select all that apply.
                 </span>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -201,10 +202,9 @@ export default function OnboardingPage() {
                 <div className="mt-6 flex items-center gap-2.5 rounded-xl border border-warning-border bg-warning-bg px-4 py-3">
                   <BarChart3 size={16} className="flex-none text-warning-ink" />
                   <p className="text-sm leading-normal text-warning-ink">
-                    <strong>{matchCount} grants</strong>{" "}
-                    in the New Sun Rising network already look relevant -
-                    we&apos;ll have them ready on
-                    your dashboard.
+                    <strong>{matchCount} grants </strong> in our database
+                    already look relevant! They&apos;ll be waiting for you at
+                    the top of your search results.
                   </p>
                 </div>
               )}
@@ -221,26 +221,10 @@ export default function OnboardingPage() {
                 You&apos;re all set.
               </h1>
               <p className="mx-auto mb-6 max-w-md text-sm leading-relaxed text-ink-muted">
-                Here&apos;s what we&apos;ve got ready for you. Everything stays
-                editable in your profile.
+                Thanks for sharing a bit about {orgLabel}!
+                <br />
+                You can edit your responses at any time in your profile.
               </p>
-              <div className="mx-auto max-w-md rounded-2xl border border-border bg-surface-alt px-5 py-1 text-left">
-                {[
-                  `Profile started for ${orgLabel} · ${areaLabel}`,
-                  matchCount > 0
-                    ? `${matchCount} matching grants waiting in search`
-                    : "Grant search ready to explore",
-                  "Impact tracking ready to connect to your reports",
-                ].map((line) => (
-                  <div
-                    key={line}
-                    className="flex items-center gap-3 border-b border-border-soft py-3 last:border-b-0"
-                  >
-                    <Check size={14} className="flex-none text-success-ink-2" />
-                    <span className="text-sm text-ink-secondary">{line}</span>
-                  </div>
-                ))}
-              </div>
             </div>
           )}
 
@@ -256,7 +240,7 @@ export default function OnboardingPage() {
             ) : (
               <button
                 onClick={() => setStep(step - 1)}
-                className="text-sm font-semibold text-ink-secondary hover:text-ink"
+                className="inline-flex items-center gap-2 rounded-xl px-2 text-sm font-semibold whitespace-nowrap text-ink-secondary transition duration-150 hover:text-ink"
               >
                 <ArrowLeft size={16} className="shrink-0" /> Back
               </button>
@@ -275,8 +259,7 @@ export default function OnboardingPage() {
                 onClick={complete}
                 className="inline-flex items-center gap-2 rounded-xl bg-accent-ink px-6 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px"
               >
-                Go to my dashboard{" "}
-                <ArrowRight size={16} className="shrink-0" />
+                Go to my dashboard <ArrowRight size={16} className="shrink-0" />
               </button>
             )}
           </div>
