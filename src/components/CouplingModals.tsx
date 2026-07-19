@@ -5,7 +5,6 @@ import Modal from "./Modal";
 import { useAppStore } from "@/store/useAppStore";
 import { useGrantView, isSavedStage } from "@/store/derived";
 import type { CouplingModal } from "@/store/useAppStore";
-import JargonTerm from "./JargonTerm";
 import { Check } from "lucide-react";
 
 /** The "also do the coupled action" checkbox each prompt offers. */
@@ -69,17 +68,17 @@ function CouplingPrompt({ modal }: { modal: NonNullable<CouplingModal> }) {
   // ── Save: offer to also list as a collaborator ─────────────────
   if (modal.type === "save") {
     return (
-      <Modal open onClose={closeCouplingModal} title="Saved to your grants">
+      <Modal open onClose={closeCouplingModal} title="Looking to collaborate?">
         <p className="text-sm leading-normal text-ink-body">
-          <span className="font-semibold">{grantName}</span> is now in your
-          saved grants.
+          You&apos;re adding <span className="font-semibold">{grantName}</span>{" "}
+          to your saved grants.
         </p>
         <p className="mt-3 text-sm leading-normal text-ink-muted">
-          Want other organizations applying to this grant to find you as a
-          potential{" "}
-          <JargonTerm termKey="discoverable">collaborator</JargonTerm>? This
-          makes your contact details available to other NSR Clients interested
-          in collaborating. You can change this anytime from your profile.
+          Would you also like to list your organization as open to collaborate
+          on this grant? If you opt in, your organization and its contact email
+          will be shown to others when they encounter this grant on the Vibrancy
+          Portal. You can undo this action at any time from this page or on your
+          dashboard.
         </p>
         <div className="mt-5 flex justify-end gap-2.5">
           <button
@@ -202,11 +201,14 @@ function CouplingPrompt({ modal }: { modal: NonNullable<CouplingModal> }) {
 
   // ── Uncollab: offer to also unsave ─────────────────────────────
   return (
-    <Modal open onClose={closeCouplingModal} title="Stop collaborating on this?">
+    <Modal
+      open
+      onClose={closeCouplingModal}
+      title="Stop collaborating on this?"
+    >
       <p className="text-sm leading-normal text-ink-body">
         You&apos;ll be removed from the list of organizations open to
-        collaborating on{" "}
-        <span className="font-semibold">{grantName}</span>.
+        collaborating on <span className="font-semibold">{grantName}</span>.
       </p>
       {saved && (
         <CoupledCheckbox
@@ -254,5 +256,7 @@ function CouplingPrompt({ modal }: { modal: NonNullable<CouplingModal> }) {
 export default function CouplingModals() {
   const modal = useAppStore((s) => s.couplingModal);
   if (!modal) return null;
-  return <CouplingPrompt key={`${modal.type}:${modal.grantId}`} modal={modal} />;
+  return (
+    <CouplingPrompt key={`${modal.type}:${modal.grantId}`} modal={modal} />
+  );
 }
