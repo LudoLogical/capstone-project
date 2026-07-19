@@ -362,7 +362,10 @@ type AppState = {
   // actions apply the choice (optionally doing the coupled action too, per the
   // checkbox the prompt offers). Saving and collaborating can therefore
   // diverge if the user opts out.
-  openCouplingModal: (type: NonNullable<CouplingModal>["type"], grantId: string) => void;
+  openCouplingModal: (
+    type: NonNullable<CouplingModal>["type"],
+    grantId: string,
+  ) => void;
   closeCouplingModal: () => void;
   confirmSave: (grantId: string, alsoDiscover: boolean) => void;
   confirmUnsave: (grantId: string, alsoStopDiscover: boolean) => void;
@@ -493,7 +496,7 @@ export const useAppStore = create<AppState>()(
         }),
       // Finishing (or skipping) onboarding is the entry point - there's no
       // separate landing step - so it drops the user straight onto the dashboard.
-      completeOnboarding: () => set({ onboarded: true, onboardStep: 0 }),
+      completeOnboarding: () => set({ onboarded: true }),
 
       setStage: (grantId, stage) =>
         set((state) => ({
