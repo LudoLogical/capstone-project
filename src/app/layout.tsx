@@ -45,7 +45,10 @@ export default function RootLayout({
         </a>
         <AppHeader />
         <NavTracker />
-        <main id="nc-main" className="flex-1 px-4 pb-8 sm:px-8">
+        {/* No vertical padding here: pages own their own bottom spacing, so a
+            page that sizes itself to the viewport (onboarding's min-h-screen)
+            isn't pushed past it into a needless scrollbar. */}
+        <main id="nc-main" className="flex-1 px-4 sm:px-8">
           <OnboardingGate>{children}</OnboardingGate>
         </main>
         {/* Toasts render last so they paint above the coupling modals:

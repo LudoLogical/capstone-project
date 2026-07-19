@@ -226,7 +226,7 @@ export default function DataCollectionWizardPage() {
   };
 
   return (
-    <div className="mx-auto w-full animate-nc-rise px-8 pt-7 pb-20">
+    <div className="mx-auto w-full animate-nc-rise px-8 pt-7 pb-28">
       <BackButton fallback={`/grants/${grant.id}`} />
       <div className="flex items-start gap-7">
         {/* Same shell as the report flow: a sticky step rail beside the work. */}

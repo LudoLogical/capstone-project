@@ -38,7 +38,7 @@ export default function CollaboratePage() {
   const orgs = orgIds.map((id) => ORG_PROFILES[id]).filter(Boolean);
 
   return (
-    <div className="mx-auto w-full animate-nc-rise px-8 pt-7 pb-20">
+    <div className="mx-auto w-full animate-nc-rise px-8 pt-7 pb-28">
       <BackButton fallback={`/grants/${grant.id}`} />
 
       <div className="flex items-center gap-3">

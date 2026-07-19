@@ -100,7 +100,7 @@ export default function OnboardingPage() {
           {step === 0 && (
             <div>
               <h1 className="mb-2 font-serif text-3xl leading-tight font-bold">
-                Find and win the perfect grant
+                Find and win the perfect grant.
               </h1>
               <p className="mb-6 text-sm leading-relaxed text-ink-muted">
                 This tool helps your organization discover grants that align

@@ -420,7 +420,7 @@ export default function HomePage() {
   const firstName = personName.split(/\s+/)[0];
 
   return (
-    <div className="animate-nc-rise mx-auto w-full px-8 pt-8 pb-20">
+    <div className="animate-nc-rise mx-auto w-full px-8 pt-8 pb-28">
       <div className="mb-6">
         <h1 className="font-serif text-3xl leading-tight font-bold">
           {showPersonal

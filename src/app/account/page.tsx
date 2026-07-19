@@ -41,7 +41,7 @@ export default function AccountProfilePage() {
   const orgName = useOrgName();
 
   return (
-    <div className="animate-nc-rise mx-auto w-full px-8 pt-7 pb-20">
+    <div className="animate-nc-rise mx-auto w-full px-8 pt-7 pb-28">
       <BackButton fallback="/" />
       <h1 className="mb-2.5 font-serif text-3xl leading-tight font-bold">
         {orgName}

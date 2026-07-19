@@ -382,7 +382,7 @@ export default function ReportFlowPage() {
   // requirements. They're then kept in view and woven through every step.
   if (!report.requirementsSet) {
     return (
-      <div className="mx-auto w-full max-w-2xl animate-nc-rise px-8 pt-7 pb-20">
+      <div className="mx-auto w-full max-w-2xl animate-nc-rise px-8 pt-7 pb-28">
         <BackButton fallback="/" />
         <div className="mb-3 inline-flex items-center gap-1 rounded-full border border-accent-tint-border bg-accent-tint px-3 py-1 text-xs font-bold text-accent-ink">
           <BarChart3 size={12} />
@@ -454,7 +454,7 @@ export default function ReportFlowPage() {
   };
 
   return (
-    <div className="mx-auto w-full animate-nc-rise px-8 pt-7 pb-20">
+    <div className="mx-auto w-full animate-nc-rise px-8 pt-7 pb-28">
       <BackButton fallback="/" />
       <div className="flex items-start gap-7">
         <aside className="sticky top-22 w-56 flex-none rounded-2xl border border-border bg-surface p-4">

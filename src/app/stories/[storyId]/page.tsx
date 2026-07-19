@@ -12,7 +12,7 @@ export default function StoryDetailPage() {
 
   if (!story) {
     return (
-      <div className="animate-nc-rise mx-auto w-full px-8 pt-7 pb-20">
+      <div className="animate-nc-rise mx-auto w-full px-8 pt-7 pb-28">
         <p className="leading-relaxed">Story not found.</p>
         <BackButton />
       </div>
@@ -20,7 +20,7 @@ export default function StoryDetailPage() {
   }
 
   return (
-    <div className="animate-nc-rise mx-auto w-full px-8 pt-7 pb-20">
+    <div className="animate-nc-rise mx-auto w-full px-8 pt-7 pb-28">
       <BackButton />
       <div className="overflow-hidden rounded-2xl border border-border bg-surface">
         <div className="flex h-48 items-center justify-center bg-accent text-7xl">

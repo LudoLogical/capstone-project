@@ -21,7 +21,7 @@ export default function OrgProfilePage() {
 
   if (!profile) {
     return (
-      <div className="mx-auto w-full animate-nc-rise px-8 pt-7 pb-20">
+      <div className="mx-auto w-full animate-nc-rise px-8 pt-7 pb-28">
         <p className="leading-relaxed">Organization not found.</p>
       </div>
     );
@@ -39,7 +39,7 @@ export default function OrgProfilePage() {
   );
 
   return (
-    <div className="mx-auto w-full animate-nc-rise px-8 pt-7 pb-20">
+    <div className="mx-auto w-full animate-nc-rise px-8 pt-7 pb-28">
       <BackButton fallback={`/grants/${grantId}/collaborate`} />
       <div className="rounded-2xl border border-border bg-surface p-8">
         <div className="mb-6 flex flex-wrap items-center gap-5">

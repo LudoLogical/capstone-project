@@ -135,7 +135,7 @@ export default function SearchPage() {
     draftFilters.fundMax !== DEFAULT_FILTERS.fundMax;
 
   return (
-    <div className="animate-nc-rise mx-auto w-full px-8 pt-7 pb-20">
+    <div className="animate-nc-rise mx-auto w-full px-8 pt-7 pb-28">
       <BackButton fallback="/" />
       <div className="mb-6">
         <h1 className="font-serif text-3xl leading-tight font-bold">
