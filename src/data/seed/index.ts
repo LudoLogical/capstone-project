@@ -8,7 +8,6 @@ export * from "./grantRecords";
 export * from "./stories";
 export * from "./provenance";
 export * from "./orgProfiles";
-export * from "./accountFacts";
 export * from "./repository";
 export * from "./rueaContent";
 export * from "./dataDetails";

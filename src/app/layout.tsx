@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { Lato } from "next/font/google";
 import "./globals.css";
-import StoreHydrator from "@/components/StoreHydrator";
+import StoreHydrator from "@/components/meta/StoreHydrator";
 import AppHeader from "@/components/AppHeader";
-import NavTracker from "@/components/NavTracker";
-import OnboardingGate from "@/components/OnboardingGate";
+import NavTracker from "@/components/meta/NavTracker";
+import OnboardingGate from "@/components/meta/OnboardingGate";
 import CouplingModals from "@/components/CouplingModals";
 import ToastHost from "@/components/ToastHost";
 
@@ -31,10 +31,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${lato.variable} h-full`}
-    >
+    <html lang="en" className={`${lato.variable} h-full`}>
       <body className="flex min-h-screen flex-col bg-canvas font-ui text-ink antialiased">
         {/* Triggers store rehydration, and must stay outside OnboardingGate:
             the gate renders nothing until hydration finishes, so nesting this
