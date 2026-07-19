@@ -2,34 +2,21 @@
 
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
+import { User } from "lucide-react";
 import { useAppStore } from "@/store/useAppStore";
 import { useHydrated } from "@/store/useHydrated";
-import { usePersonName } from "@/store/derived";
-
-/** Initials from a person's name, e.g. "Maya Torres" → "MT". */
-function initialsOf(name: string): string {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0]?.toUpperCase() ?? "")
-    .join("");
-}
 
 export default function AppHeader() {
   const router = useRouter();
   const pathname = usePathname();
   const hydrated = useHydrated();
   const onboarded = useAppStore((s) => s.onboarded);
-  const person = usePersonName();
 
   // Onboarding takes over the full screen and carries its own brand mark, so
   // the app chrome stays out of the way: on the onboarding route itself, and on
   // any route an unonboarded user is about to be redirected away from.
   if (pathname === "/onboarding") return null;
   if (!hydrated || !onboarded) return null;
-
-  const initials = initialsOf(person);
 
   // Highlight the nav item matching the current route.
   const navItems = [
@@ -93,9 +80,9 @@ export default function AppHeader() {
           href="/account"
           aria-label="Your profile"
           title="Your profile"
-          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border-strong bg-accent text-sm font-bold text-white no-underline ring-3 ring-glow"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border-strong bg-accent text-white no-underline ring-3 ring-glow"
         >
-          {initials}
+          <User size={18} />
         </Link>
       </div>
     </header>

@@ -10,6 +10,7 @@ import {
 } from "@/data/seed";
 import Modal from "@/components/Modal";
 import BackButton from "@/components/BackButton";
+import Pagination from "@/components/Pagination";
 import { useAppStore } from "@/store/useAppStore";
 import { ISSUE_TAGS, LOCATION_OPTIONS } from "@/data/selectors";
 import { useOrgName, usePersonName } from "@/store/derived";
@@ -18,8 +19,6 @@ import {
   Plus,
   Trash2,
   FileText,
-  ArrowLeft,
-  ArrowRight,
   ArrowUpRight,
   type LucideIcon,
 } from "lucide-react";
@@ -510,47 +509,13 @@ function RepositorySection({
         )}
       </div>
 
-      {pageCount > 1 && (
-        <div className="mt-4 flex items-center justify-center gap-6">
-          <button
-            onClick={() => setPage(Math.max(0, safePage - 1))}
-            disabled={safePage === 0}
-            aria-label="Previous page"
-            className="inline-flex items-center gap-1 text-sm font-semibold text-ink-secondary transition duration-150 enabled:hover:text-ink disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            <ArrowLeft size={16} className="shrink-0" /> Prev
-          </button>
-
-          <div className="flex items-center gap-1.5">
-            {Array.from({ length: pageCount }).map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setPage(i)}
-                aria-label={`Go to page ${i + 1}`}
-                aria-current={i === safePage ? "page" : undefined}
-                className={`h-2 w-2 rounded-full transition duration-150 ${
-                  i === safePage ? "bg-accent" : "bg-divider-2 hover:bg-border-strong"
-                }`}
-              />
-            ))}
-          </div>
-
-          <button
-            onClick={() => setPage(Math.min(pageCount - 1, safePage + 1))}
-            disabled={safePage === pageCount - 1}
-            aria-label="Next page"
-            className="inline-flex items-center gap-1 text-sm font-semibold text-ink-secondary transition duration-150 enabled:hover:text-ink disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            Next <ArrowRight size={16} className="shrink-0" />
-          </button>
-        </div>
-      )}
-
-      {pageCount > 1 && (
-        <div className="mt-1 text-center text-xs text-ink-muted">
-          Page {safePage + 1} of {pageCount}
-        </div>
-      )}
+      <Pagination
+        page={safePage}
+        pageCount={pageCount}
+        onPageChange={setPage}
+        label={title}
+        className="mt-4"
+      />
 
       {preview && (
         <Modal open onClose={() => setPreview(null)} title={preview.label}>

@@ -38,6 +38,7 @@ import {
 import ResolvePastDueModal from "@/components/ResolvePastDueModal";
 import Modal from "@/components/Modal";
 import CheckboxRow from "@/components/CheckboxRow";
+import Pagination from "@/components/Pagination";
 
 type Tone = "accent" | "success" | "neutral";
 
@@ -305,25 +306,16 @@ function BoardColumn<T>({
         )}
       </div>
 
-      {pageCount > 1 && (
-        <div className="mt-4 flex items-center justify-center gap-1.5">
-          {Array.from({ length: pageCount }).map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setPage(i)}
-              aria-current={i === safePage ? "page" : undefined}
-              aria-label={`${title}, page ${i + 1}`}
-              className={`min-w-7 rounded-md border px-2 py-1 text-xs font-bold transition duration-150 ${
-                i === safePage
-                  ? "border-ink bg-ink text-white"
-                  : "border-border-strong bg-white text-ink-secondary hover:border-accent"
-              }`}
-            >
-              {i + 1}
-            </button>
-          ))}
-        </div>
-      )}
+      <Pagination
+        page={safePage}
+        pageCount={pageCount}
+        onPageChange={setPage}
+        // A board column sits beside four others, so its pagination stays
+        // compact rather than outweighing the cards it pages.
+        size="sm"
+        label={title}
+        className="mt-4"
+      />
     </section>
   );
 }
@@ -377,7 +369,9 @@ export default function HomePage() {
   const { inProgress, awarded, saved, collaborating, archived } =
     useDashboardGroups();
   // Which archived reason the user is filtering to, or "all".
-  const [archiveFilter, setArchiveFilter] = useState<GrantStatus | "all">("all");
+  const [archiveFilter, setArchiveFilter] = useState<GrantStatus | "all">(
+    "all",
+  );
   const addToast = useAppStore((s) => s.addToast);
   const setDraftFilters = useAppStore((s) => s.setDraftFilters);
   const applyFilters = useAppStore((s) => s.applyFilters);
@@ -398,7 +392,8 @@ export default function HomePage() {
       (v) => v.grant.id === closedGrantId,
     ) ?? null;
   const resolveKind: "deadline" | "decision" | "report" =
-    closedGrant?.status === "awarded" || closedGrant?.status === "report-overdue"
+    closedGrant?.status === "awarded" ||
+    closedGrant?.status === "report-overdue"
       ? "report"
       : closedGrant?.status === "submitted"
         ? "decision"
@@ -438,10 +433,9 @@ export default function HomePage() {
           </div>
         )}
         <p className="mt-3 w-full text-sm leading-relaxed text-ink-muted">
-          This is your home base for grant work. Effectively discover grants
-          that fit your work, find collaborators in the New Sun Rising network
-          to apply for grants together, and tell powerful stories proving your
-          impact with data.
+          This is your home base for grant work. Discover grants that align with
+          your organization, find other NSR client organizations to apply with,
+          and leverage data to make your impact stories more powerful than ever.
         </p>
       </div>
 
@@ -468,7 +462,7 @@ export default function HomePage() {
       {/* ── Personal grant board: signed-in only ─────────────── */}
       {showPersonal && (
         <div className="mb-10">
-          <SectionLabel>Your grants at a glance</SectionLabel>
+          <SectionLabel>Your Grants</SectionLabel>
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <BoardColumn
               icon={FileText}
@@ -681,7 +675,9 @@ export default function HomePage() {
                             label: back.label,
                             onClick: () => {
                               setGrantStatus(v.grant.id, back.status);
-                              addToast(`${back.label.replace("Move back to", "Moved back to")}.`);
+                              addToast(
+                                `${back.label.replace("Move back to", "Moved back to")}.`,
+                              );
                             },
                           }
                         : undefined

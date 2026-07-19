@@ -12,13 +12,14 @@ import {
   sortGrants,
   type SortOption,
 } from "@/data/selectors";
-import { Search, Plus, Minus, ArrowLeft, ArrowRight } from "lucide-react";
+import { Search, Plus, Minus } from "lucide-react";
 import CheckboxRow from "@/components/CheckboxRow";
 import RadioRow from "@/components/RadioRow";
 import RangeHistogram from "@/components/RangeHistogram";
 import GrantCard from "@/components/GrantCard";
 import EmptyState from "@/components/EmptyState";
 import BackButton from "@/components/BackButton";
+import Pagination from "@/components/Pagination";
 
 const SORTS: { key: SortOption; label: string }[] = [
   { key: "relevance", label: "Relevance" },
@@ -366,39 +367,12 @@ export default function SearchPage() {
                 ))}
               </div>
 
-              {pageCount > 1 && (
-                <div className="mt-6 flex items-center justify-center gap-2">
-                  <button
-                    onClick={() => setPage(Math.max(0, safePage - 1))}
-                    disabled={safePage === 0}
-                    className="inline-flex items-center gap-1 rounded-lg border border-border-strong bg-white px-3 py-2 text-sm font-semibold text-ink transition duration-150 enabled:hover:border-accent disabled:cursor-not-allowed disabled:opacity-40"
-                  >
-                    <ArrowLeft size={16} className="shrink-0" /> Prev
-                  </button>
-                  {Array.from({ length: pageCount }).map((_, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setPage(i)}
-                      aria-current={i === safePage ? "page" : undefined}
-                      aria-label={`Page ${i + 1}`}
-                      className={`min-w-9 rounded-lg border px-3 py-2 text-sm font-bold transition duration-150 ${
-                        i === safePage
-                          ? "border-ink bg-ink text-white"
-                          : "border-border-strong bg-white text-ink-secondary hover:border-accent"
-                      }`}
-                    >
-                      {i + 1}
-                    </button>
-                  ))}
-                  <button
-                    onClick={() => setPage(Math.min(pageCount - 1, safePage + 1))}
-                    disabled={safePage === pageCount - 1}
-                    className="inline-flex items-center gap-1 rounded-lg border border-border-strong bg-white px-3 py-2 text-sm font-semibold text-ink transition duration-150 enabled:hover:border-accent disabled:cursor-not-allowed disabled:opacity-40"
-                  >
-                    Next <ArrowRight size={16} className="shrink-0" />
-                  </button>
-                </div>
-              )}
+              <Pagination
+                page={safePage}
+                pageCount={pageCount}
+                onPageChange={setPage}
+                className="mt-6"
+              />
             </>
           )}
         </div>
