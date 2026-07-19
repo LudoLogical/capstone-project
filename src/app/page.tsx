@@ -11,7 +11,6 @@ import {
   UNSUCCESSFUL_STATUSES,
   type GrantStatus,
 } from "@/store/useAppStore";
-import { useHydrated } from "@/store/useHydrated";
 import {
   nextReportDeadline,
   useDashboardGroups,
@@ -20,7 +19,6 @@ import {
   type GrantView,
 } from "@/store/derived";
 import { formatCurrency, formatDate } from "@/utils/format";
-import Onboarding from "@/components/Onboarding";
 import DaysLeftChip from "@/components/DaysLeftChip";
 import {
   Trash2,
@@ -333,8 +331,6 @@ function BoardColumn<T>({
 export default function HomePage() {
   const router = useRouter();
   const [query, setQuery] = useState("");
-  const hydrated = useHydrated();
-  const onboarded = useAppStore((s) => s.onboarded);
   const openCouplingModal = useAppStore((s) => s.openCouplingModal);
   const onboardOrg = useAppStore((s) => s.onboardOrg);
   const personName = usePersonName();
@@ -391,12 +387,6 @@ export default function HomePage() {
     applyFilters();
     router.push("/search");
   };
-
-  // Onboarding is the entry point: there's no separate landing page anymore.
-  // Render nothing until hydrated so the onboarding doesn't flash in after a
-  // blank/landing frame, then show onboarding until it's completed.
-  if (!hydrated) return null;
-  if (!onboarded) return <Onboarding />;
 
   const showPersonal = true;
   const shownArchived =

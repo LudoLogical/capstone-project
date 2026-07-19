@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useAppStore } from "@/store/useAppStore";
 import { ISSUE_TAGS, LOCATION_OPTIONS } from "@/data/selectors";
 import {
@@ -40,14 +41,26 @@ function chip(active: boolean) {
   }`;
 }
 
-export default function Onboarding() {
+/**
+ * First-run setup. Every route funnels an unonboarded user here (see
+ * OnboardingGate), so this is the one page that renders without the app chrome.
+ */
+export default function OnboardingPage() {
+  const router = useRouter();
   const step = useAppStore((s) => s.onboardStep);
   const org = useAppStore((s) => s.onboardOrg);
   const setStep = useAppStore((s) => s.setOnboardStep);
   const patchOrg = useAppStore((s) => s.patchOnboardOrg);
   const toggleIssue = useAppStore((s) => s.toggleOnboardIssue);
   const toggleArea = useAppStore((s) => s.toggleOnboardArea);
-  const complete = useAppStore((s) => s.completeOnboarding);
+  const completeOnboarding = useAppStore((s) => s.completeOnboarding);
+
+  // Finishing or skipping both land on the dashboard. `replace` keeps setup out
+  // of the history stack, so Back can't walk the user into a flow they've done.
+  const complete = () => {
+    completeOnboarding();
+    router.replace("/");
+  };
 
   const matchCount = org.issues.length * 4 + org.areas.length * 3;
   const orgLabel = org.name.trim() || "your organization";

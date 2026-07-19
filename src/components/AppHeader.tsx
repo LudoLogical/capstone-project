@@ -23,9 +23,11 @@ export default function AppHeader() {
   const onboarded = useAppStore((s) => s.onboarded);
   const person = usePersonName();
 
-  // Onboarding is the entry point and takes over the full screen; hide the app
-  // chrome until it's finished.
-  if (hydrated && !onboarded) return null;
+  // Onboarding takes over the full screen and carries its own brand mark, so
+  // the app chrome stays out of the way: on the onboarding route itself, and on
+  // any route an unonboarded user is about to be redirected away from.
+  if (pathname === "/onboarding") return null;
+  if (!hydrated || !onboarded) return null;
 
   const initials = initialsOf(person);
 

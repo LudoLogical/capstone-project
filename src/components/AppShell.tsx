@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import AppHeader from "./AppHeader";
 import NavTracker from "./NavTracker";
+import OnboardingGate from "./OnboardingGate";
 import CouplingModals from "./CouplingModals";
 import ToastHost from "./ToastHost";
 
@@ -23,7 +24,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
       <AppHeader />
       <NavTracker />
       <main id="nc-main" className="flex-1 px-4 pb-8 sm:px-8">
-        {children}
+        <OnboardingGate>{children}</OnboardingGate>
       </main>
       <CouplingModals />
       <ToastHost />
