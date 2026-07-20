@@ -12,7 +12,11 @@ import CoupledCheckbox from "@/components/modals/CoupledCheckbox";
  * time a prompt opens it remounts with the checkbox freshly pre-checked - no
  * effect needed to reset it.
  */
-export default function CouplingPrompt({ modal }: { modal: NonNullable<CouplingModal> }) {
+export default function CouplingPrompt({
+  modal,
+}: {
+  modal: NonNullable<CouplingModal>;
+}) {
   const closeCouplingModal = useAppStore((s) => s.closeCouplingModal);
   const confirmSave = useAppStore((s) => s.confirmSave);
   const confirmUnsave = useAppStore((s) => s.confirmUnsave);

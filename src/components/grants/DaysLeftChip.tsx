@@ -23,9 +23,7 @@ export default function DaysLeftChip({ date }: { date: Date }) {
     <span
       className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-bold ${tone}`}
     >
-      {days === 0
-        ? "Due today"
-        : `${days} day${days === 1 ? "" : "s"} left`}
+      {days === 0 ? "Due today" : `${days} day${days === 1 ? "" : "s"} left`}
     </span>
   );
 }

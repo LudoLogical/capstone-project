@@ -34,7 +34,10 @@ const ANALYSIS_ID_HEALTHY_NEIGHBORHOODS_WRITING = 1;
 const ANALYSIS_ID_YOUTH_DIGITAL_WELLNESS_WRITING = 2;
 const ANALYSIS_ID_FOOD_ACCESS_REPORTING = 3;
 
-const userTurn = (text: string): Content => ({ role: "user", parts: [{ text }] });
+const userTurn = (text: string): Content => ({
+  role: "user",
+  parts: [{ text }],
+});
 
 // Every "model" turn carries a GrantReportConversationResponse as JSON, which
 // is what the reporting workflow parses back out.

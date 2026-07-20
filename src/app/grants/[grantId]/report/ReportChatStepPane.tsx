@@ -30,9 +30,7 @@ export default function ReportChatStepPane({
   setStep: (step: number) => void;
   saveAndContinue: (n: number) => void;
 }) {
-  const stepDef = REPORT_QUESTION_STEPS.find(
-    (q) => q.id === questionStepId,
-  )!;
+  const stepDef = REPORT_QUESTION_STEPS.find((q) => q.id === questionStepId)!;
   const chat = report.chat[questionStepId];
   return (
     <div>
@@ -63,10 +61,7 @@ export default function ReportChatStepPane({
                 ...r.chat[questionStepId],
                 picks: {
                   ...r.chat[questionStepId].picks,
-                  [itemId]: !isPicked(
-                    r.chat[questionStepId].picks,
-                    itemId,
-                  ),
+                  [itemId]: !isPicked(r.chat[questionStepId].picks, itemId),
                 },
               },
             },
@@ -88,10 +83,7 @@ export default function ReportChatStepPane({
                   ...prev,
                   custom: [...custom, text],
                   picks: { ...prev.picks, [newId]: true },
-                  messages: [
-                    ...prev.messages,
-                    { from: "user", text },
-                  ],
+                  messages: [...prev.messages, { from: "user", text }],
                 },
               },
             };
@@ -133,10 +125,7 @@ export default function ReportChatStepPane({
                 ...r.chat,
                 [questionStepId]: {
                   ...prev,
-                  custom: [
-                    ...custom,
-                    `Key figures pulled from ${fileName}`,
-                  ],
+                  custom: [...custom, `Key figures pulled from ${fileName}`],
                   customSources: {
                     ...(prev.customSources ?? {}),
                     [newIndex]: fileName,

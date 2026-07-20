@@ -45,8 +45,8 @@ export default function DeleteDataConfirmModal({
         </button>
       </div>
       <p className="text-xs leading-relaxed text-ink-muted">
-        The source we pulled this from will still be stored, and we may pull from
-        it again. You can access all the sources we store on your{" "}
+        The source we pulled this from will still be stored, and we may pull
+        from it again. You can access all the sources we store on your{" "}
         <Link
           href="/account"
           className="font-semibold text-accent underline underline-offset-2 hover:text-accent-ink"

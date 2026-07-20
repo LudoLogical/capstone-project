@@ -44,12 +44,12 @@ export const POINT_ANALYSES: Record<string, DatumAnalysis> = {
     relevance: null,
     result: {
       understand: [
-      "You promised a standing weekly presence on four specific blocks, not a one-off event series.",
-      "Reviewers read 'weekly' as a staffing and consistency commitment, so it's the bar you'll be measured against.",
+        "You promised a standing weekly presence on four specific blocks, not a one-off event series.",
+        "Reviewers read 'weekly' as a staffing and consistency commitment, so it's the bar you'll be measured against.",
       ],
       apply: [
-      "State the commitment first, then your delivered session count, so the promise and the proof sit together.",
-      "Name the four blocks - specificity signals you know your service area.",
+        "State the commitment first, then your delivered session count, so the promise and the proof sit together.",
+        "Name the four blocks - specificity signals you know your service area.",
       ],
     },
   },
@@ -58,12 +58,12 @@ export const POINT_ANALYSES: Record<string, DatumAnalysis> = {
     relevance: null,
     result: {
       understand: [
-      "You committed to screening at roughly half your walking-group sessions, tying a clinical touchpoint to a social one.",
-      "This is what turns a walking program into a health intervention in a reviewer's eyes.",
+        "You committed to screening at roughly half your walking-group sessions, tying a clinical touchpoint to a social one.",
+        "This is what turns a walking program into a health intervention in a reviewer's eyes.",
       ],
       apply: [
-      "Pair this with your screening session count to show you held the cadence.",
-      "If you fell short, say so plainly and explain what you learned - funders read candor as maturity.",
+        "Pair this with your screening session count to show you held the cadence.",
+        "If you fell short, say so plainly and explain what you learned - funders read candor as maturity.",
       ],
     },
   },
@@ -72,11 +72,11 @@ export const POINT_ANALYSES: Record<string, DatumAnalysis> = {
     relevance: null,
     result: {
       understand: [
-      "You held a walking group roughly four times a month across the year.",
-      "Against the weekly cadence you committed to (52), 42 sessions is about 81% delivery.",
+        "You held a walking group roughly four times a month across the year.",
+        "Against the weekly cadence you committed to (52), 42 sessions is about 81% delivery.",
       ],
       apply: [
-      "Lead with the 42 sessions, then account for the gap - an unexplained shortfall reads worse than an explained one.",
+        "Lead with the 42 sessions, then account for the gap - an unexplained shortfall reads worse than an explained one.",
       ],
     },
   },
@@ -85,11 +85,11 @@ export const POINT_ANALYSES: Record<string, DatumAnalysis> = {
     relevance: null,
     result: {
       understand: [
-      "You delivered exactly the monthly cadence you committed to: 12 workshops, one per month.",
-      "Hitting a commitment exactly is the cleanest evidence of reliable delivery.",
+        "You delivered exactly the monthly cadence you committed to: 12 workshops, one per month.",
+        "Hitting a commitment exactly is the cleanest evidence of reliable delivery.",
       ],
       apply: [
-      "Say 'we committed to monthly workshops and delivered 12' - matching promise to result in one sentence is the strongest form.",
+        "Say 'we committed to monthly workshops and delivered 12' - matching promise to result in one sentence is the strongest form.",
       ],
     },
   },
@@ -98,11 +98,11 @@ export const POINT_ANALYSES: Record<string, DatumAnalysis> = {
     relevance: null,
     result: {
       understand: [
-      "You screened at 18 sessions, against a commitment of every other walking group (about 21 of your 42).",
-      "That's most of the cadence you promised, with a small shortfall.",
+        "You screened at 18 sessions, against a commitment of every other walking group (about 21 of your 42).",
+        "That's most of the cadence you promised, with a small shortfall.",
       ],
       apply: [
-      "Report the 18 alongside your 42 walking groups so the reader can see the ratio you actually achieved.",
+        "Report the 18 alongside your 42 walking groups so the reader can see the ratio you actually achieved.",
       ],
     },
   },
@@ -111,11 +111,11 @@ export const POINT_ANALYSES: Record<string, DatumAnalysis> = {
     relevance: null,
     result: {
       understand: [
-      "Your reach concentrated in four Hilltop neighborhoods rather than spreading thin across the county.",
-      "Depth in a defined service area is usually a strength, not a limitation.",
+        "Your reach concentrated in four Hilltop neighborhoods rather than spreading thin across the county.",
+        "Depth in a defined service area is usually a strength, not a limitation.",
       ],
       apply: [
-      "Name the neighborhoods and tie them to the need data - it shows you served where the gap is widest.",
+        "Name the neighborhoods and tie them to the need data - it shows you served where the gap is widest.",
       ],
     },
   },
@@ -133,24 +133,40 @@ export const POINT_CONTEXT: Record<
 > = {
   e1: {
     bars: [
-      { label: "Committed (weekly)", value: 52, unit: "sessions", role: "other" },
+      {
+        label: "Committed (weekly)",
+        value: 52,
+        unit: "sessions",
+        role: "other",
+      },
       { label: "Delivered", value: 42, unit: "sessions", role: "me" },
     ],
     evalNote: "10 sessions short of a weekly cadence, or about 81% delivered.",
   },
   e2: {
     bars: [
-      { label: "Committed (monthly)", value: 12, unit: "workshops", role: "other" },
+      {
+        label: "Committed (monthly)",
+        value: 12,
+        unit: "workshops",
+        role: "other",
+      },
       { label: "Delivered", value: 12, unit: "workshops", role: "me" },
     ],
     evalNote: "Commitment met exactly - 12 of 12.",
   },
   e3: {
     bars: [
-      { label: "Committed (every other)", value: 21, unit: "sessions", role: "other" },
+      {
+        label: "Committed (every other)",
+        value: 21,
+        unit: "sessions",
+        role: "other",
+      },
       { label: "Delivered", value: 18, unit: "sessions", role: "me" },
     ],
-    evalNote: "3 sessions short of the promised cadence, or about 86% delivered.",
+    evalNote:
+      "3 sessions short of the promised cadence, or about 86% delivered.",
   },
 };
 
@@ -169,7 +185,12 @@ export const REPORT_QUESTION_STEPS: ReportQuestionStep[] = [
     question: "What did you commit to doing with this grant?",
     items: [
       fromAnalysis("c1"),
-      { id: "c2", label: "Monthly nutrition workshops using locally sourced produce", source: "From your application", analysisId: "ruea-produce" },
+      {
+        id: "c2",
+        label: "Monthly nutrition workshops using locally sourced produce",
+        source: "From your application",
+        analysisId: "ruea-produce",
+      },
       fromAnalysis("c3"),
     ],
     suggestions: [
@@ -184,11 +205,7 @@ export const REPORT_QUESTION_STEPS: ReportQuestionStep[] = [
     index: 3,
     topic: "EVENTS RUN",
     question: "What events or activities did you run?",
-    items: [
-      fromAnalysis("e1"),
-      fromAnalysis("e2"),
-      fromAnalysis("e3"),
-    ],
+    items: [fromAnalysis("e1"), fromAnalysis("e2"), fromAnalysis("e3")],
     suggestions: [
       "We also ran...",
       "One of these counts is off...",
@@ -202,7 +219,12 @@ export const REPORT_QUESTION_STEPS: ReportQuestionStep[] = [
     topic: "COMMUNITY SERVED",
     question: "Who did this work reach?",
     items: [
-      { id: "m1", label: "1,240 unique residents served across all programs", source: "From your Annual Impact Survey", analysisId: "ruea-served" },
+      {
+        id: "m1",
+        label: "1,240 unique residents served across all programs",
+        source: "From your Annual Impact Survey",
+        analysisId: "ruea-served",
+      },
       fromAnalysis("m2"),
     ],
     suggestions: [
@@ -218,8 +240,19 @@ export const REPORT_QUESTION_STEPS: ReportQuestionStep[] = [
     topic: "OUTCOMES",
     question: "What changed as a result of this work?",
     items: [
-      { id: "o1", label: "68% of participants returned for a second season", source: "From your Annual Impact Survey", analysisId: "ruea-retention" },
-      { id: "o2", label: "Hilltop's cardiovascular disease rate sits 36% below the county average", source: "From the Vibrancy Index", analysisId: "ruea-cvd" },
+      {
+        id: "o1",
+        label: "68% of participants returned for a second season",
+        source: "From your Annual Impact Survey",
+        analysisId: "ruea-retention",
+      },
+      {
+        id: "o2",
+        label:
+          "Hilltop's cardiovascular disease rate sits 36% below the county average",
+        source: "From the Vibrancy Index",
+        analysisId: "ruea-cvd",
+      },
     ],
     suggestions: [
       "We also measured...",

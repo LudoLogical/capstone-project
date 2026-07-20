@@ -155,10 +155,7 @@ export const SRC_ORG_PROFILE: DocumentSource = {
   type: "pdf",
 };
 
-const commitment = (
-  id: number,
-  content: string,
-): InitiativeDatum => ({
+const commitment = (id: number, content: string): InitiativeDatum => ({
   id,
   content,
   citation: "From your application",

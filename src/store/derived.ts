@@ -159,8 +159,9 @@ function buildGrantView(
     (c) => c.markedComplete,
   ).length;
   const liveReportDone = reportState
-    ? Object.values(reportState.stepStatus ?? {}).filter((s) => s === "complete")
-        .length
+    ? Object.values(reportState.stepStatus ?? {}).filter(
+        (s) => s === "complete",
+      ).length
     : 0;
   const reportDone = Math.min(
     Math.max(seededReportDone, liveReportDone),
@@ -283,4 +284,3 @@ export function useDashboardGroups() {
   const collaborating = views.filter((v) => !!discoverable[v.grant.id]);
   return { inProgress, saved, awarded, collaborating, archived };
 }
-

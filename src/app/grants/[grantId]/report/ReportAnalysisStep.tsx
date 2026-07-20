@@ -50,18 +50,18 @@ export default function ReportAnalysisStep({
         Analysis
       </h1>
       <p className="mb-3.5 text-sm leading-relaxed text-ink-muted">
-        Each card below breaks down each of the data points you selected:
-        what it means in plain English (In Other Words), how it compares
-        to county and peer benchmarks (In Context), and how to use it in
-        your reporting (In Your Report). Review each card and use the
-        language in “In Your Report” to strengthen your report.
+        Each card below breaks down each of the data points you selected: what
+        it means in plain English (In Other Words), how it compares to county
+        and peer benchmarks (In Context), and how to use it in your reporting
+        (In Your Report). Review each card and use the language in “In Your
+        Report” to strengthen your report.
       </p>
       <div className="mb-5 flex items-start gap-2.5 rounded-xl border border-accent-tint-border bg-accent-tint-soft px-4 py-3">
         <Check size={14} className="mt-px shrink-0 text-accent" />
         <p className="text-sm leading-relaxed text-ink-body">
-          <strong>Check the box on each card</strong> you want in your
-          data analysis. Only checked cards are included when you
-          download or share it below - everything else stays out.
+          <strong>Check the box on each card</strong> you want in your data
+          analysis. Only checked cards are included when you download or share
+          it below - everything else stays out.
         </p>
       </div>
 

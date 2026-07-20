@@ -33,7 +33,8 @@ export const REQUIREMENT_SUGGESTIONS = [
  * Data points start unchecked: the user opts each one in. Unset therefore reads
  * as unchecked.
  */
-export const isPicked = (picks: Record<string, boolean>, id: string) => !!picks[id];
+export const isPicked = (picks: Record<string, boolean>, id: string) =>
+  !!picks[id];
 
 export type QuestionStepId = keyof ReportState["chat"];
 
@@ -60,7 +61,6 @@ export function assistantReply(topic: string, text: string): string {
   // (Math.random is unavailable here and would break persistence anyway).
   return openers[text.length % openers.length];
 }
-
 
 /** One section of the consolidated review on step 6. */
 export type ReviewGroup = {

@@ -122,7 +122,11 @@ export default function GrantCard({
               }`}
               aria-pressed={saved}
             >
-              <Star size={13} fill={saved ? "currentColor" : "none"} className="shrink-0" />
+              <Star
+                size={13}
+                fill={saved ? "currentColor" : "none"}
+                className="shrink-0"
+              />
               {saved ? "Saved" : "Save"}
             </button>
             <button

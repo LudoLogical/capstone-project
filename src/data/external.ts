@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Indicator } from "@/types/constants";
 import { Region } from "@/types/geo";
 import { DATUM_CVD_RATE, DATUM_OAT_RESOURCES } from "./seed";

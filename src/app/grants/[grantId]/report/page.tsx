@@ -265,7 +265,8 @@ export default function ReportFlowPage() {
     analysisSections.every((s) => isAnalysisSelected(s.id));
   const selectAllAnalysis = () => {
     // Remember what was ticked so switching back to "selected" can restore it.
-    if (exportMode !== "all") picksBeforeAllRef.current = report.supportingPicks;
+    if (exportMode !== "all")
+      picksBeforeAllRef.current = report.supportingPicks;
     setExportMode("all");
     updateReport(grantId, (r) => ({
       ...r,
@@ -441,8 +442,6 @@ export default function ReportFlowPage() {
           </p>
         </Modal>
       )}
-
     </div>
   );
 }
-

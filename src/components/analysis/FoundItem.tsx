@@ -21,7 +21,9 @@ export default function FoundItem({
   return (
     <div
       className={`relative rounded-xl border ${
-        picked ? "border-accent bg-accent-tint" : "border-border-strong bg-white"
+        picked
+          ? "border-accent bg-accent-tint"
+          : "border-border-strong bg-white"
       }`}
     >
       <button
@@ -31,7 +33,7 @@ export default function FoundItem({
       >
         <span
           aria-hidden
-          className={`mt-0.5 flex h-[22px] w-[22px] flex-none items-center justify-center rounded-md border-2 text-sm font-extrabold text-white ${
+          className={`mt-0.5 flex h-5.5 w-5.5 flex-none items-center justify-center rounded-md border-2 text-sm font-extrabold text-white ${
             picked ? "border-accent bg-accent" : "border-ink-muted"
           }`}
         >

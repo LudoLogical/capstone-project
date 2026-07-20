@@ -7,7 +7,8 @@ const BINS = 32;
 
 function formatMoney(value: number, max: number): string {
   if (value >= max) return `$${Math.round(max / 1000)}K+`;
-  if (value >= 1000) return `$${(value / 1000).toFixed(value % 1000 === 0 ? 0 : 1)}K`;
+  if (value >= 1000)
+    return `$${(value / 1000).toFixed(value % 1000 === 0 ? 0 : 1)}K`;
   return `$${value}`;
 }
 
@@ -62,7 +63,10 @@ export default function RangeHistogram({
     const valueFromClientX = (clientX: number) => {
       const rect = trackRef.current?.getBoundingClientRect();
       if (!rect) return min;
-      const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+      const ratio = Math.max(
+        0,
+        Math.min(1, (clientX - rect.left) / rect.width),
+      );
       return Math.round((min + ratio * range) / step) * step;
     };
     const move = (ev: PointerEvent) => {
@@ -127,7 +131,10 @@ export default function RangeHistogram({
         />
         <div
           className="absolute top-1/2 h-1 -translate-y-1/2 rounded-full bg-accent"
-          style={{ left: `${pct(valueMin)}%`, right: `${100 - pct(valueMax)}%` }}
+          style={{
+            left: `${pct(valueMin)}%`,
+            right: `${100 - pct(valueMax)}%`,
+          }}
         />
         <button
           type="button"

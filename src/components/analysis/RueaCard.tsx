@@ -60,7 +60,7 @@ export default function RueaCard({
           >
             <span
               aria-hidden
-              className={`flex h-[22px] w-[22px] items-center justify-center rounded-md border-2 text-sm font-extrabold text-white ${
+              className={`flex h-5.5 w-5.5 items-center justify-center rounded-md border-2 text-sm font-extrabold text-white ${
                 selected ? "border-accent bg-accent" : "border-ink-muted"
               }`}
             >
@@ -77,7 +77,9 @@ export default function RueaCard({
           <div className="min-w-0 flex-1">
             <div className="text-sm font-bold">{headline}</div>
             {source && (
-              <div className="mt-1 text-xs text-ink-muted">Source: {source}</div>
+              <div className="mt-1 text-xs text-ink-muted">
+                Source: {source}
+              </div>
             )}
           </div>
           <div className="text-ink-muted">

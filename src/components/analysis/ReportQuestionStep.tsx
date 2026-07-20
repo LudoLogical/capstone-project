@@ -89,7 +89,7 @@ export default function ReportQuestionStep({
             before it scrolls, and to give an empty chat open space. */}
         <div
           ref={threadRef}
-          className="flex max-h-[40rem] min-h-[26rem] flex-col gap-2.5 overflow-y-auto bg-white p-5"
+          className="flex max-h-160 min-h-104 flex-col gap-2.5 overflow-y-auto bg-white p-5"
         >
           {chat.messages.length === 0 ? (
             <div className="m-auto max-w-sm px-6 text-center">
@@ -100,9 +100,9 @@ export default function ReportQuestionStep({
                 You&apos;re chatting with an AI assistant
               </div>
               <p className="mt-1.5 text-sm leading-relaxed text-ink-muted">
-                Tell it about {stepDef.topic.toLowerCase()} in your own words, or
-                attach a file. Everything you share is saved below with a source
-                you can trace, and nothing is submitted for you.
+                Tell it about {stepDef.topic.toLowerCase()} in your own words,
+                or attach a file. Everything you share is saved below with a
+                source you can trace, and nothing is submitted for you.
               </p>
             </div>
           ) : (
@@ -263,4 +263,3 @@ export default function ReportQuestionStep({
     </div>
   );
 }
-

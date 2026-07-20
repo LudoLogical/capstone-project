@@ -83,7 +83,9 @@ export default function GrantDetailPage() {
       <div className="mb-5 rounded-2xl border border-border bg-surface p-8">
         <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0">
-            <div className="mb-2 font-serif text-3xl font-bold">{grant.name}</div>
+            <div className="mb-2 font-serif text-3xl font-bold">
+              {grant.name}
+            </div>
             <div className="text-sm text-ink-muted">
               {grant.grantor} ·{" "}
               {grant.targetRegions.map((r) => r.name).join(", ")}
@@ -91,7 +93,11 @@ export default function GrantDetailPage() {
           </div>
           <div className="flex flex-none flex-wrap gap-2.5">
             <button onClick={toggleSave} className={toggleClass(saved)}>
-              <Star size={14} fill={saved ? "currentColor" : "none"} className="shrink-0" />
+              <Star
+                size={14}
+                fill={saved ? "currentColor" : "none"}
+                className="shrink-0"
+              />
               {saved ? "Saved for Later" : "Save for Later"}
             </button>
             <button
@@ -314,7 +320,8 @@ export default function GrantDetailPage() {
                 onClick={() => router.push(`/grants/${grant.id}/report`)}
                 className="inline-flex items-center gap-2 rounded-lg bg-accent-ink px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px"
               >
-                Go to outcome report <ArrowRight size={16} className="shrink-0" />
+                Go to outcome report{" "}
+                <ArrowRight size={16} className="shrink-0" />
               </button>
               {view.status === "awarded" && (
                 <button
@@ -333,12 +340,12 @@ export default function GrantDetailPage() {
           <div className="rounded-2xl border border-accent-tint-border bg-accent-tint-soft px-6 py-5">
             <div className="mb-2.5 inline-flex items-center gap-1 rounded-full border border-accent-tint-border bg-accent-tint px-3 py-1 text-xs font-bold text-accent-ink">
               <BarChart3 size={12} />
-          AI-ASSISTED
+              AI-ASSISTED
             </div>
             <div className="mb-1.5 text-base font-bold">Ready to apply?</div>
             <p className="mb-3.5 text-sm leading-relaxed text-ink-muted">
-              We&apos;ll help you gather your context and supporting data first -
-              you choose what to share. This adds the grant to Grant
+              We&apos;ll help you gather your context and supporting data first
+              - you choose what to share. This adds the grant to Grant
               Applications on your dashboard.
             </p>
             <button
@@ -394,7 +401,9 @@ export default function GrantDetailPage() {
       {shareOpen && (
         <ShareModal
           name={grant.name}
-          link={typeof window !== "undefined" ? window.location.href : grant.link}
+          link={
+            typeof window !== "undefined" ? window.location.href : grant.link
+          }
           onClose={() => setShareOpen(false)}
         />
       )}

@@ -1,6 +1,12 @@
 "use client";
 
-export default function ProfileReadRow({ label, value }: { label: string; value: string }) {
+export default function ProfileReadRow({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
   return (
     <div>
       <div className="mb-2 text-xs font-bold tracking-wider text-ink-muted uppercase">

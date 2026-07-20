@@ -29,7 +29,7 @@ export default function RadioRow({
       className="flex cursor-pointer items-start gap-2.5"
     >
       <div
-        className={`mt-0.5 flex h-[22px] w-[22px] flex-none items-center justify-center rounded-full border-2 ${
+        className={`mt-0.5 flex h-5.5 w-5.5 flex-none items-center justify-center rounded-full border-2 ${
           checked ? "border-accent" : "border-ink-muted"
         }`}
       >

@@ -23,7 +23,7 @@ const SRC_WEBSITE: WebpageSource = {
     "Hilltop neighborhoods.</p>" +
     "<h2>Programs</h2>" +
     "<ul><li>Neighborhood walking groups</li><li>Nutrition workshops</li></ul>" +
-    "<p>Contact us at <a href=\"mailto:maya@hilltopwellness.org\">maya@hilltopwellness.org</a>.</p>" +
+    '<p>Contact us at <a href="mailto:maya@hilltopwellness.org">maya@hilltopwellness.org</a>.</p>' +
     "</body></html>",
 };
 
@@ -35,8 +35,7 @@ const SRC_CHAT_WORKSHOP_REACH: ChatSource = {
   creationTime: new Date("2026-06-06T15:41:00Z"),
   creator: USER_MAYA_ID,
   isDeleted: false,
-  content:
-    "Your chronic-disease workshops reached 240 residents last quarter.",
+  content: "Your chronic-disease workshops reached 240 residents last quarter.",
 };
 
 // Grant-readiness ID of the org that is signed in to the portal in this

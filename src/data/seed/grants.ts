@@ -370,9 +370,7 @@ function makeGrant(g: {
     n.setMonth(n.getMonth() + m);
     return n;
   };
-  const decidesOn = g.decidesOn
-    ? new Date(g.decidesOn)
-    : plusMonths(closes, 2);
+  const decidesOn = g.decidesOn ? new Date(g.decidesOn) : plusMonths(closes, 2);
   const awardTerm = g.awardTerm ?? 12;
   const awardEnds = g.awardEnds
     ? new Date(g.awardEnds)

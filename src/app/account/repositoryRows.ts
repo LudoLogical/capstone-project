@@ -1,7 +1,4 @@
-import {
-  InitiativeSourceKind,
-  type InitiativeSource,
-} from "@/types/data";
+import { InitiativeSourceKind, type InitiativeSource } from "@/types/data";
 import { USER_DISPLAY_NAME } from "@/data/seed";
 import { formatLongDate } from "@/utils/format";
 

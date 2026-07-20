@@ -139,4 +139,3 @@ export default function WarmIntroModal({
     </Modal>
   );
 }
-

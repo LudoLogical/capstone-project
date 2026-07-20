@@ -29,9 +29,9 @@ export default function ResetAnalysisButton({
         title="Reset this analysis?"
       >
         <p className="mb-4 text-sm leading-relaxed text-ink-body">
-          This can&apos;t be undone. Before you reset, make sure you&apos;ve saved
-          anything from this analysis you want to keep. The breakdown and its
-          suggested language will be cleared.
+          This can&apos;t be undone. Before you reset, make sure you&apos;ve
+          saved anything from this analysis you want to keep. The breakdown and
+          its suggested language will be cleared.
         </p>
         <div className="flex flex-wrap gap-2.5">
           <button

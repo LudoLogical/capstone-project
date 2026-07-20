@@ -11,5 +11,7 @@ import CouplingPrompt from "@/components/modals/CouplingPrompt";
 export default function CouplingModals() {
   const modal = useAppStore((s) => s.couplingModal);
   if (!modal) return null;
-  return <CouplingPrompt key={`${modal.type}:${modal.grantId}`} modal={modal} />;
+  return (
+    <CouplingPrompt key={`${modal.type}:${modal.grantId}`} modal={modal} />
+  );
 }

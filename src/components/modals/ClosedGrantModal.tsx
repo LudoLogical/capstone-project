@@ -24,8 +24,8 @@ export default function ClosedGrantModal({
       <p className="text-sm leading-relaxed text-ink-body">
         The application window for{" "}
         <span className="font-semibold">{grantName}</span> closed on{" "}
-        <span className="font-semibold">{formatDate(closedOn)}</span>. You can no
-        longer work on this grant.
+        <span className="font-semibold">{formatDate(closedOn)}</span>. You can
+        no longer work on this grant.
       </p>
       <p className="mt-3 text-sm leading-relaxed text-ink-muted">
         Anything you gathered for it stays in your profile, so it&apos;s there
