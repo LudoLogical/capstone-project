@@ -23,6 +23,7 @@ export const USER_DISPLAY_NAME: Record<string, string> = {
 };
 
 export const SRC_ANNUAL_IMPACT_SURVEY: DocumentSource = {
+  id: "src-doc-2025-annual-impact-survey",
   kind: InitiativeSourceKind.Document,
   folder: "Impact Surveys",
   creationTime: new Date("2026-06-06T14:12:00Z"),
@@ -40,6 +41,7 @@ export const SRC_ANNUAL_IMPACT_SURVEY: DocumentSource = {
 };
 
 export const SRC_BUDGET_RECORDS: DocumentSource = {
+  id: "src-doc-fy2025-budget-summary",
   kind: InitiativeSourceKind.Document,
   folder: "Budget Records",
   creationTime: new Date("2026-06-16T09:35:00Z"),
@@ -134,6 +136,7 @@ export const DATUM_PROGRAM_RETENTION: AISDatum = {
 // org profile. InitiativeDatum requires a source, and neither has a document
 // behind it in this prototype.
 export const SRC_GRANT_APPLICATION: DocumentSource = {
+  id: "src-doc-grant-application",
   kind: InitiativeSourceKind.Document,
   folder: null,
   creationTime: new Date("2026-01-15T00:00:00Z"),
@@ -145,6 +148,7 @@ export const SRC_GRANT_APPLICATION: DocumentSource = {
 };
 
 export const SRC_ORG_PROFILE: DocumentSource = {
+  id: "src-doc-account-profile",
   kind: InitiativeSourceKind.Document,
   folder: null,
   creationTime: new Date("2026-01-15T00:00:00Z"),

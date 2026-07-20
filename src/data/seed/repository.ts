@@ -9,7 +9,7 @@ import { USER_MAYA_ID } from "./datum";
 // The three collections behind the Profile screen, expressed as the canonical
 // InitiativeSource variants: uploaded files are DocumentSources, saved links
 // are WebpageSources, and facts captured in conversation are ChatSources.
-// The Profile page adapts these into display rows (see repositoryRows.ts).
+// The Profile page adapts these into display rows (see RepositorySection.tsx).
 
 /** Seeded sources predate this session, so their file bytes are placeholders. */
 const placeholderFile = (name: string) =>
@@ -19,6 +19,7 @@ const at = (iso: string) => new Date(iso);
 
 export const REPOSITORY_FILES: DocumentSource[] = [
   {
+    id: "src-doc-annual-report-2025",
     kind: InitiativeSourceKind.Document,
     folder: null,
     creationTime: at("2026-06-06T00:00:00Z"),
@@ -29,6 +30,7 @@ export const REPOSITORY_FILES: DocumentSource[] = [
     type: "pdf",
   },
   {
+    id: "src-doc-march-budget-2026",
     kind: InitiativeSourceKind.Document,
     folder: null,
     creationTime: at("2026-06-06T00:00:00Z"),
@@ -39,6 +41,7 @@ export const REPOSITORY_FILES: DocumentSource[] = [
     type: "pdf",
   },
   {
+    id: "src-doc-board-roster-2026",
     kind: InitiativeSourceKind.Document,
     folder: null,
     creationTime: at("2026-06-06T00:00:00Z"),
@@ -49,6 +52,7 @@ export const REPOSITORY_FILES: DocumentSource[] = [
     type: "pdf",
   },
   {
+    id: "src-doc-990-filing-2024",
     kind: InitiativeSourceKind.Document,
     folder: null,
     creationTime: at("2026-06-16T00:00:00Z"),
@@ -59,6 +63,7 @@ export const REPOSITORY_FILES: DocumentSource[] = [
     type: "pdf",
   },
   {
+    id: "src-doc-program-outcomes-q1",
     kind: InitiativeSourceKind.Document,
     folder: null,
     creationTime: at("2026-06-16T00:00:00Z"),
@@ -69,6 +74,7 @@ export const REPOSITORY_FILES: DocumentSource[] = [
     type: "xlsx",
   },
   {
+    id: "src-doc-logic-model-2026",
     kind: InitiativeSourceKind.Document,
     folder: null,
     creationTime: at("2026-07-08T00:00:00Z"),
@@ -79,6 +85,7 @@ export const REPOSITORY_FILES: DocumentSource[] = [
     type: "pdf",
   },
   {
+    id: "src-doc-letter-of-support-health-dept",
     kind: InitiativeSourceKind.Document,
     folder: null,
     creationTime: at("2026-07-08T00:00:00Z"),
@@ -89,6 +96,7 @@ export const REPOSITORY_FILES: DocumentSource[] = [
     type: "pdf",
   },
   {
+    id: "src-doc-staff-bios-2026",
     kind: InitiativeSourceKind.Document,
     folder: null,
     creationTime: at("2026-07-08T00:00:00Z"),
@@ -99,6 +107,7 @@ export const REPOSITORY_FILES: DocumentSource[] = [
     type: "docx",
   },
   {
+    id: "src-doc-audited-financials-2024",
     kind: InitiativeSourceKind.Document,
     folder: null,
     creationTime: at("2026-07-09T00:00:00Z"),
@@ -109,6 +118,7 @@ export const REPOSITORY_FILES: DocumentSource[] = [
     type: "pdf",
   },
   {
+    id: "src-doc-strategic-plan-2025-2028",
     kind: InitiativeSourceKind.Document,
     folder: null,
     creationTime: at("2026-07-09T00:00:00Z"),
@@ -119,6 +129,7 @@ export const REPOSITORY_FILES: DocumentSource[] = [
     type: "pdf",
   },
   {
+    id: "src-doc-insurance-certificate",
     kind: InitiativeSourceKind.Document,
     folder: null,
     creationTime: at("2026-07-10T00:00:00Z"),
@@ -129,6 +140,7 @@ export const REPOSITORY_FILES: DocumentSource[] = [
     type: "pdf",
   },
   {
+    id: "src-doc-volunteer-handbook",
     kind: InitiativeSourceKind.Document,
     folder: null,
     creationTime: at("2026-07-10T00:00:00Z"),
@@ -139,6 +151,7 @@ export const REPOSITORY_FILES: DocumentSource[] = [
     type: "pdf",
   },
   {
+    id: "src-doc-grant-budget-narrative",
     kind: InitiativeSourceKind.Document,
     folder: null,
     creationTime: at("2026-07-11T00:00:00Z"),
@@ -149,6 +162,7 @@ export const REPOSITORY_FILES: DocumentSource[] = [
     type: "docx",
   },
   {
+    id: "src-doc-community-survey-results",
     kind: InitiativeSourceKind.Document,
     folder: null,
     creationTime: at("2026-07-11T00:00:00Z"),
@@ -159,6 +173,7 @@ export const REPOSITORY_FILES: DocumentSource[] = [
     type: "pdf",
   },
   {
+    id: "src-doc-photo-release-forms",
     kind: InitiativeSourceKind.Document,
     folder: null,
     creationTime: at("2026-07-12T00:00:00Z"),
@@ -169,6 +184,7 @@ export const REPOSITORY_FILES: DocumentSource[] = [
     type: "pdf",
   },
   {
+    id: "src-doc-irs-determination-letter",
     kind: InitiativeSourceKind.Document,
     folder: null,
     creationTime: at("2026-07-12T00:00:00Z"),
@@ -179,6 +195,7 @@ export const REPOSITORY_FILES: DocumentSource[] = [
     type: "pdf",
   },
   {
+    id: "src-doc-partnership-mou-food-bank",
     kind: InitiativeSourceKind.Document,
     folder: null,
     creationTime: at("2026-07-13T00:00:00Z"),
@@ -189,6 +206,7 @@ export const REPOSITORY_FILES: DocumentSource[] = [
     type: "pdf",
   },
   {
+    id: "src-doc-impact-report-2025",
     kind: InitiativeSourceKind.Document,
     folder: null,
     creationTime: at("2026-07-13T00:00:00Z"),
@@ -199,6 +217,7 @@ export const REPOSITORY_FILES: DocumentSource[] = [
     type: "pdf",
   },
   {
+    id: "src-doc-organizational-chart",
     kind: InitiativeSourceKind.Document,
     folder: null,
     creationTime: at("2026-07-13T00:00:00Z"),
@@ -209,6 +228,7 @@ export const REPOSITORY_FILES: DocumentSource[] = [
     type: "pdf",
   },
   {
+    id: "src-doc-diversity-equity-statement",
     kind: InitiativeSourceKind.Document,
     folder: null,
     creationTime: at("2026-07-13T00:00:00Z"),
@@ -222,6 +242,7 @@ export const REPOSITORY_FILES: DocumentSource[] = [
 
 export const REPOSITORY_LINKS: WebpageSource[] = [
   {
+    id: "src-web-hilltopwellness-home",
     kind: InitiativeSourceKind.Webpage,
     folder: null,
     creationTime: at("2026-06-06T00:00:00Z"),
@@ -231,6 +252,7 @@ export const REPOSITORY_LINKS: WebpageSource[] = [
     content: "<html><!-- hilltopwellness.org (seed placeholder) --></html>",
   },
   {
+    id: "src-web-hilltopwellness-programs",
     kind: InitiativeSourceKind.Webpage,
     folder: null,
     creationTime: at("2026-06-06T00:00:00Z"),
@@ -241,6 +263,7 @@ export const REPOSITORY_LINKS: WebpageSource[] = [
       "<html><!-- hilltopwellness.org/programs (seed placeholder) --></html>",
   },
   {
+    id: "src-web-hilltopwellness-impact-2025",
     kind: InitiativeSourceKind.Webpage,
     folder: null,
     creationTime: at("2026-06-06T00:00:00Z"),
@@ -251,6 +274,7 @@ export const REPOSITORY_LINKS: WebpageSource[] = [
       "<html><!-- hilltopwellness.org/impact-2025 (seed placeholder) --></html>",
   },
   {
+    id: "src-web-guidestar-profile",
     kind: InitiativeSourceKind.Webpage,
     folder: null,
     creationTime: at("2026-06-16T00:00:00Z"),
@@ -261,6 +285,7 @@ export const REPOSITORY_LINKS: WebpageSource[] = [
       "<html><!-- guidestar.org/profile/hilltop-wellness (seed placeholder) --></html>",
   },
   {
+    id: "src-web-facebook-page",
     kind: InitiativeSourceKind.Webpage,
     folder: null,
     creationTime: at("2026-06-16T00:00:00Z"),
@@ -271,6 +296,7 @@ export const REPOSITORY_LINKS: WebpageSource[] = [
       "<html><!-- facebook.com/HilltopWellnessPGH (seed placeholder) --></html>",
   },
   {
+    id: "src-web-instagram-profile",
     kind: InitiativeSourceKind.Webpage,
     folder: null,
     creationTime: at("2026-07-08T00:00:00Z"),
@@ -281,6 +307,7 @@ export const REPOSITORY_LINKS: WebpageSource[] = [
       "<html><!-- instagram.com/hilltopwellness (seed placeholder) --></html>",
   },
   {
+    id: "src-web-linkedin-company",
     kind: InitiativeSourceKind.Webpage,
     folder: null,
     creationTime: at("2026-07-08T00:00:00Z"),
@@ -291,6 +318,7 @@ export const REPOSITORY_LINKS: WebpageSource[] = [
       "<html><!-- linkedin.com/company/hilltop-wellness (seed placeholder) --></html>",
   },
   {
+    id: "src-web-youtube-channel",
     kind: InitiativeSourceKind.Webpage,
     folder: null,
     creationTime: at("2026-07-08T00:00:00Z"),
@@ -301,6 +329,7 @@ export const REPOSITORY_LINKS: WebpageSource[] = [
       "<html><!-- youtube.com/@hilltopwellness (seed placeholder) --></html>",
   },
   {
+    id: "src-web-hilltopwellness-annual-report",
     kind: InitiativeSourceKind.Webpage,
     folder: null,
     creationTime: at("2026-07-09T00:00:00Z"),
@@ -311,6 +340,7 @@ export const REPOSITORY_LINKS: WebpageSource[] = [
       "<html><!-- hilltopwellness.org/annual-report (seed placeholder) --></html>",
   },
   {
+    id: "src-web-candid-profile",
     kind: InitiativeSourceKind.Webpage,
     folder: null,
     creationTime: at("2026-07-09T00:00:00Z"),
@@ -321,6 +351,7 @@ export const REPOSITORY_LINKS: WebpageSource[] = [
       "<html><!-- candid.org/profile/hilltop-wellness (seed placeholder) --></html>",
   },
   {
+    id: "src-web-hilltopwellness-board",
     kind: InitiativeSourceKind.Webpage,
     folder: null,
     creationTime: at("2026-07-10T00:00:00Z"),
@@ -331,6 +362,7 @@ export const REPOSITORY_LINKS: WebpageSource[] = [
       "<html><!-- hilltopwellness.org/board (seed placeholder) --></html>",
   },
   {
+    id: "src-web-pghfoodbank-partners",
     kind: InitiativeSourceKind.Webpage,
     folder: null,
     creationTime: at("2026-07-10T00:00:00Z"),
@@ -341,6 +373,7 @@ export const REPOSITORY_LINKS: WebpageSource[] = [
       "<html><!-- pghfoodbank.org/partners (seed placeholder) --></html>",
   },
   {
+    id: "src-web-hilltopwellness-volunteer",
     kind: InitiativeSourceKind.Webpage,
     folder: null,
     creationTime: at("2026-07-11T00:00:00Z"),
@@ -351,6 +384,7 @@ export const REPOSITORY_LINKS: WebpageSource[] = [
       "<html><!-- hilltopwellness.org/volunteer (seed placeholder) --></html>",
   },
   {
+    id: "src-web-greatnonprofits-profile",
     kind: InitiativeSourceKind.Webpage,
     folder: null,
     creationTime: at("2026-07-11T00:00:00Z"),
@@ -361,6 +395,7 @@ export const REPOSITORY_LINKS: WebpageSource[] = [
       "<html><!-- greatnonprofits.org/org/hilltop-wellness (seed placeholder) --></html>",
   },
   {
+    id: "src-web-hilltopwellness-heat-resilience",
     kind: InitiativeSourceKind.Webpage,
     folder: null,
     creationTime: at("2026-07-12T00:00:00Z"),
@@ -371,6 +406,7 @@ export const REPOSITORY_LINKS: WebpageSource[] = [
       "<html><!-- hilltopwellness.org/news/heat-resilience (seed placeholder) --></html>",
   },
   {
+    id: "src-web-post-gazette-hilltop-clinic",
     kind: InitiativeSourceKind.Webpage,
     folder: null,
     creationTime: at("2026-07-13T00:00:00Z"),
@@ -384,6 +420,7 @@ export const REPOSITORY_LINKS: WebpageSource[] = [
 
 export const REPOSITORY_CONVERSATIONS: ChatSource[] = [
   {
+    id: "src-chat-families-served",
     kind: InitiativeSourceKind.Chat,
     folder: null,
     creationTime: at("2026-06-06T00:00:00Z"),
@@ -392,6 +429,7 @@ export const REPOSITORY_CONVERSATIONS: ChatSource[] = [
     content: "You served 18 families with funds from the Transform Grant.",
   },
   {
+    id: "src-chat-communities-served",
     kind: InitiativeSourceKind.Chat,
     folder: null,
     creationTime: at("2026-06-06T00:00:00Z"),
@@ -400,6 +438,7 @@ export const REPOSITORY_CONVERSATIONS: ChatSource[] = [
     content: "You served 3 communities with funds from the Transform Grant.",
   },
   {
+    id: "src-chat-chronic-disease-workshops",
     kind: InitiativeSourceKind.Chat,
     folder: null,
     creationTime: at("2026-06-06T00:00:00Z"),
@@ -409,6 +448,7 @@ export const REPOSITORY_CONVERSATIONS: ChatSource[] = [
       "Your chronic-disease workshops reached 240 residents last quarter.",
   },
   {
+    id: "src-chat-food-bank-produce-drive",
     kind: InitiativeSourceKind.Chat,
     folder: null,
     creationTime: at("2026-06-16T00:00:00Z"),
@@ -418,6 +458,7 @@ export const REPOSITORY_CONVERSATIONS: ChatSource[] = [
       "You partnered with the Pittsburgh Food Bank on a fresh-produce drive.",
   },
   {
+    id: "src-chat-community-health-workers-hired",
     kind: InitiativeSourceKind.Chat,
     folder: null,
     creationTime: at("2026-06-16T00:00:00Z"),
@@ -426,6 +467,7 @@ export const REPOSITORY_CONVERSATIONS: ChatSource[] = [
     content: "Two full-time community health workers joined the team in May.",
   },
   {
+    id: "src-chat-blood-pressure-clinic",
     kind: InitiativeSourceKind.Chat,
     folder: null,
     creationTime: at("2026-07-08T00:00:00Z"),
@@ -434,6 +476,7 @@ export const REPOSITORY_CONVERSATIONS: ChatSource[] = [
     content: "You run a free blood-pressure clinic every Tuesday morning.",
   },
   {
+    id: "src-chat-volunteer-hours-growth",
     kind: InitiativeSourceKind.Chat,
     folder: null,
     creationTime: at("2026-07-08T00:00:00Z"),
@@ -442,6 +485,7 @@ export const REPOSITORY_CONVERSATIONS: ChatSource[] = [
     content: "Volunteer hours grew 35% year over year.",
   },
   {
+    id: "src-chat-hill-district-location",
     kind: InitiativeSourceKind.Chat,
     folder: null,
     creationTime: at("2026-07-08T00:00:00Z"),
@@ -450,6 +494,7 @@ export const REPOSITORY_CONVERSATIONS: ChatSource[] = [
     content: "You opened a second location in the Hill District this spring.",
   },
   {
+    id: "src-chat-cooling-center-program",
     kind: InitiativeSourceKind.Chat,
     folder: null,
     creationTime: at("2026-07-09T00:00:00Z"),
@@ -459,6 +504,7 @@ export const REPOSITORY_CONVERSATIONS: ChatSource[] = [
       "Your cooling-center program served 90 people during the July heat wave.",
   },
   {
+    id: "src-chat-heinz-endowments-commitment",
     kind: InitiativeSourceKind.Chat,
     folder: null,
     creationTime: at("2026-07-09T00:00:00Z"),
@@ -467,6 +513,7 @@ export const REPOSITORY_CONVERSATIONS: ChatSource[] = [
     content: "You secured a three-year commitment from the Heinz Endowments.",
   },
   {
+    id: "src-chat-digital-literacy-enrollment",
     kind: InitiativeSourceKind.Chat,
     folder: null,
     creationTime: at("2026-07-10T00:00:00Z"),
@@ -475,6 +522,7 @@ export const REPOSITORY_CONVERSATIONS: ChatSource[] = [
     content: "The digital-literacy program enrolled 45 teens this cohort.",
   },
   {
+    id: "src-chat-mobile-pantry-meals",
     kind: InitiativeSourceKind.Chat,
     folder: null,
     creationTime: at("2026-07-10T00:00:00Z"),
@@ -483,6 +531,7 @@ export const REPOSITORY_CONVERSATIONS: ChatSource[] = [
     content: "You distributed 1,200 meals through the mobile pantry in June.",
   },
   {
+    id: "src-chat-board-public-health-members",
     kind: InitiativeSourceKind.Chat,
     folder: null,
     creationTime: at("2026-07-11T00:00:00Z"),
@@ -491,6 +540,7 @@ export const REPOSITORY_CONVERSATIONS: ChatSource[] = [
     content: "Your board added two new members with public-health backgrounds.",
   },
   {
+    id: "src-chat-spanish-outreach-line",
     kind: InitiativeSourceKind.Chat,
     folder: null,
     creationTime: at("2026-07-11T00:00:00Z"),
@@ -499,6 +549,7 @@ export const REPOSITORY_CONVERSATIONS: ChatSource[] = [
     content: "You launched a Spanish-language outreach line in April.",
   },
   {
+    id: "src-chat-program-satisfaction-scores",
     kind: InitiativeSourceKind.Chat,
     folder: null,
     creationTime: at("2026-07-12T00:00:00Z"),
@@ -507,6 +558,7 @@ export const REPOSITORY_CONVERSATIONS: ChatSource[] = [
     content: "Program satisfaction scores averaged 4.7 out of 5 last quarter.",
   },
   {
+    id: "src-chat-primary-care-matches",
     kind: InitiativeSourceKind.Chat,
     folder: null,
     creationTime: at("2026-07-13T00:00:00Z"),

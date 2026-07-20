@@ -8,9 +8,9 @@ import {
 import BackButton from "@/components/primitives/BackButton";
 import { useOrgName } from "@/store/derived";
 import { Paperclip, Plus } from "lucide-react";
-import { toRows } from "@/app/account/repositoryRows";
 import ProfileDetailsSection from "@/app/account/ProfileDetailsSection";
 import RepositorySection from "@/app/account/RepositorySection";
+import { InitiativeSourceKind } from "@/types/data";
 
 /**
  * The Profile screen is a data repository: three collections the app pulls from
@@ -39,34 +39,34 @@ export default function AccountProfilePage() {
 
       <RepositorySection
         title="Files"
-        kind="file"
+        kind={InitiativeSourceKind.Document}
         description="These are the documents you've uploaded while gathering data for grant applications and reports. We save them so that we can pull from them automatically whenever you gather data in the future."
         addLabel="Upload new file"
         addIcon={Paperclip}
         fileUpload
         verb="Uploaded"
-        items={toRows(REPOSITORY_FILES, "f")}
+        sources={REPOSITORY_FILES}
         underlineLabel
       />
 
       <RepositorySection
         title="Webpages"
-        kind="link"
+        kind={InitiativeSourceKind.Webpage}
         description="These are the links you've saved while gathering data for grant applications and reports. We save them so that we can pull from them automatially whenever you gather data in the future."
         addLabel="Add new website link"
         addIcon={Plus}
         addPlaceholder="https://example.org"
         verb="Uploaded"
-        items={toRows(REPOSITORY_LINKS, "l")}
+        sources={REPOSITORY_LINKS}
         underlineLabel
       />
 
       <RepositorySection
         title="From Your Conversations"
-        kind="conversation"
+        kind={InitiativeSourceKind.Chat}
         description="These are some of the things you've mentioned while gathering data for grant reports in conversation with AI. We save your messages when the AI thinks you've shared something new so that we can pull from them automatically whenever you gather data in the future."
         verb="Logged"
-        items={toRows(REPOSITORY_CONVERSATIONS, "c")}
+        sources={REPOSITORY_CONVERSATIONS}
         help={
           <>
             Because these data points are captured from conversations, we store

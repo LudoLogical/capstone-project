@@ -9,7 +9,10 @@ import {
 } from "./datum";
 import { InitiativeType } from "@/types/initiative";
 
+// The org's home page, also saved to the Profile screen's link collection
+// (see ./repository), so both representations carry the same source id.
 const SRC_WEBSITE: WebpageSource = {
+  id: "src-web-hilltopwellness-home",
   kind: InitiativeSourceKind.Webpage,
   folder: null,
   creationTime: new Date("2026-06-06T14:03:00Z"),
@@ -30,6 +33,7 @@ const SRC_WEBSITE: WebpageSource = {
 // Captured by the AI system from Maya's onboarding conversation; the same fact
 // surfaces in the Profile screen's conversation collection (see ./repository).
 const SRC_CHAT_WORKSHOP_REACH: ChatSource = {
+  id: "src-chat-chronic-disease-workshops",
   kind: InitiativeSourceKind.Chat,
   folder: null,
   creationTime: new Date("2026-06-06T15:41:00Z"),

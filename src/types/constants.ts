@@ -59,3 +59,23 @@ export const GRANTORS = [
  * An entity that publishes and manages a Grant.
  */
 export type Grantor = (typeof GRANTORS)[number];
+
+/**
+ * The file types that are acceptable as DocumentSources.
+ */
+export const DOCUMENT_SOURCE_TYPES = [
+  "txt",
+  "md",
+  "doc",
+  "docx",
+  "csv",
+  "xlsx",
+  "ppt",
+  "pptx",
+  "pdf",
+] as const;
+
+/**
+ * A file type that is acceptable as a DocumentSources.
+ */
+export type DocumentSourceType = (typeof DOCUMENT_SOURCE_TYPES)[number];

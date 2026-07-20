@@ -13,7 +13,7 @@
  * @example NSR's Annual Financial Report for Fiscal Year 2025
  */
 
-import { Indicator, Issue } from "./constants";
+import { DocumentSourceType, Indicator, Issue } from "./constants";
 import { Region } from "./geo";
 
 /**
@@ -304,6 +304,11 @@ export enum InitiativeSourceKind {
  */
 type BaseInitiativeSource = {
   /**
+   * The unique ID of this InitiativeSource.
+   */
+  id: string;
+
+  /**
    * The InitiativeSourceKind of this InitiativeSource.
    */
   kind: InitiativeSourceKind;
@@ -381,7 +386,7 @@ export type DocumentSource = BaseInitiativeSource & {
   /**
    * The file type of this DocumentSource.
    */
-  type: "txt" | "md" | "doc" | "docx" | "csv" | "xlsx" | "ppt" | "pptx" | "pdf";
+  type: DocumentSourceType;
 };
 
 /**

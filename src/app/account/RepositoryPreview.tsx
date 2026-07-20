@@ -1,10 +1,7 @@
 "use client";
 
+import { InitiativeSourceKind } from "@/types/data";
 import { FileText, ArrowUpRight } from "lucide-react";
-import type { RepositoryRow } from "@/app/account/repositoryRows";
-
-/** What kind of repository collection a row belongs to. */
-export type RepositoryKind = "file" | "link" | "conversation";
 
 /** A live object URL for a file the user uploaded this session. */
 export type FileBlob = { url: string; type: string };
@@ -12,25 +9,27 @@ export type FileBlob = { url: string; type: string };
 /** The preview shown when a repository item is clicked. */
 export default function RepositoryPreview({
   kind,
-  item,
+  label,
+  date,
+  creator,
   verb,
   blob,
 }: {
-  kind: RepositoryKind;
-  item: RepositoryRow;
+  kind: InitiativeSourceKind;
+  label: string;
+  date: string;
+  creator: string;
   verb: "Uploaded" | "Logged";
   blob?: FileBlob;
 }) {
   const meta = (
     <div className="mt-4 text-xs text-ink-muted">
-      {verb} {item.date} by {item.by}
+      {verb} {date} by {creator}
     </div>
   );
 
-  if (kind === "link") {
-    const href = item.label.startsWith("http")
-      ? item.label
-      : `https://${item.label}`;
+  if (kind === InitiativeSourceKind.Webpage) {
+    const href = label.startsWith("http") ? label : `https://${label}`;
     return (
       <div>
         <div className="mb-1.5 text-xs font-bold tracking-wider text-ink-muted uppercase">
@@ -42,7 +41,7 @@ export default function RepositoryPreview({
           rel="noopener noreferrer"
           className="block rounded-xl border border-border bg-surface-alt px-4 py-3 text-sm font-semibold break-all text-accent underline underline-offset-2 hover:text-accent-ink"
         >
-          {item.label}
+          {label}
         </a>
         <p className="mt-3 text-sm leading-relaxed text-ink-muted">
           Opens in a new tab. We pull from this page the next time you apply or
@@ -53,16 +52,14 @@ export default function RepositoryPreview({
     );
   }
 
-  if (kind === "conversation") {
+  if (kind === InitiativeSourceKind.Chat) {
     return (
       <div>
         <div className="mb-1.5 text-xs font-bold tracking-wider text-ink-muted uppercase">
           Captured from your conversations
         </div>
         <div className="rounded-xl border border-border bg-surface-alt px-4 py-3.5">
-          <p className="text-base leading-relaxed text-ink-body">
-            “{item.label}”
-          </p>
+          <p className="text-base leading-relaxed text-ink-body">“{label}”</p>
         </div>
         <p className="mt-3 text-sm leading-relaxed text-ink-muted">
           We saved this while you built an outcome report, and reuse it the next
@@ -74,8 +71,8 @@ export default function RepositoryPreview({
   }
 
   // file
-  const ext = item.label.includes(".")
-    ? item.label.split(".").pop()!.toUpperCase()
+  const ext = label.includes(".")
+    ? label.split(".").pop()!.toUpperCase()
     : "FILE";
 
   // When we have the actual uploaded file, show it: images render inline, PDFs
@@ -94,13 +91,13 @@ export default function RepositoryPreview({
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={blob.url}
-            alt={item.label}
+            alt={label}
             className="max-h-96 w-full rounded-xl border border-border bg-surface-alt object-contain"
           />
         ) : isPdf ? (
           <iframe
             src={blob.url}
-            title={item.label}
+            title={label}
             className="h-96 w-full rounded-xl border border-border bg-surface-alt"
           />
         ) : (
@@ -110,7 +107,7 @@ export default function RepositoryPreview({
             </div>
             <div className="min-w-0 flex-1">
               <div className="truncate text-sm font-semibold text-ink">
-                {item.label}
+                {label}
               </div>
               <div className="text-xs text-ink-muted">{ext} file</div>
             </div>
@@ -139,9 +136,7 @@ export default function RepositoryPreview({
           <FileText size={20} />
         </div>
         <div className="min-w-0">
-          <div className="truncate text-sm font-semibold text-ink">
-            {item.label}
-          </div>
+          <div className="truncate text-sm font-semibold text-ink">{label}</div>
           <div className="text-xs text-ink-muted">{ext} document</div>
         </div>
       </div>
