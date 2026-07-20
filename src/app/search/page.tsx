@@ -110,20 +110,23 @@ export default function SearchPage() {
     draftFilters.fundMax !== DEFAULT_FILTERS.fundMax;
 
   return (
-    <div className="animate-nc-rise mx-auto w-full px-8 pt-7 pb-28">
+    <div className="animate-nc-rise mx-auto w-full max-w-6xl px-8 pt-7 pb-28">
       <BackButton fallback="/" />
       <div className="mb-6">
         <h1 className="font-serif text-3xl leading-tight font-bold">
           Find a grant that fits your work
         </h1>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-muted">
-          Results draw on what you told us and your living profile.
+          Search results are based on the information you&apos;ve shared with us
+          about your organization.
         </p>
       </div>
       <div className="flex items-start gap-7">
-        <aside className="sticky top-22 w-80 flex-none rounded-2xl border border-border bg-surface p-5">
+        <aside className="top-22 w-80 flex-none rounded-2xl border border-border bg-surface p-5">
           <div className="mb-4 flex items-center justify-between">
-            <div className="text-sm font-bold">Refine your search</div>
+            <h3 className="leading-tight font-bold text-ink">
+              Refine your search
+            </h3>
             <button
               onClick={clearAll}
               disabled={!hasChanges}
@@ -165,11 +168,8 @@ export default function SearchPage() {
             )}
           </div>
 
-          <div className="mb-1 text-xs font-bold tracking-wider text-ink-muted uppercase">
+          <div className="mb-2.5 text-xs font-bold tracking-wider text-ink-muted uppercase">
             Organization type
-          </div>
-          <div className="mb-2.5 text-xs text-ink-muted">
-            Show grants open to your kind of organization.
           </div>
           <div className="mb-5 flex flex-col gap-2">
             <RadioRow
@@ -189,10 +189,10 @@ export default function SearchPage() {
           </div>
 
           <div className="mb-1 text-xs font-bold tracking-wider text-ink-muted uppercase">
-            Grant&apos;s Target Location
+            Target Locations
           </div>
           <div className="mb-2.5 text-xs text-ink-muted">
-            Where the grant&apos;s funding must be spent.
+            Where the grant funding must be spent.
           </div>
           <div className="mb-5">
             <div
@@ -223,8 +223,11 @@ export default function SearchPage() {
             )}
           </div>
 
-          <div className="mb-2.5 text-xs font-bold tracking-wider text-ink-muted uppercase">
-            Deadline (closing date)
+          <div className="mb-1 text-xs font-bold tracking-wider text-ink-muted uppercase">
+            Application Period
+          </div>
+          <div className="mb-2.5 text-xs text-ink-muted">
+            When applications are accepted.
           </div>
           <div className="mb-5 grid grid-cols-2 gap-2.5">
             <div>
@@ -276,7 +279,7 @@ export default function SearchPage() {
           </div>
         </aside>
 
-        <div className="min-w-0 flex-1">
+        <div className="w-full max-w-3xl flex-1">
           <div className="mb-2 flex flex-wrap items-center gap-3">
             <input
               value={draftFilters.query}
@@ -318,8 +321,8 @@ export default function SearchPage() {
           {sorted.length === 0 ? (
             <EmptyState
               icon={Search}
-              title="No grants match your filters"
-              body="Try removing an issue tag or organization type."
+              title="No grants match your criteria."
+              body="Try changing your filters or searching for something else."
               action={
                 <button
                   onClick={clearFilters}
@@ -331,7 +334,7 @@ export default function SearchPage() {
             />
           ) : (
             <>
-              <div className="flex flex-col gap-3.5">
+              <div className="flex flex-col gap-3.5 w-full">
                 {pageResults.map((grant) => (
                   <GrantCard
                     key={grant.id}

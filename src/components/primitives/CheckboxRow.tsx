@@ -28,10 +28,10 @@ export default function CheckboxRow({
       tabIndex={0}
       aria-checked={checked}
       aria-label={label}
-      className="flex cursor-pointer items-start gap-2.5"
+      className="flex cursor-pointer items-center gap-2.5"
     >
       <div
-        className={`mt-0.5 flex h-5.5 w-5.5 flex-none items-center justify-center rounded-sm border-2 text-xs font-extrabold text-white ${
+        className={`flex h-5.5 w-5.5 flex-none items-center justify-center rounded-sm border-2 text-xs font-extrabold text-white ${
           checked ? "border-accent bg-accent" : "border-ink-muted"
         }`}
       >

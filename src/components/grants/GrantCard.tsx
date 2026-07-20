@@ -38,9 +38,9 @@ export default function GrantCard({
   };
 
   return (
-    <div className="rounded-2xl border border-border bg-surface p-6">
+    <div className="flex-1 rounded-2xl border border-border bg-surface p-6">
       <div className="flex flex-wrap justify-between gap-4">
-        <div className="min-w-60 flex-1">
+        <div className="max-w-sm flex-1">
           <div
             onClick={() => router.push(`/grants/${grant.id}`)}
             role="button"
@@ -53,91 +53,89 @@ export default function GrantCard({
             {grant.grantor} ·{" "}
             {grant.targetRegions.map((r) => r.name).join(", ")}
           </div>
-          <p className="mb-3 text-sm leading-normal text-ink-muted">
-            {grant.purpose}
-          </p>
-          <div className="mb-3 flex flex-wrap gap-x-5 gap-y-1.5 text-xs">
-            <div>
-              <span className="text-ink-muted">Award </span>
-              <span className="font-semibold text-ink-secondary">
-                {formatCurrency(grant.award.totalAmount)}
-              </span>
-            </div>
-            <div>
-              <span className="text-ink-muted">Eligible area </span>
-              <span className="font-semibold text-ink-secondary">
-                {grant.targetRegions.map((r) => r.name).join(", ")}
-              </span>
-            </div>
-            <div>
-              <span className="text-ink-muted">Opens </span>
-              <span className="font-semibold text-ink-secondary">
-                {formatDate(grant.timeline.applicationWindowStart)}
-              </span>
-            </div>
-            <div>
-              <span className="text-ink-muted">
-                {closed ? "Closed on " : "Closes "}
-              </span>
-              <span
-                className={`font-semibold ${
-                  closed ? "text-warning-ink" : "text-ink-secondary"
-                }`}
-              >
-                {formatDate(grant.timeline.applicationWindowEnd)}
-              </span>
-            </div>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {grant.issues.map((tag) => (
-              <span
-                key={tag}
-                className="inline-flex items-center gap-1 rounded-full border border-border-strong bg-surface-alt px-3 py-1 text-xs font-bold text-ink-secondary"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-          {collabCount > 0 && (
-            <button
-              onClick={() => router.push(`/grants/${grant.id}/collaborate`)}
-              className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-accent-tint-2 px-3 py-1 text-xs font-bold text-accent-ink-2 transition duration-150 hover:brightness-95"
-            >
-              <Users size={12} className="shrink-0" />
-              {collabCount} open to collaborate
-            </button>
-          )}
         </div>
-        <div className="flex shrink-0 flex-col items-end gap-2">
-          <div className="text-sm font-bold text-accent-ink-2">
-            {formatCurrency(grant.award.totalAmount)}
-          </div>
-          <div className="mt-1 flex gap-2">
-            <button
-              onClick={toggleSave}
-              className={`inline-flex items-center gap-2 rounded-lg border border-border-strong px-4 py-2.5 text-sm font-semibold whitespace-nowrap transition duration-150 ${
-                closed && !saved
-                  ? "bg-divider-2 text-ink-muted hover:bg-border-strong"
-                  : "bg-white text-ink hover:border-accent"
-              }`}
-              aria-pressed={saved}
-            >
-              <Star
-                size={13}
-                fill={saved ? "currentColor" : "none"}
-                className="shrink-0"
-              />
-              {saved ? "Saved" : "Save"}
-            </button>
-            <button
-              onClick={() => router.push(`/grants/${grant.id}`)}
-              className="inline-flex items-center gap-2 rounded-lg bg-accent-ink px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              View grant details <ArrowRight size={14} className="shrink-0" />
-            </button>
-          </div>
+        <div className="flex shrink-0 justify-end items-start gap-2">
+          <button
+            onClick={toggleSave}
+            className={`inline-flex items-center gap-2 rounded-lg border border-border-strong px-4 py-2.5 text-sm font-semibold whitespace-nowrap transition duration-150 ${
+              closed && !saved
+                ? "bg-divider-2 text-ink-muted hover:bg-border-strong"
+                : "bg-white text-ink hover:border-accent"
+            }`}
+            aria-pressed={saved}
+          >
+            <Star
+              size={13}
+              fill={saved ? "currentColor" : "none"}
+              className="shrink-0"
+            />
+            {saved ? "Saved" : "Save"}
+          </button>
+          <button
+            onClick={() => router.push(`/grants/${grant.id}`)}
+            className="inline-flex items-center gap-2 rounded-lg bg-accent-ink px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            View grant details <ArrowRight size={14} className="shrink-0" />
+          </button>
         </div>
       </div>
+      <p className="mb-3 max-w-2xl text-sm leading-normal text-ink-muted">
+        {grant.purpose}
+      </p>
+      <div className="mb-3 flex flex-wrap gap-x-5 gap-y-1.5 text-xs">
+        <div>
+          <span className="text-ink-muted">Award </span>
+          <span className="ml-0.5 font-semibold text-ink-secondary">
+            {formatCurrency(grant.award.totalAmount)}
+          </span>
+        </div>
+        <div>
+          <span className="text-ink-muted">Eligible area </span>
+          <span className="ml-0.5 font-semibold text-ink-secondary">
+            {grant.targetRegions[0].name +
+              (grant.targetRegions.length > 1
+                ? " + " + (grant.targetRegions.length - 1) + " more"
+                : "")}
+          </span>
+        </div>
+        <div>
+          <span className="text-ink-muted">Opens </span>
+          <span className="ml-0.5 font-semibold text-ink-secondary">
+            {formatDate(grant.timeline.applicationWindowStart)}
+          </span>
+        </div>
+        <div>
+          <span className="text-ink-muted">
+            {closed ? "Closed on " : "Closes "}
+          </span>
+          <span
+            className={`ml-0.5 font-semibold ${
+              closed ? "text-warning-ink" : "text-ink-secondary"
+            }`}
+          >
+            {formatDate(grant.timeline.applicationWindowEnd)}
+          </span>
+        </div>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {grant.issues.map((tag) => (
+          <span
+            key={tag}
+            className="inline-flex items-center gap-1 rounded-full border border-border-strong bg-surface-alt px-3 py-1 text-xs font-bold text-ink-secondary"
+          >
+            {tag}
+          </span>
+        ))}
+      </div>
+      {collabCount > 0 && (
+        <button
+          onClick={() => router.push(`/grants/${grant.id}/collaborate`)}
+          className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-accent-tint-2 px-3 py-1 text-xs font-bold text-accent-ink-2 transition duration-150 hover:brightness-95"
+        >
+          <Users size={12} className="shrink-0" />
+          {collabCount} open to collaborate
+        </button>
+      )}
 
       {closedOpen && (
         <ClosedGrantModal

@@ -102,28 +102,28 @@ export function sortGrants(grants: Grant[], sortBy: SortOption): Grant[] {
   }
 }
 
-export const ORG_TYPE_OPTIONS: { id: string; label: string; hint: string }[] = [
-  {
-    id: "nonprofit",
-    label: "501(c)(3) nonprofit",
-    hint: "Independently incorporated nonprofit organization.",
-  },
-  {
-    id: "fiscally-sponsored",
-    label: "Fiscally sponsored project",
-    hint: "Operates under a sponsoring nonprofit's status.",
-  },
-  {
-    id: "social-enterprise",
-    label: "Social enterprise",
-    hint: "Mission-driven, may have earned revenue.",
-  },
-  {
-    id: "community-group",
-    label: "Community group",
-    hint: "Informal resident-led group without 501(c)(3) status.",
-  },
-];
+export const ORG_TYPE_OPTIONS: { id: string; label: string; hint?: string }[] =
+  [
+    {
+      id: "nonprofit",
+      label: "501(c)(3) nonprofit",
+      hint: "An independently incorporated non-profit organization.",
+    },
+    {
+      id: "fiscally-sponsored",
+      label: "Fiscally sponsored project",
+      hint: "Operates under the sponsorship of an incorporated non-profit.",
+    },
+    {
+      id: "social-enterprise",
+      label: "Social enterprise",
+      hint: "Mission-driven, but may have earned revenue.",
+    },
+    {
+      id: "other",
+      label: "Other",
+    },
+  ];
 
 export const LOCATION_OPTIONS = [
   "City of Pittsburgh",
