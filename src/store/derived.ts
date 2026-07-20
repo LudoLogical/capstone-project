@@ -98,17 +98,16 @@ export function nextReportDeadline(
   grant: Grant,
   reportsSubmitted: number,
 ): Date | null {
-  const { firstReportDeadline, reportFrequency, awardEndDate } = grant.timeline;
+  const { firstReportDeadline, reportFrequency, awardTerm } = grant.timeline;
   if (reportFrequency < 0) return null; // this grant asks for no reports
   if (reportsSubmitted === 0) return firstReportDeadline;
   if (reportFrequency === 0) return null; // a single report, already filed
   const next = new Date(firstReportDeadline);
-  next.setMonth(next.getMonth() + reportsSubmitted * reportFrequency);
-  // The last report falls due shortly after the award period ends; anything
-  // past that window means the grant is done reporting.
-  const FINAL_REPORT_WINDOW_MS = 90 * 86_400_000;
-  if (next.getTime() > awardEndDate.getTime() + FINAL_REPORT_WINDOW_MS)
+  const monthsElapsed = reportsSubmitted * reportFrequency;
+  if (monthsElapsed > awardTerm) {
     return null;
+  }
+  next.setMonth(next.getMonth() + monthsElapsed);
   return next;
 }
 

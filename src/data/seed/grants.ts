@@ -67,7 +67,6 @@ export const GRANT_HEALTHY_NEIGHBORHOODS: Grant = {
     applicationWindowEnd: new Date("2026-09-30T23:59:59Z"),
     notificationDate: new Date("2026-10-15T00:00:00Z"),
     awardTerm: 24,
-    awardEndDate: new Date("2028-12-31T23:59:59Z"),
     firstReportDeadline: new Date("2027-04-15T00:00:00Z"),
     reportFrequency: 6,
   },
@@ -144,7 +143,6 @@ export const GRANT_FOOD_ACCESS: Grant = {
     applicationWindowEnd: new Date("2026-10-31T23:59:59Z"),
     notificationDate: new Date("2026-12-01T00:00:00Z"),
     awardTerm: 12,
-    awardEndDate: new Date("2027-11-30T23:59:59Z"),
     firstReportDeadline: new Date("2027-12-01T00:00:00Z"),
     reportFrequency: 12,
   },
@@ -200,7 +198,6 @@ export const GRANT_YOUTH_DIGITAL_WELLNESS: Grant = {
     applicationWindowEnd: new Date("2026-11-01T23:59:59Z"),
     notificationDate: new Date("2026-12-01T00:00:00Z"),
     awardTerm: 12,
-    awardEndDate: new Date("2027-12-31T23:59:59Z"),
     firstReportDeadline: new Date("2027-01-15T00:00:00Z"),
     reportFrequency: -1,
   },
@@ -268,7 +265,6 @@ export const GRANT_GREEN_SPACES: Grant = {
     applicationWindowEnd: new Date("2026-08-31T23:59:59Z"),
     notificationDate: new Date("2026-10-01T00:00:00Z"),
     awardTerm: 24,
-    awardEndDate: new Date("2028-10-31T23:59:59Z"),
     firstReportDeadline: new Date("2027-05-01T00:00:00Z"),
     reportFrequency: 6,
   },
@@ -332,7 +328,6 @@ export const GRANT_SENIOR_MOBILITY: Grant = {
     applicationWindowEnd: new Date("2026-07-15T23:59:59Z"),
     notificationDate: new Date("2026-09-01T00:00:00Z"),
     awardTerm: 12,
-    awardEndDate: new Date("2027-09-30T23:59:59Z"),
     firstReportDeadline: new Date("2027-09-30T00:00:00Z"),
     reportFrequency: 12,
   },
@@ -359,8 +354,8 @@ function makeGrant(g: {
   /** Decision date, ISO. Defaults to ~6 weeks after close. */
   decidesOn?: string;
   awardTerm?: number;
-  awardEnds?: string;
-  firstReportDue?: string;
+  /** First report deadline, ISO. Stated outright rather than derived. */
+  firstReportDue: string;
   reportFrequency?: number;
   isRecommended?: boolean;
 }): Grant {
@@ -372,9 +367,6 @@ function makeGrant(g: {
   };
   const decidesOn = g.decidesOn ? new Date(g.decidesOn) : plusMonths(closes, 2);
   const awardTerm = g.awardTerm ?? 12;
-  const awardEnds = g.awardEnds
-    ? new Date(g.awardEnds)
-    : plusMonths(decidesOn, awardTerm);
   return {
     id: g.id,
     name: g.name,
@@ -423,10 +415,7 @@ function makeGrant(g: {
       applicationWindowEnd: closes,
       notificationDate: decidesOn,
       awardTerm,
-      awardEndDate: awardEnds,
-      firstReportDeadline: g.firstReportDue
-        ? new Date(g.firstReportDue)
-        : plusMonths(awardEnds, 1),
+      firstReportDeadline: new Date(g.firstReportDue),
       reportFrequency: g.reportFrequency ?? 12,
     },
     isRecommended: g.isRecommended ?? false,
@@ -447,6 +436,7 @@ export const CATALOG_GRANTS: Grant[] = [
     issues: ["Environment", "Health"],
     totalAmount: 50000,
     closes: "2026-07-21T23:59:59Z",
+    firstReportDue: "2027-10-21T23:59:59Z",
     isRecommended: true,
   }),
   makeGrant({
@@ -459,6 +449,7 @@ export const CATALOG_GRANTS: Grant[] = [
     regions: [REGION_ALLEGHENY_COUNTY, REGION_WESTMORELAND_COUNTY],
     totalAmount: 60000,
     closes: "2026-07-27T23:59:59Z",
+    firstReportDue: "2027-10-27T23:59:59Z",
     isRecommended: true,
   }),
   makeGrant({
@@ -470,6 +461,7 @@ export const CATALOG_GRANTS: Grant[] = [
     issues: ["Community"],
     totalAmount: 30000,
     closes: "2026-08-05T23:59:59Z",
+    firstReportDue: "2027-11-05T23:59:59Z",
   }),
   makeGrant({
     id: "g-youth-dev",
@@ -481,6 +473,7 @@ export const CATALOG_GRANTS: Grant[] = [
     totalAmount: 75000,
     closes: "2026-08-12T23:59:59Z",
     awardTerm: 24,
+    firstReportDue: "2028-11-13T23:59:59Z",
     reportFrequency: 6,
   }),
   makeGrant({
@@ -492,6 +485,7 @@ export const CATALOG_GRANTS: Grant[] = [
     issues: ["Health"],
     totalAmount: 40000,
     closes: "2026-08-28T23:59:59Z",
+    firstReportDue: "2027-11-29T23:59:59Z",
   }),
   makeGrant({
     id: "g-digital-equity",
@@ -502,6 +496,7 @@ export const CATALOG_GRANTS: Grant[] = [
     issues: ["Technology", "Community"],
     totalAmount: 45000,
     closes: "2026-09-10T23:59:59Z",
+    firstReportDue: "2027-12-11T23:59:59Z",
   }),
   makeGrant({
     id: "g-food-rescue",
@@ -512,6 +507,7 @@ export const CATALOG_GRANTS: Grant[] = [
     issues: ["Food Security"],
     totalAmount: 28000,
     closes: "2026-09-18T23:59:59Z",
+    firstReportDue: "2027-12-19T23:59:59Z",
   }),
   makeGrant({
     id: "g-housing-stability",
@@ -522,6 +518,7 @@ export const CATALOG_GRANTS: Grant[] = [
     issues: ["Community"],
     totalAmount: 65000,
     closes: "2026-09-25T23:59:59Z",
+    firstReportDue: "2027-12-26T23:59:59Z",
   }),
   makeGrant({
     id: "g-early-literacy",
@@ -532,6 +529,7 @@ export const CATALOG_GRANTS: Grant[] = [
     issues: ["Youth"],
     totalAmount: 35000,
     closes: "2026-10-08T23:59:59Z",
+    firstReportDue: "2028-01-09T23:59:59Z",
   }),
   makeGrant({
     id: "g-riverfront",
@@ -543,6 +541,7 @@ export const CATALOG_GRANTS: Grant[] = [
     totalAmount: 80000,
     closes: "2026-10-20T23:59:59Z",
     awardTerm: 24,
+    firstReportDue: "2029-01-21T23:59:59Z",
     reportFrequency: 6,
   }),
   makeGrant({
@@ -554,6 +553,7 @@ export const CATALOG_GRANTS: Grant[] = [
     issues: ["Community"],
     totalAmount: 42000,
     closes: "2026-11-05T23:59:59Z",
+    firstReportDue: "2028-02-05T23:59:59Z",
   }),
   makeGrant({
     id: "g-senior-nutrition",
@@ -564,6 +564,7 @@ export const CATALOG_GRANTS: Grant[] = [
     issues: ["Food Security", "Health"],
     totalAmount: 30000,
     closes: "2026-11-18T23:59:59Z",
+    firstReportDue: "2028-02-18T23:59:59Z",
   }),
   makeGrant({
     id: "g-workforce",
@@ -575,6 +576,7 @@ export const CATALOG_GRANTS: Grant[] = [
     totalAmount: 90000,
     closes: "2026-12-01T23:59:59Z",
     awardTerm: 24,
+    firstReportDue: "2029-03-01T23:59:59Z",
   }),
   makeGrant({
     id: "g-maker-stem",
@@ -585,6 +587,7 @@ export const CATALOG_GRANTS: Grant[] = [
     issues: ["Youth", "Technology"],
     totalAmount: 32000,
     closes: "2026-12-15T23:59:59Z",
+    firstReportDue: "2028-03-15T23:59:59Z",
   }),
   makeGrant({
     id: "g-urban-farm",
@@ -595,6 +598,7 @@ export const CATALOG_GRANTS: Grant[] = [
     issues: ["Food Security", "Environment"],
     totalAmount: 26000,
     closes: "2027-01-15T23:59:59Z",
+    firstReportDue: "2028-04-15T23:59:59Z",
   }),
   makeGrant({
     id: "g-safe-passage",
@@ -606,6 +610,7 @@ export const CATALOG_GRANTS: Grant[] = [
     regions: [REGION_PITTSBURGH],
     totalAmount: 38000,
     closes: "2027-02-01T23:59:59Z",
+    firstReportDue: "2028-05-01T23:59:59Z",
   }),
 ];
 
@@ -622,6 +627,7 @@ export const GRANT_ARTS_MICROGRANT = makeGrant({
   issues: ["Community"],
   totalAmount: 8000,
   closes: "2025-05-30T23:59:59Z",
+  firstReportDue: "2026-08-30T23:59:59Z",
 });
 
 export const GRANT_SAFETY_INNOVATION = makeGrant({
@@ -633,6 +639,7 @@ export const GRANT_SAFETY_INNOVATION = makeGrant({
   issues: ["Community"],
   totalAmount: 45000,
   closes: "2025-04-15T23:59:59Z",
+  firstReportDue: "2026-07-15T23:59:59Z",
 });
 
 export const GRANT_SUMMER_YOUTH = makeGrant({
@@ -644,6 +651,7 @@ export const GRANT_SUMMER_YOUTH = makeGrant({
   issues: ["Youth"],
   totalAmount: 25000,
   closes: "2025-03-01T23:59:59Z",
+  firstReportDue: "2026-06-01T23:59:59Z",
 });
 
 /** Withdrawn: the user pulled this application before the window closed. */
@@ -656,6 +664,7 @@ export const GRANT_CIVIC_TECH = makeGrant({
   issues: ["Technology", "Community"],
   totalAmount: 15000,
   closes: "2025-09-30T23:59:59Z",
+  firstReportDue: "2026-12-31T23:59:59Z",
 });
 
 /** Submitted, and the funder's decision date has already passed. */
@@ -669,6 +678,7 @@ export const GRANT_PARKS_ACCESS = makeGrant({
   totalAmount: 33000,
   closes: "2026-05-01T23:59:59Z",
   decidesOn: "2026-06-30T23:59:59Z",
+  firstReportDue: "2027-07-30T23:59:59Z",
 });
 
 /** Awarded, with a final report already overdue. */
@@ -682,7 +692,6 @@ export const GRANT_WELLNESS_PILOT = makeGrant({
   totalAmount: 20000,
   closes: "2025-01-31T23:59:59Z",
   decidesOn: "2025-03-01T00:00:00Z",
-  awardEnds: "2026-03-01T23:59:59Z",
   firstReportDue: "2026-06-15T23:59:59Z",
   reportFrequency: 0,
 });
@@ -699,7 +708,6 @@ export const GRANT_NEIGHBORHOOD_HEALTH = makeGrant({
   closes: "2025-06-30T23:59:59Z",
   decidesOn: "2025-08-15T00:00:00Z",
   awardTerm: 24,
-  awardEnds: "2027-08-15T23:59:59Z",
   firstReportDue: "2026-02-15T23:59:59Z",
   reportFrequency: 6,
 });

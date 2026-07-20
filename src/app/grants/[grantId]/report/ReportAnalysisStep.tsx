@@ -20,7 +20,6 @@ export default function ReportAnalysisStep({
   exportMode,
   editCustomSupporting,
   deleteCustomSupporting,
-  setShareOpen,
   setStep,
   saveToGrant,
   resetAnalysis,
@@ -36,7 +35,6 @@ export default function ReportAnalysisStep({
   exportMode: "selected" | "all";
   editCustomSupporting: (index: number, text: string) => void;
   deleteCustomSupporting: (index: number) => void;
-  setShareOpen: (open: boolean) => void;
   setStep: (step: number) => void;
   saveToGrant: () => void;
   resetAnalysis: () => void;
@@ -181,7 +179,7 @@ export default function ReportAnalysisStep({
             </button>
           </div>
 
-          {/* Download (with format menu) + Share link */}
+          {/* Download (with format menu) */}
           <div className="flex flex-wrap items-start gap-2.5">
             <div className="relative">
               <button
@@ -208,12 +206,6 @@ export default function ReportAnalysisStep({
                 </div>
               )}
             </div>
-            <button
-              onClick={() => setShareOpen(true)}
-              className="inline-flex items-center gap-2 rounded-lg border border-border-strong bg-white px-5 py-3 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 hover:border-accent"
-            >
-              Share link
-            </button>
           </div>
         </div>
       )}

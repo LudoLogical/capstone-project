@@ -215,17 +215,6 @@ type Grant = {
     awardTerm: number;
 
     /**
-     * The date and time (in UTC) at which the award period ends - the grant has
-     * expired and any final reporting obligation comes due. Stated explicitly
-     * rather than derived from `awardTerm`, because a funder's term rarely runs
-     * exactly N months from the notification date.
-     *
-     * @deprecated
-     * This property was added by a vibe coding tool without human approval.
-     */
-    awardEndDate: Date;
-
-    /**
      * The date and time (in UTC) by which the awardee(s) of this Grant
      * must submit their first impact report(s), or `null` if no reporting
      * is required.

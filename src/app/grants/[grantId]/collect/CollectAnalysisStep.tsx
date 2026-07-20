@@ -22,7 +22,6 @@ export default function CollectAnalysisStep({
   useSelectedExportMode,
   downloadOpen,
   setDownloadOpen,
-  setShareOpen,
   resetAnalysis,
   setStep,
   REVIEW_STEP,
@@ -39,7 +38,6 @@ export default function CollectAnalysisStep({
   useSelectedExportMode: () => void;
   downloadOpen: boolean;
   setDownloadOpen: Dispatch<SetStateAction<boolean>>;
-  setShareOpen: (open: boolean) => void;
   resetAnalysis: () => void;
   setStep: (step: number) => void;
   REVIEW_STEP: number;
@@ -147,7 +145,7 @@ export default function CollectAnalysisStep({
             </button>
           </div>
 
-          {/* Download (with format menu) + Share link */}
+          {/* Download (with format menu) */}
           <div className="flex flex-wrap items-start gap-2.5">
             <div className="relative">
               <button
@@ -174,12 +172,6 @@ export default function CollectAnalysisStep({
                 </div>
               )}
             </div>
-            <button
-              onClick={() => setShareOpen(true)}
-              className="inline-flex items-center gap-2 rounded-lg border border-border-strong bg-white px-5 py-3 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 hover:border-accent"
-            >
-              Share link
-            </button>
           </div>
         </div>
       )}

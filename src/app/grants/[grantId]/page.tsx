@@ -11,14 +11,20 @@ import {
   formatReportFrequency,
 } from "@/utils/format";
 import { INTERESTED_BY_GRANT, ORG_PROFILES } from "@/data/seed";
-import ShareModal from "@/components/modals/ShareModal";
 import BackButton from "@/components/primitives/BackButton";
 import OrgAvatar from "@/components/primitives/OrgAvatar";
 import ClosedGrantModal from "@/components/modals/ClosedGrantModal";
 import DetailCard from "@/components/primitives/DetailCard";
 import BulletList from "@/components/primitives/BulletList";
 import TimelineCell from "@/app/grants/[grantId]/TimelineCell";
-import { Star, BarChart3, ArrowUpRight, ArrowRight } from "lucide-react";
+import {
+  Star,
+  BarChart3,
+  ArrowUpRight,
+  ArrowRight,
+  Copy,
+  TriangleAlert,
+} from "lucide-react";
 
 export default function GrantDetailPage() {
   const { grantId = "" } = useParams<{ grantId: string }>();
@@ -30,7 +36,6 @@ export default function GrantDetailPage() {
   const setGrantStatus = useAppStore((s) => s.setGrantStatus);
   const clearGrantStatus = useAppStore((s) => s.clearGrantStatus);
   const addToast = useAppStore((s) => s.addToast);
-  const [shareOpen, setShareOpen] = useState(false);
   const [closedOpen, setClosedOpen] = useState(false);
   const setStage = useAppStore((s) => s.setStage);
   const setDiscoverable = useAppStore((s) => s.setDiscoverable);
@@ -71,12 +76,21 @@ export default function GrantDetailPage() {
           : "border border-border-strong bg-white text-ink hover:border-accent"
     }`;
 
+  // Copies the funder's own URL - the same destination as "View grant on
+  // website", not this portal page.
+  const copyLink = () => {
+    navigator.clipboard
+      ?.writeText(grant.link)
+      .then(() => addToast("Link copied."))
+      .catch(() => addToast("Couldn't copy the link."));
+  };
+
   const collabOrgs = (INTERESTED_BY_GRANT[grant.id] ?? [])
     .map((id) => ORG_PROFILES[id])
     .filter(Boolean);
 
   return (
-    <div className="mx-auto w-full px-8 pt-7 pb-28 animate-nc-rise">
+    <div className="mx-auto w-full max-w-3xl px-8 pt-7 pb-28 animate-nc-rise">
       <BackButton fallback="/search" />
 
       <div className="mb-5 rounded-2xl border border-border bg-surface p-8">
@@ -109,14 +123,23 @@ export default function GrantDetailPage() {
             </button>
           </div>
         </div>
-        <a
-          href={grant.link}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mb-4 inline-flex items-center gap-2 rounded-lg border border-border-strong bg-white px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-ink no-underline transition duration-150 hover:border-accent"
-        >
-          View grant on website <ArrowUpRight size={15} className="shrink-0" />
-        </a>
+        <div className="mb-4 flex flex-wrap gap-2.5">
+          <a
+            href={grant.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 rounded-lg border border-border-strong bg-white px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-ink no-underline transition duration-150 hover:border-accent"
+          >
+            View grant on website{" "}
+            <ArrowUpRight size={15} className="shrink-0" />
+          </a>
+          <button
+            onClick={copyLink}
+            className="inline-flex items-center gap-2 rounded-lg border border-border-strong bg-white px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 hover:border-accent"
+          >
+            <Copy size={15} className="shrink-0" /> Copy link
+          </button>
+        </div>
         <div className="mb-4 flex flex-wrap items-baseline gap-x-2 gap-y-1">
           <span className="text-xl font-bold text-accent-ink-2">
             {formatCurrencyFull(grant.award.totalAmount)} total
@@ -171,13 +194,31 @@ export default function GrantDetailPage() {
           />
         </div>
 
-        <div className="flex flex-wrap gap-2.5">
-          <button
-            onClick={() => setShareOpen(true)}
-            className="inline-flex items-center gap-2 rounded-lg border border-border-strong bg-white px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 enabled:hover:border-accent disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            Share link
-          </button>
+        <div className="flex items-start gap-2.5 rounded-xl border border-warning-border bg-warning-bg px-4 py-3.5">
+          <TriangleAlert
+            size={16}
+            className="mt-0.5 flex-none text-warning-ink"
+          />
+          <div className="text-sm leading-relaxed text-warning-ink">
+            <strong>
+              Confirm these details on{" "}
+              <a
+                href={grant.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold text-warning-ink underline underline-offset-2"
+              >
+                {grant.grantor}&apos;s website
+              </a>{" "}
+              before you apply.
+              <br />
+            </strong>
+            The info on this page was extracted from the original listing using
+            AI, which can make mistakes.
+            <br />
+            Also, some details might have changed since that extraction took
+            place.
+          </div>
         </div>
       </div>
 
@@ -385,16 +426,6 @@ export default function GrantDetailPage() {
             setClosedOpen(false);
             router.push("/");
           }}
-        />
-      )}
-
-      {shareOpen && (
-        <ShareModal
-          name={grant.name}
-          link={
-            typeof window !== "undefined" ? window.location.href : grant.link
-          }
-          onClose={() => setShareOpen(false)}
         />
       )}
     </div>

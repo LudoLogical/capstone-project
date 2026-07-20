@@ -17,7 +17,6 @@ import {
 import { type AnalysisCardSection } from "@/components/analysis/RueaCard";
 import Modal from "@/components/primitives/Modal";
 import BackButton from "@/components/primitives/BackButton";
-import ShareModal from "@/components/modals/ShareModal";
 import {
   STEP_NAV,
   isPicked,
@@ -44,7 +43,6 @@ export default function ReportFlowPage() {
   const [reqDraft, setReqDraft] = useState("");
   // Export controls on the Analysis step.
   const [exportMode, setExportMode] = useState<"selected" | "all">("selected");
-  const [shareOpen, setShareOpen] = useState(false);
   // The ticks in place before "Export all cards" auto-selected everything, so
   // switching back to "Export selected cards" can restore them.
   const picksBeforeAllRef = useRef<Record<string, boolean> | null>(null);
@@ -409,7 +407,6 @@ export default function ReportFlowPage() {
               exportMode={exportMode}
               editCustomSupporting={editCustomSupporting}
               deleteCustomSupporting={deleteCustomSupporting}
-              setShareOpen={setShareOpen}
               setStep={setStep}
               saveToGrant={saveToGrant}
               resetAnalysis={resetAnalysis}
@@ -417,19 +414,6 @@ export default function ReportFlowPage() {
           )}
         </div>
       </div>
-
-      {shareOpen && (
-        <ShareModal
-          title="Share this data analysis"
-          name={`${grant.name} - Data Analysis`}
-          link={
-            typeof window !== "undefined"
-              ? window.location.href
-              : `/grants/${grant.id}/report`
-          }
-          onClose={() => setShareOpen(false)}
-        />
-      )}
 
       {usageKey && DATA_DETAILS[usageKey] && (
         <Modal

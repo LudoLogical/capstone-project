@@ -8,7 +8,6 @@ import { useGrantView } from "@/store/derived";
 import { DATA_DETAILS, RUEA_SECTIONS, SHARE_KEYS } from "@/data/seed";
 import Modal from "@/components/primitives/Modal";
 import BackButton from "@/components/primitives/BackButton";
-import ShareModal from "@/components/modals/ShareModal";
 import CollectStepRail from "@/app/grants/[grantId]/collect/CollectStepRail";
 import CollectContextStep from "@/app/grants/[grantId]/collect/CollectContextStep";
 import CollectReviewStep from "@/app/grants/[grantId]/collect/CollectReviewStep";
@@ -41,7 +40,6 @@ export default function DataCollectionWizardPage() {
   // Export controls on the Analyze step.
   const [exportMode, setExportMode] = useState<"selected" | "all">("selected");
   const [downloadOpen, setDownloadOpen] = useState(false);
-  const [shareOpen, setShareOpen] = useState(false);
   // The ticks in place before "Export all cards" auto-selected everything, so
   // switching back to "Export selected cards" can restore them.
   const picksBeforeAllRef = useRef<Record<string, boolean> | null>(null);
@@ -274,7 +272,6 @@ export default function DataCollectionWizardPage() {
               useSelectedExportMode={useSelectedExportMode}
               downloadOpen={downloadOpen}
               setDownloadOpen={setDownloadOpen}
-              setShareOpen={setShareOpen}
               resetAnalysis={resetAnalysis}
               setStep={setStep}
               REVIEW_STEP={REVIEW_STEP}
@@ -282,19 +279,6 @@ export default function DataCollectionWizardPage() {
           )}
         </div>
       </div>
-
-      {shareOpen && (
-        <ShareModal
-          title="Share this data analysis"
-          name={`${grant.name} - Data Analysis`}
-          link={
-            typeof window !== "undefined"
-              ? window.location.href
-              : `/grants/${grant.id}/collect`
-          }
-          onClose={() => setShareOpen(false)}
-        />
-      )}
 
       {usageKey && DATA_DETAILS[usageKey] && (
         <Modal
