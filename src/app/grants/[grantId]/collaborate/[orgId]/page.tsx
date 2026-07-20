@@ -2,11 +2,10 @@
 
 import { useState } from "react";
 import { useParams } from "next/navigation";
-import { useAppStore } from "@/store/useAppStore";
 import { ORG_PROFILES } from "@/data/seed";
-import { Check, Hourglass } from "lucide-react";
 import WarmIntroModal from "@/components/modals/WarmIntroModal";
 import BackButton from "@/components/primitives/BackButton";
+import OrgAvatar from "@/components/primitives/OrgAvatar";
 
 export default function OrgProfilePage() {
   const { grantId = "", orgId = "" } = useParams<{
@@ -14,36 +13,22 @@ export default function OrgProfilePage() {
     orgId: string;
   }>();
   const profile = ORG_PROFILES[orgId];
-  const contactRequested = useAppStore((s) => s.contactRequested[orgId]);
-  const requestContact = useAppStore((s) => s.requestContact);
-  const addToast = useAppStore((s) => s.addToast);
   const [emailOpen, setEmailOpen] = useState(false);
 
   if (!profile) {
     return (
-      <div className="mx-auto w-full animate-nc-rise px-8 pt-7 pb-28">
+      <div className="mx-auto w-full max-w-4xl animate-nc-rise px-8 pt-7 pb-28">
         <p className="leading-relaxed">Organization not found.</p>
       </div>
     );
   }
 
-  const requestIntro = () => {
-    requestContact(orgId);
-    addToast("Requested - pending approval and consent.");
-  };
-
-  // "Shares a funder with you" signals were removed product-wide; only the
-  // remaining observable signals (overlap, distance) surface here.
-  const signals = profile.signals.filter(
-    (s) => !s.label.toLowerCase().includes("shares a funder"),
-  );
-
   return (
-    <div className="mx-auto w-full animate-nc-rise px-8 pt-7 pb-28">
+    <div className="mx-auto w-full max-w-4xl animate-nc-rise px-8 pt-7 pb-28">
       <BackButton fallback={`/grants/${grantId}/collaborate`} />
       <div className="rounded-2xl border border-border bg-surface p-8">
         <div className="mb-6 flex flex-wrap items-center gap-5">
-          <div className="h-16 w-16 rounded-full bg-accent" />
+          <OrgAvatar size="lg" />
           <div className="min-w-50 flex-1">
             <div className="mb-1 flex items-center gap-2">
               <h1 className="font-serif text-xl leading-tight font-bold">
@@ -81,11 +66,6 @@ export default function OrgProfilePage() {
           </div>
         </div>
 
-        <div className="mb-2 text-sm font-bold">About</div>
-        <p className="mb-5 text-sm leading-relaxed text-ink-body">
-          {profile.about}
-        </p>
-
         <div className="mb-2.5 text-sm font-bold">Focus areas</div>
         <div className="mb-5 flex flex-wrap gap-2">
           {profile.focus.map((f) => (
@@ -98,62 +78,17 @@ export default function OrgProfilePage() {
           ))}
         </div>
 
-        <div className="mb-2.5 text-sm font-bold">Contact</div>
-        {profile.contactConsent ? (
-          <div className="mb-5 rounded-xl border border-success-border-2 bg-success-bg-2 p-4">
-            <div className="mb-2.5 text-xs font-bold text-success-ink">
-              SHARED WITH CONSENT
-            </div>
-            <div className="text-sm">
-              <strong>{profile.contactName}</strong>
-            </div>
-            <div className="text-sm">{profile.contactPhone}</div>
-          </div>
-        ) : (
-          <div className="mb-5 rounded-xl border border-info-border-2 bg-info-bg-2 p-4">
-            <div className="mb-2 text-xs font-bold text-info-ink">
-              CONTACT KEPT PRIVATE
-            </div>
-            <p className="mb-3 text-sm leading-normal">
-              This organization hasn&apos;t made their contact details public.
-              Sharing them takes a few human steps: requests are reviewed,
-              consent is obtained, and contact details are shared separately.
-            </p>
-            {contactRequested ? (
-              <div className="inline-flex items-center gap-1 rounded-full border border-warning-border bg-warning-bg px-3 py-1 text-xs font-bold text-warning-ink">
-                <Hourglass size={13} className="shrink-0" /> Requested - pending
-                approval and consent
-              </div>
-            ) : (
-              <button
-                onClick={requestIntro}
-                className="inline-flex items-center gap-2 rounded-lg border border-border-strong bg-white px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 enabled:hover:border-accent disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Request introduction
-              </button>
-            )}
-          </div>
-        )}
-
-        {signals.length > 0 && (
-          <>
-            <div className="mb-2.5 text-sm font-bold">
-              Why the AI surfaced this organization
-            </div>
-            <div className="mb-6 flex flex-wrap gap-2">
-              {signals.map((sig) => (
-                <span
-                  key={sig.label}
-                  title={sig.source}
-                  className="inline-flex items-center gap-1 rounded-full border border-info-border bg-info-bg px-3 py-1 text-xs font-bold text-info-ink"
-                >
-                  <Check size={12} className="shrink-0" />
-                  {sig.label}{" "}
-                </span>
-              ))}
-            </div>
-          </>
-        )}
+        <div className="mb-2.5 text-sm font-bold">Communities served</div>
+        <div className="mb-5 flex flex-wrap gap-2">
+          {profile.areas.map((a) => (
+            <span
+              key={a}
+              className="inline-flex items-center gap-1 rounded-full border border-border-strong bg-surface-alt px-3 py-1 text-xs font-bold text-ink-secondary"
+            >
+              {a}
+            </span>
+          ))}
+        </div>
 
         <div className="flex flex-wrap items-center gap-2.5 border-t border-divider-2 pt-5">
           <button

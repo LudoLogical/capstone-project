@@ -8,18 +8,16 @@ import {
   ORG_PROFILES,
   type OrgProfileContent,
 } from "@/data/seed";
-import { initialsOf } from "@/utils/format";
 import WarmIntroModal from "@/components/modals/WarmIntroModal";
-import ShareModal from "@/components/modals/ShareModal";
 import BackButton from "@/components/primitives/BackButton";
-import { Users, ArrowUpRight } from "lucide-react";
+import OrgAvatar from "@/components/primitives/OrgAvatar";
+import { Users } from "lucide-react";
 
 export default function CollaboratePage() {
   const { grantId = "" } = useParams<{ grantId: string }>();
   const router = useRouter();
   const view = useGrantView(grantId);
   const [emailOrg, setEmailOrg] = useState<OrgProfileContent | null>(null);
-  const [shareOrg, setShareOrg] = useState<OrgProfileContent | null>(null);
   const [sentOrgs, setSentOrgs] = useState<Record<string, boolean>>({});
 
   if (!view) return null;
@@ -29,7 +27,7 @@ export default function CollaboratePage() {
   const orgs = orgIds.map((id) => ORG_PROFILES[id]).filter(Boolean);
 
   return (
-    <div className="mx-auto w-full animate-nc-rise px-8 pt-7 pb-28">
+    <div className="mx-auto w-full max-w-4xl animate-nc-rise px-8 pt-7 pb-28">
       <BackButton fallback={`/grants/${grant.id}`} />
 
       <div className="flex items-center gap-3">
@@ -41,12 +39,10 @@ export default function CollaboratePage() {
         </h1>
       </div>
       <p className="mt-3 mb-6 max-w-2xl text-sm leading-relaxed text-ink-muted">
-        New Sun Rising members who opted in for{" "}
-        <strong className="text-ink">{grant.name}</strong>. Every introduction
-        is one human reaching out to another -{" "}
-        <strong className="text-ink">
-          you write it, you send it, you decide.
-        </strong>
+        New Sun Rising client organizations who opted in for{" "}
+        <strong className="text-ink">{grant.name}</strong>. The Vibrancy Portal
+        facilitates warm introductions, but each one is authored and sent by a
+        real person, not a robot.
       </p>
 
       {orgs.length === 0 ? (
@@ -56,7 +52,7 @@ export default function CollaboratePage() {
           </p>
         </div>
       ) : (
-        <div className="grid gap-3.5 sm:grid-cols-2">
+        <div className="flex flex-col gap-3.5">
           {orgs.map((org) => {
             const sent = !!sentOrgs[org.initiativeId];
             return (
@@ -65,9 +61,7 @@ export default function CollaboratePage() {
                 className="flex flex-col rounded-2xl border border-border bg-surface p-5"
               >
                 <div className="flex items-start gap-3">
-                  <div className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-accent text-sm font-bold text-white">
-                    {initialsOf(org.name)}
-                  </div>
+                  <OrgAvatar size="md" />
                   <div className="min-w-0 flex-1">
                     <div className="text-sm leading-tight font-bold">
                       {org.name}
@@ -82,33 +76,26 @@ export default function CollaboratePage() {
                   {org.mission}
                 </p>
 
-                <div className="mt-auto flex gap-2 pt-4">
+                <div className="flex gap-2 pt-4">
+                  <button
+                    onClick={() => setEmailOrg(org)}
+                    className={`rounded-lg border px-3 py-2 text-sm font-semibold transition duration-150 ${
+                      sent
+                        ? "border-success-border bg-success-bg text-success-ink"
+                        : "border-transparent bg-accent-ink text-white shadow-cta hover:bg-accent-ink-2 active:translate-y-px"
+                    }`}
+                  >
+                    {sent ? "Introduced" : "Send warm introduction"}
+                  </button>
                   <button
                     onClick={() =>
                       router.push(
                         `/grants/${grant.id}/collaborate/${org.initiativeId}`,
                       )
                     }
-                    className="flex-1 rounded-lg border border-border-strong bg-white px-3 py-2 text-sm font-semibold text-ink transition duration-150 hover:border-accent"
+                    className="rounded-lg border border-border-strong bg-white px-3 py-2 text-sm font-semibold text-ink transition duration-150 hover:border-accent"
                   >
                     View profile
-                  </button>
-                  <button
-                    onClick={() => setEmailOrg(org)}
-                    className={`flex-none rounded-lg px-3 py-2 text-sm font-semibold transition duration-150 ${
-                      sent
-                        ? "border border-success-border bg-success-bg text-success-ink"
-                        : "bg-accent-ink text-white shadow-cta hover:bg-accent-ink-2 active:translate-y-px"
-                    }`}
-                  >
-                    {sent ? "Introduced" : "Email"}
-                  </button>
-                  <button
-                    onClick={() => setShareOrg(org)}
-                    aria-label={`Share ${org.name}`}
-                    className="inline-flex flex-none items-center gap-1 rounded-lg border border-border-strong bg-white px-3 py-2 text-sm font-semibold text-ink transition duration-150 hover:border-accent"
-                  >
-                    <ArrowUpRight size={14} className="shrink-0" /> Share
                   </button>
                 </div>
               </div>
@@ -124,19 +111,6 @@ export default function CollaboratePage() {
           onSent={(org) =>
             setSentOrgs((prev) => ({ ...prev, [org.initiativeId]: true }))
           }
-        />
-      )}
-
-      {shareOrg && (
-        <ShareModal
-          title="Share this organization"
-          name={`${shareOrg.name} · Serves ${shareOrg.place}`}
-          link={
-            typeof window !== "undefined"
-              ? `${window.location.origin}/grants/${grant.id}/collaborate/${shareOrg.initiativeId}`
-              : `/grants/${grant.id}/collaborate/${shareOrg.initiativeId}`
-          }
-          onClose={() => setShareOrg(null)}
         />
       )}
     </div>

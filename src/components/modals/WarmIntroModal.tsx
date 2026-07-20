@@ -3,29 +3,37 @@
 import { useState } from "react";
 import Modal from "@/components/primitives/Modal";
 import EmailRow from "@/components/modals/EmailRow";
+import { useOrgName } from "@/store/derived";
+import { useAppStore } from "@/store/useAppStore";
 import type { OrgProfileContent } from "@/data/seed";
 import { Check, BarChart3, X, Info } from "lucide-react";
 
-/** The warm-intro note NSR frames - addressed to the partner org, sent by you. */
-function defaultIntro(org: OrgProfileContent): string {
+/**
+ * The warm-intro note NSR frames - addressed to the partner org, sent by you.
+ * `senderName` signs the note: the user's own org name, or the stand-in from
+ * `useOrgName` until they've set one.
+ */
+function defaultIntro(org: OrgProfileContent, senderName: string): string {
   const focus = (org.focus[0] ?? "community").toLowerCase();
   return (
-    `Hi ${org.name} team,\n\n` +
-    `We're a fellow New Sun Rising member working on related community work, ` +
+    `Hi ${org.name},\n\n` +
+    `We're a fellow New Sun Rising client organization working on related community work, ` +
     `and your ${focus} work caught our eye. We'd love to compare notes and ` +
     `explore whether there's a way to collaborate.\n\n` +
     `Would you be open to a short call in the next couple of weeks?\n\n` +
-    `Warmly,\nYour Organization`
+    `Warmly,\n${senderName}`
   );
 }
 
-const EMAIL_SUBJECT = "A hello from a fellow New Sun Rising member";
+const EMAIL_SUBJECT = "Hello from a fellow New Sun Rising client organization";
 
 /**
- * Compose-and-send a warm introduction directly to a fellow NSR member. New Sun
- * Rising only frames the note - the email is addressed to the partner org and
- * handed off to the user's own mail client via mailto. Nothing is sent through
- * NSR. `onSent` lets the host mark the org introduced.
+ * Compose-and-send a warm introduction to a fellow NSR client organization.
+ * NSR frames the note and sends it on the user's behalf; replies are handed
+ * back to the sending organization's own address via the "reply to" header.
+ * `onSent` lets the host mark the org introduced.
+ *
+ * Delivery is not wired up yet -- see `send` below.
  */
 export default function WarmIntroModal({
   org,
@@ -36,15 +44,16 @@ export default function WarmIntroModal({
   onClose: () => void;
   onSent?: (org: OrgProfileContent) => void;
 }) {
-  const [body, setBody] = useState(() => defaultIntro(org));
+  const senderOrgName = useOrgName();
+  // No stand-in for the address: an invented one would look like a real inbox.
+  const senderOrgEmail = useAppStore((s) => s.onboardOrg.email.trim());
+  const [body, setBody] = useState(() => defaultIntro(org, senderOrgName));
   const [sent, setSent] = useState(false);
 
   const send = () => {
-    const mailto = `mailto:${org.email}?subject=${encodeURIComponent(
-      EMAIL_SUBJECT,
-    )}&body=${encodeURIComponent(body)}`;
-    // mailto opens the client without unloading the app.
-    window.location.href = mailto;
+    // TODO: hand `body` to the server, which sends the email on the user's
+    // behalf. Until that exists the draft is intentionally dropped -- the
+    // confirmation below describes the intended behavior, not what happens now.
     onSent?.(org);
     setSent(true);
   };
@@ -56,11 +65,11 @@ export default function WarmIntroModal({
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-success-bg text-2xl text-success-ink">
             <Check size={26} />
           </div>
-          <div className="text-lg font-bold">Opening in your email client…</div>
+          <div className="text-lg font-bold">Introduction sent</div>
           <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-ink-muted">
             Your introduction to{" "}
-            <span className="font-semibold text-ink">{org.name}</span> is ready
-            to send from your own inbox. Nothing is sent through New Sun Rising.
+            <span className="font-semibold text-ink">{org.name}</span> is on its
+            way. If they reply, their message goes straight to your inbox.
           </p>
           <button
             onClick={onClose}
@@ -80,8 +89,9 @@ export default function WarmIntroModal({
                 Warm introduction via the New Sun Rising Vibrancy Portal
               </div>
               <div className="mt-0.5 text-xs text-white/80">
-                You&apos;re both part of the NSR network. This note is framed by
-                NSR - you send it yourself.
+                NSR only facilitates the delivery of this email. If {org.name}{" "}
+                replies, their message will get sent straight to your email
+                inbox.
               </div>
             </div>
             <button
@@ -99,16 +109,19 @@ export default function WarmIntroModal({
               </span>
             </EmailRow>
             <EmailRow label="FROM">
-              Your Organization (New Sun Rising member)
+              <span className="font-semibold">
+                {senderOrgName}
+                {senderOrgEmail && <> &lt;{senderOrgEmail}&gt;</>}
+              </span>
             </EmailRow>
             <EmailRow label="SUBJECT">{EMAIL_SUBJECT}</EmailRow>
 
             <div className="mt-4 flex items-start gap-2 rounded-xl border border-border bg-surface-alt px-4 py-3 text-xs leading-normal text-ink-muted">
               <Info size={14} className="mt-px shrink-0 text-accent" />
               <span>
-                New Sun Rising vouches that you&apos;re both members of its
-                network - the same way a trusted introduction does. NSR
-                doesn&apos;t write or send this for you.
+                New Sun Rising vouches that you&apos;re both in its network, the
+                same way a trusted introduction does. You&apos;re in control of
+                the rest of the content.
               </span>
             </div>
 

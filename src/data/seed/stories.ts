@@ -43,7 +43,7 @@ export const STORIES: Story[] = [
     grant: "Green Spaces & Climate Resilience Fund",
     emoji: "🤝",
     quote:
-      "We'd never have found each other cold. The overlap signals gave us a reason to reach out, and together we won a grant neither of us could have landed alone.",
+      "We'd never have found each other cold. The collaboration feature gave us a reason to reach out, and together we won a grant neither of us could have landed alone.",
     person: "Marcus Webb, Executive Director",
     body: [
       "Beltzhoover Together had a green-space proposal that was strong on community buy-in but thin on technical planning experience.",

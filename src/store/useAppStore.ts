@@ -9,6 +9,8 @@ export type OnboardOrg = {
   // The person filling this out - their name greets them across the portal.
   person: string;
   name: string;
+  // Where collaborators reach the org - shown as the sender on warm intros.
+  email: string;
   // Issue and service-area tags, drawn from the same lists as the Explore
   // search filter (ISSUE_TAGS / LOCATION_OPTIONS), so they're plain strings.
   issues: string[];
@@ -18,6 +20,7 @@ export type OnboardOrg = {
 const emptyOnboardOrg = (): OnboardOrg => ({
   person: "",
   name: "",
+  email: "",
   issues: [],
   areas: [],
 });
@@ -322,7 +325,6 @@ type AppState = {
 
   wizard: Record<string, WizardState>;
   report: Record<string, ReportState>;
-  contactRequested: Record<string, boolean>;
 
   couplingModal: CouplingModal;
 
@@ -398,8 +400,6 @@ type AppState = {
     updater: (r: ReportState) => ReportState,
   ) => void;
 
-  requestContact: (initiativeId: string) => void;
-
   addToast: (text: string) => void;
   removeToast: (id: number) => void;
 };
@@ -446,7 +446,6 @@ export const useAppStore = create<AppState>()(
 
       wizard: {},
       report: {},
-      contactRequested: {},
 
       couplingModal: null,
 
@@ -629,11 +628,6 @@ export const useAppStore = create<AppState>()(
           },
         })),
 
-      requestContact: (initiativeId) =>
-        set((state) => ({
-          contactRequested: { ...state.contactRequested, [initiativeId]: true },
-        })),
-
       addToast: (text) => {
         const id = ++toastCounter;
         set((state) => ({ toasts: [...state.toasts, { id, text }] }));
@@ -679,7 +673,6 @@ export const useAppStore = create<AppState>()(
         deletedGrants: state.deletedGrants,
         wizard: state.wizard,
         report: state.report,
-        contactRequested: state.contactRequested,
       }),
     },
   ),

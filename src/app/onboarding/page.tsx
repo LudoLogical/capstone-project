@@ -160,8 +160,23 @@ export default function OnboardingPage() {
                 className="mb-5 w-full rounded-xl border border-border-strong bg-white px-4 py-3 text-sm text-ink outline-none focus:border-accent"
               />
 
+              <label className="mb-1 block text-sm font-bold">
+                What&apos;s your organization&apos;s contact email?
+              </label>
+              <span className="mb-2 block text-sm font-medium text-ink-muted">
+                We&apos;ll send any warm introductions you receive to this
+                address.
+              </span>
+              <input
+                type="email"
+                value={org.email}
+                onChange={(e) => patchOrg({ email: e.target.value })}
+                placeholder="e.g. hello@hilltopwellness.org"
+                className="mb-5 w-full rounded-xl border border-border-strong bg-white px-4 py-3 text-sm text-ink outline-none focus:border-accent"
+              />
+
               <div className="mb-2 text-sm font-bold">
-                What issues are relevant to your work?
+                Which of the following are relevant to your work?
                 <span className="pl-1 font-medium text-ink-muted">
                   Select all that apply.
                 </span>

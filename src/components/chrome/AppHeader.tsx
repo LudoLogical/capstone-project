@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { User } from "lucide-react";
+import OrgAvatar from "@/components/primitives/OrgAvatar";
 import { useAppStore } from "@/store/useAppStore";
 import { useHydrated } from "@/store/useHydrated";
 
@@ -80,9 +80,12 @@ export default function AppHeader() {
           href="/account"
           aria-label="Your profile"
           title="Your profile"
-          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border-strong bg-accent text-white no-underline ring-3 ring-glow"
+          className="inline-flex no-underline"
         >
-          <User size={18} />
+          <OrgAvatar
+            size="sm"
+            className="border border-border-strong ring-3 ring-glow"
+          />
         </Link>
       </div>
     </header>

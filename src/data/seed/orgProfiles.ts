@@ -11,11 +11,8 @@ import {
 } from "./initiatives";
 
 // Public-profile copy for prospective collaborators (Org Profile screen).
-// Mission/about/founding-year/contact-consent aren't part of the shared
-// Initiative type, so this is app-local presentation content keyed by
-// initiative id.
-export type CollabSignal = { label: string; source: string };
-
+// Mission/founding-year/team-size aren't part of the shared Initiative type,
+// so this is app-local presentation content keyed by initiative id.
 export type OrgProfileContent = {
   initiativeId: string;
   name: string;
@@ -24,14 +21,12 @@ export type OrgProfileContent = {
   founded: string;
   size: string;
   mission: string;
-  about: string;
   focus: string[];
+  /** Communities served, drawn from the same LOCATION_OPTIONS the user picks
+   *  from in onboarding, so both sides speak one vocabulary. */
+  areas: string[];
   /** Public contact inbox, used to address warm-introduction emails. */
   email: string;
-  contactConsent: boolean;
-  contactName?: string;
-  contactPhone?: string;
-  signals: CollabSignal[];
 };
 
 export const ORG_PROFILES: Record<string, OrgProfileContent> = {
@@ -44,29 +39,9 @@ export const ORG_PROFILES: Record<string, OrgProfileContent> = {
     size: "6 staff, 40+ volunteers",
     mission:
       "Growing and distributing fresh produce within walking distance of every household in the Hilltop neighborhoods.",
-    about:
-      "Hilltop Harvest Collective operates three community gardens and a weekly mobile produce stand, focused on closing the fresh-food gap identified in the Vibrancy Index's food access layer.",
     focus: ["Food Security", "Community", "Youth"],
+    areas: ["City of Pittsburgh", "Hill District"],
     email: "hello@hilltopharvest.org",
-    contactConsent: true,
-    contactName: "Renata Alvarez",
-    contactPhone: "(412) 555-0148",
-    signals: [
-      {
-        label: "Shares a funder with you",
-        source:
-          "Both organizations have applied to Hunger-Free PA in the past two years.",
-      },
-      {
-        label: "Overlapping service area",
-        source:
-          "Both organizations list Hilltop, Pittsburgh, PA as a primary service area.",
-      },
-      {
-        label: "0.6 miles away",
-        source: "Distance between registered program addresses.",
-      },
-    ],
   },
   [INITIATIVE_RIVERSIDE_YOUTH_STUDIO.id]: {
     initiativeId: INITIATIVE_RIVERSIDE_YOUTH_STUDIO.id,
@@ -77,22 +52,9 @@ export const ORG_PROFILES: Record<string, OrgProfileContent> = {
     size: "4 staff, 15 volunteers",
     mission:
       "Giving Pittsburgh teens hands-on media and coding skills in a low-pressure studio setting.",
-    about:
-      "Riverside Youth Studio runs after-school and summer coding, video, and podcasting programs for teens ages 12-18, with a focus on digital literacy paired with healthy technology habits.",
     focus: ["Youth", "Technology"],
+    areas: ["City of Pittsburgh", "East Liberty"],
     email: "team@riversideyouthstudio.org",
-    contactConsent: false,
-    signals: [
-      {
-        label: "Shares a funder with you",
-        source:
-          "Both organizations have applied to Grable Foundation in the past two years.",
-      },
-      {
-        label: "2.1 miles away",
-        source: "Distance between registered program addresses.",
-      },
-    ],
   },
   [INITIATIVE_ALLEGHENY_COMMONS.id]: {
     initiativeId: INITIATIVE_ALLEGHENY_COMMONS.id,
@@ -103,28 +65,9 @@ export const ORG_PROFILES: Record<string, OrgProfileContent> = {
     size: "9 staff, 60+ volunteers",
     mission:
       "Building and maintaining resilient green space across Allegheny County's most heat-vulnerable neighborhoods.",
-    about:
-      "Allegheny Commons Alliance designs and stewards pocket parks and rain gardens, with technical landscape-planning expertise that many smaller community groups don't have in-house.",
     focus: ["Environment", "Community"],
+    areas: ["Allegheny County", "Homestead", "McKeesport"],
     email: "hello@alleghenycommons.org",
-    contactConsent: true,
-    contactName: "Theo Marsh",
-    contactPhone: "(412) 555-0172",
-    signals: [
-      {
-        label: "Shares a funder with you",
-        source:
-          "Both organizations have applied to Heinz Endowments in the past two years.",
-      },
-      {
-        label: "Overlapping service area",
-        source: "Both organizations list Allegheny County as a service area.",
-      },
-      {
-        label: "3.4 miles away",
-        source: "Distance between registered program addresses.",
-      },
-    ],
   },
 };
 

@@ -9,11 +9,11 @@ import {
   formatCurrencyFull,
   formatDate,
   formatReportFrequency,
-  initialsOf,
 } from "@/utils/format";
 import { INTERESTED_BY_GRANT, ORG_PROFILES } from "@/data/seed";
 import ShareModal from "@/components/modals/ShareModal";
 import BackButton from "@/components/primitives/BackButton";
+import OrgAvatar from "@/components/primitives/OrgAvatar";
 import ClosedGrantModal from "@/components/modals/ClosedGrantModal";
 import DetailCard from "@/components/primitives/DetailCard";
 import BulletList from "@/components/primitives/BulletList";
@@ -31,7 +31,6 @@ export default function GrantDetailPage() {
   const clearGrantStatus = useAppStore((s) => s.clearGrantStatus);
   const addToast = useAppStore((s) => s.addToast);
   const [shareOpen, setShareOpen] = useState(false);
-  const [shareOrgId, setShareOrgId] = useState<string | null>(null);
   const [closedOpen, setClosedOpen] = useState(false);
   const setStage = useAppStore((s) => s.setStage);
   const setDiscoverable = useAppStore((s) => s.setDiscoverable);
@@ -275,9 +274,7 @@ export default function GrantDetailPage() {
                 key={org.initiativeId}
                 className="flex items-start gap-3 rounded-xl border border-border bg-surface-alt px-4 py-3"
               >
-                <div className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-accent text-xs font-bold text-white">
-                  {initialsOf(org.name)}
-                </div>
+                <OrgAvatar size="sm" />
                 <div className="min-w-0 flex-1">
                   <div className="text-sm leading-tight font-bold">
                     {org.name}
@@ -286,13 +283,6 @@ export default function GrantDetailPage() {
                     Serves {org.place}
                   </div>
                 </div>
-                <button
-                  onClick={() => setShareOrgId(org.initiativeId)}
-                  aria-label={`Share ${org.name}`}
-                  className="inline-flex flex-none items-center gap-1 rounded-lg border border-border-strong bg-white px-2.5 py-1.5 text-xs font-semibold whitespace-nowrap text-ink transition duration-150 hover:border-accent"
-                >
-                  <ArrowUpRight size={13} className="shrink-0" /> Share
-                </button>
               </div>
             ))}
           </div>
@@ -301,7 +291,7 @@ export default function GrantDetailPage() {
           onClick={() => router.push(`/grants/${grant.id}/collaborate`)}
           className="mt-4 inline-flex items-center gap-2 rounded-lg border border-border-strong bg-white px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 hover:border-accent"
         >
-          See detail <ArrowRight size={16} className="shrink-0" />
+          See details <ArrowRight size={16} className="shrink-0" />
         </button>
       </div>
 
@@ -407,22 +397,6 @@ export default function GrantDetailPage() {
           onClose={() => setShareOpen(false)}
         />
       )}
-
-      {shareOrgId &&
-        (() => {
-          const org = ORG_PROFILES[shareOrgId];
-          if (!org) return null;
-          const base =
-            typeof window !== "undefined" ? window.location.origin : "";
-          return (
-            <ShareModal
-              title="Share this organization"
-              name={`${org.name} · Serves ${org.place}`}
-              link={`${base}/grants/${grant.id}/collaborate/${org.initiativeId}`}
-              onClose={() => setShareOrgId(null)}
-            />
-          );
-        })()}
     </div>
   );
 }

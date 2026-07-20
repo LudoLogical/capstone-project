@@ -18,9 +18,11 @@ export default function ProfileDetailsSection() {
   const toggleArea = useAppStore((s) => s.toggleOnboardArea);
   const addToast = useAppStore((s) => s.addToast);
   const [editing, setEditing] = useState(false);
-  // Names are edited as a draft so a half-typed name never lands in the store.
+  // Text fields are edited as a draft so a half-typed value never lands in the
+  // store.
   const [person, setPerson] = useState(org.person);
   const [name, setName] = useState(org.name);
+  const [email, setEmail] = useState(org.email);
 
   // The tag chips write to the store on click, so cancelling has to put the
   // lists back the way they were when editing started.
@@ -32,11 +34,16 @@ export default function ProfileDetailsSection() {
   const startEditing = () => {
     setPerson(org.person);
     setName(org.name);
+    setEmail(org.email);
     setTagsAtEntry({ issues: org.issues, areas: org.areas });
     setEditing(true);
   };
   const save = () => {
-    patchOrg({ person: person.trim(), name: name.trim() });
+    patchOrg({
+      person: person.trim(),
+      name: name.trim(),
+      email: email.trim(),
+    });
     setEditing(false);
     addToast("Profile updated.");
   };
@@ -64,7 +71,8 @@ export default function ProfileDetailsSection() {
       </p>
       <div className="flex items-start justify-between gap-3 mb-1 rounded-2xl border border-border bg-surface p-6">
         {editing ? (
-          <div className="flex flex-col gap-4">
+          // Spans the card so the footer buttons land on its right edge.
+          <div className="flex flex-1 flex-col gap-4">
             <div>
               <label className="mb-1.5 block text-xs font-bold tracking-wider text-ink-muted uppercase">
                 Your name
@@ -88,8 +96,20 @@ export default function ProfileDetailsSection() {
               />
             </div>
             <div>
+              <label className="mb-1.5 block text-xs font-bold tracking-wider text-ink-muted uppercase">
+                Contact email
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="e.g. hello@hilltopwellness.org"
+                className="w-full rounded-xl border border-border-strong bg-white px-4 py-2.5 text-sm text-ink outline-none focus:border-accent"
+              />
+            </div>
+            <div>
               <div className="mb-2 text-xs font-bold tracking-wider text-ink-muted uppercase">
-                Issues you focus on
+                Focus areas
               </div>
               <div className="flex flex-wrap gap-2">
                 {ISSUE_TAGS.map((issue) => (
@@ -121,18 +141,18 @@ export default function ProfileDetailsSection() {
                 ))}
               </div>
             </div>
-            <div className="flex gap-2.5">
-              <button
-                onClick={save}
-                className="rounded-lg bg-accent-ink px-4 py-2.5 text-sm font-semibold text-white shadow-cta transition duration-150 hover:bg-accent-ink-2 active:translate-y-px"
-              >
-                Save changes
-              </button>
+            <div className="flex justify-end gap-2.5">
               <button
                 onClick={cancel}
                 className="rounded-lg border border-border-strong bg-white px-4 py-2.5 text-sm font-semibold text-ink transition duration-150 hover:border-accent"
               >
                 Cancel
+              </button>
+              <button
+                onClick={save}
+                className="rounded-lg bg-accent-ink px-4 py-2.5 text-sm font-semibold text-white shadow-cta transition duration-150 hover:bg-accent-ink-2 active:translate-y-px"
+              >
+                Save changes
               </button>
             </div>
           </div>
@@ -142,8 +162,9 @@ export default function ProfileDetailsSection() {
                 row has its own "Not set yet" empty state. */}
             <ProfileReadRow label="Your name" value={org.person.trim()} />
             <ProfileReadRow label="Organization name" value={org.name.trim()} />
-            <ProfileReadTags label="Issues you work on" values={org.issues} />
-            <ProfileReadTags label="Where you serve" values={org.areas} />
+            <ProfileReadRow label="Contact email" value={org.email.trim()} />
+            <ProfileReadTags label="Focus areas" values={org.issues} />
+            <ProfileReadTags label="Communities you serve" values={org.areas} />
           </div>
         )}
         {!editing && (
