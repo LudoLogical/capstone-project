@@ -6,11 +6,11 @@ import { STORIES } from "@/data/seed";
 import {
   useAppStore,
   ARCHIVE_FILTERS,
-  MOVE_BACK_TARGET,
   STATUS_LABEL,
   type GrantStatus,
 } from "@/store/useAppStore";
 import {
+  isPastDecisionDate,
   nextReportDeadline,
   useDashboardGroups,
   useOrgName,
@@ -22,6 +22,7 @@ import {
   Award,
   Star,
   Users,
+  Send,
   Bookmark,
   ArrowRight,
 } from "lucide-react";
@@ -78,7 +79,7 @@ export default function HomePage() {
     addToast("Deleted from your board.");
     setPendingDeleteGrant(null);
   };
-  const { inProgress, awarded, saved, collaborating, archived } =
+  const { inProgress, submitted, awarded, saved, collaborating, archived } =
     useDashboardGroups();
   // Which archived reason the user is filtering to, or "all".
   const [archiveFilter, setArchiveFilter] = useState<GrantStatus | "all">(
@@ -100,9 +101,14 @@ export default function HomePage() {
       ? archived
       : archived.filter((v) => v.status === archiveFilter);
   const closedGrant =
-    [...saved, ...collaborating, ...inProgress, ...awarded, ...archived].find(
-      (v) => v.grant.id === closedGrantId,
-    ) ?? null;
+    [
+      ...saved,
+      ...collaborating,
+      ...inProgress,
+      ...submitted,
+      ...awarded,
+      ...archived,
+    ].find((v) => v.grant.id === closedGrantId) ?? null;
   const resolveKind: "deadline" | "decision" | "report" =
     closedGrant?.status === "awarded" ||
     closedGrant?.status === "report-overdue"
@@ -180,7 +186,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <BoardColumn
               icon={FileText}
-              title="Grant Applications"
+              title="Applying"
               tone="accent"
               items={inProgress}
               empty="No applications yet. Open a saved grant and start an application."
@@ -195,31 +201,34 @@ export default function HomePage() {
                     label: `${v.writingStarted ? "Continue" : "Start"} gathering data for application`,
                     to: `/grants/${v.grant.id}/collect`,
                   }}
+                  secondary={{
+                    label: "Grant Details",
+                    to: `/grants/${v.grant.id}`,
+                  }}
                   deadline={v.grant.timeline.applicationWindowEnd}
                   menu={[
                     {
-                      label: "Mark as submitted",
+                      label: "Mark as applied",
                       onClick: () => {
                         setGrantStatus(v.grant.id, "submitted");
-                        addToast("Marked as submitted. Moved to Archived.");
+                        addToast('Marked as applied. Moved to "Submitted".');
                       },
                     },
                     {
-                      label: "Delete application",
+                      label: "Mark as withdrawn",
                       danger: true,
                       onClick: () => {
                         setGrantStatus(v.grant.id, "withdrawn");
-                        addToast("Application deleted. Moved to Archived.");
+                        addToast('Marked as withdrawn. Moved to "Archived".');
                       },
                     },
                   ]}
                 />
               )}
             />
-
             <BoardColumn
               icon={Award}
-              title="Awarded Grant Reports"
+              title="Awarded"
               tone="success"
               items={awarded}
               empty="No awarded grants yet. Reports appear here once you win funding."
@@ -238,27 +247,31 @@ export default function HomePage() {
                     label: `${v.reportStarted ? "Continue" : "Start"} gathering data for report(s)`,
                     to: `/grants/${v.grant.id}/report`,
                   }}
+                  secondary={{
+                    label: "Grant Details",
+                    to: `/grants/${v.grant.id}`,
+                  }}
                   menu={[
                     {
-                      label: "Mark report completed",
+                      label: "Mark as completed",
                       onClick: () => {
                         setGrantStatus(v.grant.id, "reported");
-                        addToast("Report completed. Moved to Archived.");
+                        addToast('Marked as completed. Moved to "Archived".');
                       },
                     },
                     {
-                      label: "Move back to Grant Applications",
+                      label: 'Move back to "Applying"',
                       onClick: () => {
                         setGrantStatus(v.grant.id, "applying");
-                        addToast("Moved back to Grant Applications.");
+                        addToast('Moved to "Applying".');
                       },
                     },
                     {
-                      label: "Delete report",
+                      label: "Mark as withdrawn",
                       danger: true,
                       onClick: () => {
                         setGrantStatus(v.grant.id, "withdrawn");
-                        addToast("Report deleted. Moved to Archived.");
+                        addToast('Marked as withdrawn. Moved to "Archived".');
                       },
                     },
                   ]}
@@ -268,7 +281,7 @@ export default function HomePage() {
 
             <BoardColumn
               icon={Star}
-              title="Saved Grants"
+              title="Saved"
               tone="neutral"
               items={saved}
               empty="No saved grants yet. Save any grant to keep it here."
@@ -319,6 +332,7 @@ export default function HomePage() {
                       : `Closes ${formatDate(v.grant.timeline.applicationWindowEnd)}`
                   }
                   deadline={v.grant.timeline.applicationWindowEnd}
+                  closed={v.isClosed}
                   onClosedClick={() => setClosedGrantId(v.grant.id)}
                   primary={{
                     label: "See organizations open to collaboration",
@@ -336,9 +350,74 @@ export default function HomePage() {
               )}
             />
 
+            {/* Submitted is a waiting room, not an ending: the application is
+                with the funder and the answer is still to come. */}
+            <BoardColumn
+              icon={Send}
+              title="Submitted"
+              tone="accent"
+              items={submitted}
+              empty="Nothing submitted yet. Mark an application as applied once it's with the funder."
+              renderItem={(v) => {
+                const decided = isPastDecisionDate(v.grant);
+                return (
+                  <GrantMiniCard
+                    key={v.grant.id}
+                    view={v}
+                    dueLabel={
+                      decided
+                        ? `Decision was due ${formatDate(v.grant.timeline.notificationDate)}`
+                        : `Decision by ${formatDate(v.grant.timeline.notificationDate)}`
+                    }
+                    deadline={
+                      decided ? undefined : v.grant.timeline.notificationDate
+                    }
+                    onClosedClick={() => setClosedGrantId(v.grant.id)}
+                    secondary={{
+                      label: "Grant Details",
+                      to: `/grants/${v.grant.id}`,
+                    }}
+                    menu={[
+                      {
+                        label: "Mark as awarded",
+                        onClick: () => {
+                          setGrantStatus(v.grant.id, "awarded");
+                          addToast('Marked as awarded. Moved to "Awarded".');
+                        },
+                      },
+                      {
+                        label: "Mark as not awarded",
+                        onClick: () => {
+                          setGrantStatus(v.grant.id, "not-awarded");
+                          addToast(
+                            'Marked as not awarded. Moved to "Archived".',
+                          );
+                        },
+                      },
+                      {
+                        label: 'Move back to "Applying"',
+                        onClick: () => {
+                          setGrantStatus(v.grant.id, "applying");
+                          addToast('Moved to "Applying".');
+                        },
+                      },
+                      {
+                        label: "Mark as withdrawn",
+                        danger: true,
+                        onClick: () => {
+                          setGrantStatus(v.grant.id, "withdrawn");
+                          addToast('Marked as withdrawn. Moved to "Archived".');
+                        },
+                      },
+                    ]}
+                  />
+                );
+              }}
+            />
+
             <BoardColumn
               icon={Bookmark}
-              title="Archived Grants"
+              title="Archived"
               tone="neutral"
               items={shownArchived}
               empty="Nothing archived yet. Grants land here once they're finished, withdrawn, or out of time."
@@ -364,36 +443,42 @@ export default function HomePage() {
                 </div>
               }
               renderItem={(v) => {
-                // A missed deadline or a funder's "no" isn't a decision the user
-                // can take back, so those offer no way out of the archive.
-                const back = v.status ? MOVE_BACK_TARGET[v.status] : null;
+                // A finished report ended a grant the user actually held, so
+                // reopening it belongs in Awarded; every other archive reason
+                // ended an application, which reopens in Applying.
+                const wasHeld = v.status === "reported";
                 return (
                   <GrantMiniCard
                     key={v.grant.id}
                     view={v}
                     badge={v.status ? STATUS_LABEL[v.status] : undefined}
                     dueLabel={`Closed ${formatDate(v.grant.timeline.applicationWindowEnd)}`}
-                    primary={{
+                    secondary={{
                       label: "Grant Details",
                       to: `/grants/${v.grant.id}`,
                     }}
-                    remove={{
-                      label: "Delete from board",
-                      onClick: () => requestDeleteGrant(v.grant.id),
-                    }}
-                    secondary={
-                      back
+                    menu={[
+                      wasHeld
                         ? {
-                            label: back.label,
+                            label: 'Move back to "Awarded"',
                             onClick: () => {
-                              setGrantStatus(v.grant.id, back.status);
-                              addToast(
-                                `${back.label.replace("Move back to", "Moved back to")}.`,
-                              );
+                              setGrantStatus(v.grant.id, "awarded");
+                              addToast('Moved to "Awarded".');
                             },
                           }
-                        : undefined
-                    }
+                        : {
+                            label: 'Move back to "Applying"',
+                            onClick: () => {
+                              setGrantStatus(v.grant.id, "applying");
+                              addToast('Moved to "Applying".');
+                            },
+                          },
+                      {
+                        label: "Remove permanently",
+                        danger: true,
+                        onClick: () => requestDeleteGrant(v.grant.id),
+                      },
+                    ]}
                   />
                 );
               }}
@@ -445,15 +530,15 @@ export default function HomePage() {
             setClosedGrantId(null);
             addToast(
               isFinalReport
-                ? "Report filed. Moved to Archived."
-                : "Report filed. On to the next deadline.",
+                ? 'Report filed. Moved to "Archived".'
+                : "Report filed.",
             );
           }}
           onClose={() => setClosedGrantId(null)}
           onResolve={(status) => {
             setGrantStatus(closedGrant.grant.id, status);
             setClosedGrantId(null);
-            addToast(`Moved to ${STATUS_LABEL[status]}.`);
+            addToast(`Moved to "${STATUS_LABEL[status]}\".`);
           }}
         />
       )}

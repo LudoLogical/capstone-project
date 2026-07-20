@@ -11,8 +11,9 @@ import type { GrantStatus } from "@/store/useAppStore";
  * filing the grant away) it asks - and every answer lands the grant somewhere
  * that explains itself.
  *
- * Two moments need asking: the application window closed while they were still
- * applying, and a submitted application passed the funder's decision date.
+ * Three moments need asking: the application window closed while they were
+ * still applying, a submitted application passed the funder's decision date
+ * (the Submitted column's "what happened?" prompt), and a report came due.
  */
 export default function ResolvePastDueModal({
   grantName,
@@ -43,9 +44,7 @@ export default function ResolvePastDueModal({
       title={
         report
           ? "Did you submit your report?"
-          : decision
-            ? "Did you hear back?"
-            : "What happened with this grant?"
+          : "What happened with this grant?"
       }
     >
       <p className="text-sm leading-relaxed text-ink-body">
@@ -96,7 +95,7 @@ export default function ResolvePastDueModal({
           <>
             <ResolveOption
               label="We were awarded this grant"
-              hint="Moves it to Awarded Grant Reports so you can start reporting."
+              hint="Moves it to Awarded so you can start reporting."
               onClick={() => onResolve("awarded")}
             />
             <ResolveOption
@@ -105,8 +104,8 @@ export default function ResolvePastDueModal({
               onClick={() => onResolve("not-awarded")}
             />
             <ResolveOption
-              label="Still waiting to hear"
-              hint="Leaves it in Submitted. We'll ask again next time you're here."
+              label="We're still waiting to hear back"
+              hint="Leaves it in Submitted so you can follow up about this later."
               onClick={onClose}
             />
           </>
@@ -119,7 +118,7 @@ export default function ResolvePastDueModal({
             />
             <ResolveOption
               label="We applied and were awarded"
-              hint="Moves it to Awarded Grant Reports so you can start reporting."
+              hint="Moves it to Awarded so you can start reporting."
               onClick={() => onResolve("awarded")}
             />
             <ResolveOption

@@ -198,10 +198,10 @@ function hydrateReport(r: ReportState | undefined): ReportState {
 export type GrantStatus =
   // Active - the grant is live work and shows in a working column.
   | "applying" // an application is being put together
+  | "submitted" // sent to the funder; waiting on a verdict
   | "awarded" // won; the award period is running
   | "report-overdue" // a report deadline passed without one being submitted
   // Terminal - the grant is done and lives in Archived, labelled with why.
-  | "submitted" // sent to the funder; nothing to do but wait
   | "reported" // the outcome report is done
   | "withdrawn" // the user pulled the application
   | "not-awarded" // the funder said no
@@ -209,7 +209,6 @@ export type GrantStatus =
 
 /** Terminal statuses: the grant is finished and belongs in Archived. */
 export const TERMINAL_STATUSES: GrantStatus[] = [
-  "submitted",
   "reported",
   "withdrawn",
   "not-awarded",
@@ -220,12 +219,12 @@ export const isTerminalStatus = (s: GrantStatus | undefined): boolean =>
   !!s && TERMINAL_STATUSES.includes(s);
 
 export const STATUS_LABEL: Record<GrantStatus, string> = {
-  applying: "Application in progress",
-  submitted: "Application Submitted",
+  applying: "Applying",
+  submitted: "Submitted",
   awarded: "Awarded",
   "report-overdue": "Report Overdue",
   reported: "Report Completed",
-  withdrawn: "Application Withdrawn",
+  withdrawn: "Withdrawn",
   "not-awarded": "Not Awarded",
   "deadline-past": "Deadline Past",
 };
@@ -240,37 +239,13 @@ export const UNSUCCESSFUL_STATUSES: GrantStatus[] = [
   "withdrawn",
 ];
 
-/**
- * Where an archived grant goes if the user un-archives it, or `null` when the
- * outcome is out of their hands. A missed deadline and a funder's "no" are
- * facts, not decisions - there is nothing to move back to.
- */
-export const MOVE_BACK_TARGET: Record<
-  GrantStatus,
-  { status: GrantStatus; label: string } | null
-> = {
-  // Active states can be walked back a step - these are clicks, and clicks are
-  // mis-clicked.
-  applying: null,
-  "report-overdue": null,
-  awarded: { status: "submitted", label: "Move back to Submitted" },
-  // Terminal states: only the ones the user chose can be undone. A withdrawal,
-  // a missed deadline, and a funder's "no" are all final.
-  submitted: { status: "applying", label: "Move back to Application" },
-  reported: { status: "awarded", label: "Move back to Report" },
-  withdrawn: null,
-  "not-awarded": null,
-  "deadline-past": null,
-};
-
 /** The Archived filter chips, in display order. */
 export const ARCHIVE_FILTERS: { key: GrantStatus | "all"; label: string }[] = [
   { key: "all", label: "All" },
   { key: "deadline-past", label: "Deadline Past" },
   { key: "not-awarded", label: "Not Awarded" },
   { key: "reported", label: "Report Completed" },
-  { key: "submitted", label: "Application Submitted" },
-  { key: "withdrawn", label: "Application Withdrawn" },
+  { key: "withdrawn", label: "Withdrawn" },
 ];
 
 export type Toast = { id: number; text: string };

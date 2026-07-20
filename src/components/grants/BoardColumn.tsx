@@ -14,7 +14,7 @@ const TONE: Record<Tone, { tile: string }> = {
 
 // A board column shows a few grants at a time; the rest are a page click away,
 // so one busy column can't push every other column off the screen.
-const CARDS_PER_PAGE = 3;
+const CARDS_PER_PAGE = 2;
 
 /**
  * A labeled board column: a colored header tile, a count, and its grant cards,

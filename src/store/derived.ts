@@ -253,8 +253,11 @@ export function isSavedStage(stage: GrantLifecycleStage): boolean {
  * independent of application progress, so a grant can appear in more than one
  * working column.
  *
- * - Applications: an application is being written (`applying`).
- * - Awarded Grant Reports: `awarded`, or the award period has ended.
+ * - Applying: an application is being written (`applying`).
+ * - Submitted: sent to the funder, waiting on a verdict (`submitted`). Not
+ *   terminal - the relationship is still live, so it keeps its own column
+ *   rather than being filed away.
+ * - Awarded: `awarded`, or the award period has ended.
  * - Saved: bookmarked, and not yet active work.
  * - Open to Collaborate: listed as discoverable.
  * - Archived: a terminal status, labelled with why it ended.
@@ -277,9 +280,10 @@ export function useDashboardGroups() {
     (v) => v.status === "awarded" || v.status === "report-overdue",
   );
   const inProgress = views.filter((v) => v.status === "applying");
+  const submitted = views.filter((v) => v.status === "submitted");
   // Saved is the bookmark, independent of progress; active work has its own
   // column, so it isn't repeated here.
   const saved = views.filter((v) => v.isSaved && v.status === undefined);
   const collaborating = views.filter((v) => !!discoverable[v.grant.id]);
-  return { inProgress, saved, awarded, collaborating, archived };
+  return { inProgress, submitted, saved, awarded, collaborating, archived };
 }
