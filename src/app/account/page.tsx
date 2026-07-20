@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useMemo, useRef, useState, type ReactNode } from "react";
 import {
   REPOSITORY_FILES,
@@ -40,15 +39,17 @@ export default function AccountProfilePage() {
   const orgName = useOrgName();
 
   return (
-    <div className="animate-nc-rise mx-auto w-full px-8 pt-7 pb-28">
+    <div className="animate-nc-rise mx-auto w-full max-w-3xl px-8 pt-7 pb-28">
       <BackButton fallback="/" />
       <h1 className="mb-2.5 font-serif text-3xl leading-tight font-bold">
         {orgName}
       </h1>
-      <p className="mb-6 max-w-3xl text-sm leading-relaxed text-ink-muted">
-        This is the information you&apos;ve saved so far. We pull from it to fill
-        in your grant applications and put together your outcome reports, and you
-        can edit any of it right here.
+      <p className="mb-6 max-w-2xl text-sm leading-relaxed text-ink-muted">
+        Here, you&apos;ll find all of the information that we have collected
+        about your organization. We use it to determine which grants are the
+        most relevant to you, as well as to help you gather data for your grant
+        applications and reports. You can add to, edit, or delete any of this
+        information at any time.
       </p>
 
       <ProfileDetailsSection />
@@ -56,7 +57,7 @@ export default function AccountProfilePage() {
       <RepositorySection
         title="Files"
         kind="file"
-        description="Files you've uploaded while working on applications and outcome reports. We save them and pull from them the next time you apply or report."
+        description="These are the documents you've uploaded while gathering data for grant applications and reports. We save them so that we can pull from them automatically whenever you gather data in the future."
         addLabel="Upload new file"
         addIcon={Paperclip}
         fileUpload
@@ -66,9 +67,9 @@ export default function AccountProfilePage() {
       />
 
       <RepositorySection
-        title="Website Links"
+        title="Webpages"
         kind="link"
-        description="Website links you've saved while working on applications and reports. We pull from them the next time you apply or report."
+        description="These are the links you've saved while gathering data for grant applications and reports. We save them so that we can pull from them automatially whenever you gather data in the future."
         addLabel="Add new website link"
         addIcon={Plus}
         addPlaceholder="https://example.org"
@@ -80,21 +81,15 @@ export default function AccountProfilePage() {
       <RepositorySection
         title="From Your Conversations"
         kind="conversation"
-        description="Things you told us while working on your reports. We saved them and pull from them the next time you apply or report."
+        description="These are some of the things you've mentioned while gathering data for grant reports in conversation with AI. We save your messages when the AI thinks you've shared something new so that we can pull from them automatically whenever you gather data in the future."
         verb="Logged"
         items={REPOSITORY_CONVERSATIONS}
         help={
           <>
-            These are the data points captured from your conversations with the
-            AI while you build an outcome report. To add or change them, head to
-            your outcome reports, which you can open from the{" "}
-            <Link
-              href="/"
-              className="font-semibold text-ink underline underline-offset-2 hover:text-accent"
-            >
-              dashboard
-            </Link>
-            .
+            Because these data points are captured from conversations, we store
+            and process them differently than simple statements of fact. If you
+            just want to share a new piece of information about your
+            organization, try uploading a simple text file or a PDF instead.
           </>
         }
       />
@@ -139,9 +134,97 @@ function ProfileDetailsSection() {
     }`;
 
   return (
-    <div className="mb-9 rounded-2xl border border-border bg-surface p-6">
-      <div className="mb-1 flex items-center justify-between gap-3">
-        <div className="text-base font-bold">Your details</div>
+    <section className="mb-12">
+      <h2 className="mb-1.5 font-serif text-xl leading-tight font-bold">
+        Basics
+      </h2>
+      <p className="mb-3.5 max-w-2xl text-sm leading-relaxed text-ink-muted">
+        We use this information to personalize your experience, match you with
+        grants, and, with your permission, introduce you to potential
+        collaborators.
+      </p>
+      <div className="flex items-start justify-between gap-3 mb-1 rounded-2xl border border-border bg-surface p-6">
+        {editing ? (
+          <div className="flex flex-col gap-4">
+            <div>
+              <label className="mb-1.5 block text-xs font-bold tracking-wider text-ink-muted uppercase">
+                Your name
+              </label>
+              <input
+                value={person}
+                onChange={(e) => setPerson(e.target.value)}
+                placeholder="e.g. Maya Torres"
+                className="w-full rounded-xl border border-border-strong bg-white px-4 py-2.5 text-sm text-ink outline-none focus:border-accent"
+              />
+            </div>
+            <div>
+              <label className="mb-1.5 block text-xs font-bold tracking-wider text-ink-muted uppercase">
+                Organization name
+              </label>
+              <input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="e.g. Hilltop Wellness Collective"
+                className="w-full rounded-xl border border-border-strong bg-white px-4 py-2.5 text-sm text-ink outline-none focus:border-accent"
+              />
+            </div>
+            <div>
+              <div className="mb-2 text-xs font-bold tracking-wider text-ink-muted uppercase">
+                Issues you focus on
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {ISSUE_TAGS.map((issue) => (
+                  <button
+                    key={issue}
+                    onClick={() => toggleIssue(issue)}
+                    aria-pressed={org.issues.includes(issue)}
+                    className={chip(org.issues.includes(issue))}
+                  >
+                    {issue}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <div className="mb-2 text-xs font-bold tracking-wider text-ink-muted uppercase">
+                Communities you serve
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {LOCATION_OPTIONS.map((area) => (
+                  <button
+                    key={area}
+                    onClick={() => toggleArea(area)}
+                    aria-pressed={org.areas.includes(area)}
+                    className={chip(org.areas.includes(area))}
+                  >
+                    {area}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="flex gap-2.5">
+              <button
+                onClick={save}
+                className="rounded-lg bg-accent-ink px-4 py-2.5 text-sm font-semibold text-white shadow-cta transition duration-150 hover:bg-accent-ink-2 active:translate-y-px"
+              >
+                Save changes
+              </button>
+              <button
+                onClick={() => setEditing(false)}
+                className="rounded-lg border border-border-strong bg-white px-4 py-2.5 text-sm font-semibold text-ink transition duration-150 hover:border-accent"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-4">
+            <ProfileReadRow label="Your name" value={personName} />
+            <ProfileReadRow label="Organization name" value={orgNameRead} />
+            <ProfileReadTags label="Issues you work on" values={org.issues} />
+            <ProfileReadTags label="Where you serve" values={org.areas} />
+          </div>
+        )}
         {!editing && (
           <button
             onClick={startEditing}
@@ -151,99 +234,14 @@ function ProfileDetailsSection() {
           </button>
         )}
       </div>
-      <p className="mb-4 text-sm leading-relaxed text-ink-muted">
-        We use this to match you with grants and to fill in your applications.
-      </p>
-
-      {editing ? (
-        <div className="flex flex-col gap-4">
-          <div>
-            <label className="mb-1.5 block text-xs font-bold tracking-wider text-ink-muted uppercase">
-              Your name
-            </label>
-            <input
-              value={person}
-              onChange={(e) => setPerson(e.target.value)}
-              placeholder="e.g. Maya Torres"
-              className="w-full rounded-xl border border-border-strong bg-white px-4 py-2.5 text-sm text-ink outline-none focus:border-accent"
-            />
-          </div>
-          <div>
-            <label className="mb-1.5 block text-xs font-bold tracking-wider text-ink-muted uppercase">
-              Organization name
-            </label>
-            <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Hilltop Wellness Collective"
-              className="w-full rounded-xl border border-border-strong bg-white px-4 py-2.5 text-sm text-ink outline-none focus:border-accent"
-            />
-          </div>
-          <div>
-            <div className="mb-2 text-xs font-bold tracking-wider text-ink-muted uppercase">
-              Issues you work on
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {ISSUE_TAGS.map((issue) => (
-                <button
-                  key={issue}
-                  onClick={() => toggleIssue(issue)}
-                  aria-pressed={org.issues.includes(issue)}
-                  className={chip(org.issues.includes(issue))}
-                >
-                  {issue}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div>
-            <div className="mb-2 text-xs font-bold tracking-wider text-ink-muted uppercase">
-              Where you serve
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {LOCATION_OPTIONS.map((area) => (
-                <button
-                  key={area}
-                  onClick={() => toggleArea(area)}
-                  aria-pressed={org.areas.includes(area)}
-                  className={chip(org.areas.includes(area))}
-                >
-                  {area}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="flex gap-2.5">
-            <button
-              onClick={save}
-              className="rounded-lg bg-accent-ink px-4 py-2.5 text-sm font-semibold text-white shadow-cta transition duration-150 hover:bg-accent-ink-2 active:translate-y-px"
-            >
-              Save changes
-            </button>
-            <button
-              onClick={() => setEditing(false)}
-              className="rounded-lg border border-border-strong bg-white px-4 py-2.5 text-sm font-semibold text-ink transition duration-150 hover:border-accent"
-            >
-              Done
-            </button>
-          </div>
-        </div>
-      ) : (
-        <div className="flex flex-col gap-4">
-          <ProfileReadRow label="Your name" value={personName} />
-          <ProfileReadRow label="Organization name" value={orgNameRead} />
-          <ProfileReadTags label="Issues you work on" values={org.issues} />
-          <ProfileReadTags label="Where you serve" values={org.areas} />
-        </div>
-      )}
-    </div>
+    </section>
   );
 }
 
 function ProfileReadRow({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <div className="mb-1 text-xs font-bold tracking-wider text-ink-muted uppercase">
+      <div className="mb-2 text-xs font-bold tracking-wider text-ink-muted uppercase">
         {label}
       </div>
       <div className={`text-sm ${value ? "text-ink" : "text-ink-muted"}`}>
@@ -370,7 +368,7 @@ function RepositorySection({
       <h2 className="mb-1.5 font-serif text-xl leading-tight font-bold">
         {title}
       </h2>
-      <p className="mb-3.5 max-w-3xl text-sm leading-relaxed text-ink-muted">
+      <p className="mb-3.5 max-w-2xl text-sm leading-relaxed text-ink-muted">
         {description}
       </p>
 
@@ -392,7 +390,7 @@ function RepositorySection({
             </span>
           </button>
           {helpOpen && (
-            <p className="mt-2 max-w-2xl pl-7 text-sm leading-relaxed text-ink-muted">
+            <p className="mt-2 pl-7 max-w-2xl text-sm leading-relaxed text-ink-muted">
               {help}
             </p>
           )}
@@ -495,16 +493,18 @@ function RepositorySection({
               </div>
             ))}
             {/* Invisible spacers keep the card the same height on partial pages. */}
-            {Array.from({ length: PAGE_SIZE - pageItems.length }).map((_, i) => (
-              <div
-                key={`spacer-${i}`}
-                aria-hidden
-                className="invisible border border-transparent px-4 py-3"
-              >
-                <div className="text-sm font-semibold">&nbsp;</div>
-                <div className="mt-0.5 text-xs">&nbsp;</div>
-              </div>
-            ))}
+            {Array.from({ length: PAGE_SIZE - pageItems.length }).map(
+              (_, i) => (
+                <div
+                  key={`spacer-${i}`}
+                  aria-hidden
+                  className="invisible border border-transparent px-4 py-3"
+                >
+                  <div className="text-sm font-semibold">&nbsp;</div>
+                  <div className="mt-0.5 text-xs">&nbsp;</div>
+                </div>
+              ),
+            )}
           </div>
         )}
       </div>

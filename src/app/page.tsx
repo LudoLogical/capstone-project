@@ -415,7 +415,7 @@ export default function HomePage() {
   const firstName = personName.split(/\s+/)[0];
 
   return (
-    <div className="animate-nc-rise mx-auto w-full px-8 pt-8 pb-28">
+    <div className="animate-nc-rise mx-auto w-full max-w-6xl px-8 pt-8 pb-28">
       <div className="mb-6">
         <h1 className="font-serif text-3xl leading-tight font-bold">
           {showPersonal
@@ -432,7 +432,7 @@ export default function HomePage() {
             )}
           </div>
         )}
-        <p className="mt-3 w-full text-sm leading-relaxed text-ink-muted">
+        <p className="mt-3 w-full max-w-2xl text-sm leading-relaxed text-ink-muted">
           This is your home base for grant work. Discover grants that align with
           your organization, find other NSR client organizations to apply with,
           and leverage data to make your impact stories more powerful than ever.
