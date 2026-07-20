@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useAppStore } from "@/store/useAppStore";
 import { ISSUE_TAGS, LOCATION_OPTIONS } from "@/data/selectors";
-import { useOrgName, usePersonName } from "@/store/derived";
 import ProfileReadRow from "@/app/account/ProfileReadRow";
 import ProfileReadTags from "@/app/account/ProfileReadTags";
 
@@ -18,22 +17,32 @@ export default function ProfileDetailsSection() {
   const toggleIssue = useAppStore((s) => s.toggleOnboardIssue);
   const toggleArea = useAppStore((s) => s.toggleOnboardArea);
   const addToast = useAppStore((s) => s.addToast);
-  const personName = usePersonName();
-  const orgNameRead = useOrgName();
   const [editing, setEditing] = useState(false);
   // Names are edited as a draft so a half-typed name never lands in the store.
   const [person, setPerson] = useState(org.person);
   const [name, setName] = useState(org.name);
 
+  // The tag chips write to the store on click, so cancelling has to put the
+  // lists back the way they were when editing started.
+  const [tagsAtEntry, setTagsAtEntry] = useState({
+    issues: org.issues,
+    areas: org.areas,
+  });
+
   const startEditing = () => {
     setPerson(org.person);
     setName(org.name);
+    setTagsAtEntry({ issues: org.issues, areas: org.areas });
     setEditing(true);
   };
   const save = () => {
     patchOrg({ person: person.trim(), name: name.trim() });
     setEditing(false);
     addToast("Profile updated.");
+  };
+  const cancel = () => {
+    patchOrg({ issues: tagsAtEntry.issues, areas: tagsAtEntry.areas });
+    setEditing(false);
   };
 
   const chip = (active: boolean) =>
@@ -120,17 +129,19 @@ export default function ProfileDetailsSection() {
                 Save changes
               </button>
               <button
-                onClick={() => setEditing(false)}
+                onClick={cancel}
                 className="rounded-lg border border-border-strong bg-white px-4 py-2.5 text-sm font-semibold text-ink transition duration-150 hover:border-accent"
               >
-                Done
+                Cancel
               </button>
             </div>
           </div>
         ) : (
           <div className="flex flex-col gap-4">
-            <ProfileReadRow label="Your name" value={personName} />
-            <ProfileReadRow label="Organization name" value={orgNameRead} />
+            {/* Raw values, not the `usePersonName`/`useOrgName` stand-ins: this
+                row has its own "Not set yet" empty state. */}
+            <ProfileReadRow label="Your name" value={org.person.trim()} />
+            <ProfileReadRow label="Organization name" value={org.name.trim()} />
             <ProfileReadTags label="Issues you work on" values={org.issues} />
             <ProfileReadTags label="Where you serve" values={org.areas} />
           </div>

@@ -123,14 +123,16 @@ export default function HomePage() {
       closedGrant.grant,
       (reportsSubmitted[closedGrant.grant.id] ?? 0) + 1,
     ) === null;
-  // Greet by first name, or the "Your Name" stand-in until one is given.
+  // Greet by first name, but only once the user has actually given one --
+  // `personName` falls back to a stand-in, and "Welcome, Your." reads as a bug.
+  const hasPersonName = onboardOrg.person.trim().length > 0;
   const firstName = personName.split(/\s+/)[0];
 
   return (
     <div className="animate-nc-rise mx-auto w-full max-w-6xl px-8 pt-8 pb-28">
       <div className="mb-6">
         <h1 className="font-serif text-3xl leading-tight font-bold">
-          {showPersonal
+          {showPersonal && hasPersonName
             ? `Welcome to the Vibrancy Portal, ${firstName}.`
             : "Welcome to the Vibrancy Portal."}
         </h1>
