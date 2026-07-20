@@ -99,10 +99,10 @@ export default function GrantDetailPage() {
             <div className="mb-2 font-serif text-3xl font-bold">
               {grant.name}
             </div>
-            <div className="text-sm text-ink-muted">
+            <p className="text-sm text-ink-muted">
               {grant.grantor} ·{" "}
               {grant.targetRegions.map((r) => r.name).join(", ")}
-            </div>
+            </p>
           </div>
           <div className="flex flex-none flex-wrap gap-2.5">
             <button onClick={toggleSave} className={toggleClass(saved)}>
@@ -224,23 +224,27 @@ export default function GrantDetailPage() {
 
       {grant.requirements.eligibility.length > 0 && (
         <DetailCard title="Eligibility">
+          <p className="mb-3.5 text-xs leading-relaxed text-ink-muted">
+            Pulled from the official listing using AI; verify before applying.
+          </p>
           <BulletList items={grant.requirements.eligibility} />
         </DetailCard>
       )}
 
       {grant.requirements.application.length > 0 && (
-        <DetailCard title="Requirement checklist">
+        <DetailCard title="Application Requirements">
           <p className="mb-3.5 text-xs leading-relaxed text-ink-muted">
-            Built from this funder&apos;s past requirements - a starting point
-            for where to begin, not the official list. Always check it against{" "}
-            {grant.grantor}&apos;s own guidelines.
+            Pulled from the official listing using AI; verify before applying.
           </p>
           <BulletList items={grant.requirements.application} ordered />
         </DetailCard>
       )}
 
       {grant.requirements.awardee.length > 0 && (
-        <DetailCard title="If you're awarded, you'll need to">
+        <DetailCard title="Awardee Responsibilities">
+          <p className="mb-3.5 text-xs leading-relaxed text-ink-muted">
+            Pulled from the official listing using AI; verify before applying.
+          </p>
           <BulletList items={grant.requirements.awardee} />
         </DetailCard>
       )}
@@ -252,13 +256,13 @@ export default function GrantDetailPage() {
           AI-ASSISTED
         </div>
         <div className="mt-2.5 text-base font-bold">How your work lines up</div>
-        <p className="mt-1.5 text-xs leading-relaxed text-ink-muted">
-          Traced to your records and this funder&apos;s stated priorities.
-          It&apos;s input for your call, not a yes/no.
-        </p>
-
         {view.alignmentAnalysis ? (
           <>
+            <p className="mt-1.5 text-xs leading-relaxed text-ink-muted">
+              This analysis is based on your records and the information we have
+              about this grant. It can help you decide whether to move forward,
+              but take its advice with a grain of salt.
+            </p>
             <div className="mt-4 text-xs font-bold tracking-wider text-success-ink uppercase">
               Working in your favor
             </div>
@@ -277,11 +281,13 @@ export default function GrantDetailPage() {
           // No analysis has been generated for this grant yet. The button is
           // intentionally inert: the deployment integration wires it to the
           // generation call and creates the GrantRecord behind it.
-          <div className="mt-4">
+          <div className="mt-1.5">
             <p className="mb-3.5 text-sm leading-relaxed text-ink-muted">
-              We haven&apos;t looked at how this grant lines up with your work
-              yet. Generate an analysis to see what&apos;s working in your favor
-              and where you&apos;d want to strengthen an application.
+              Mulling over whether to move forward with this grant? Click below
+              to get an AI-generated analysis of what&apos;s working in your
+              favor and areas you might want to strengthen based on your records
+              and the information we have about this grant. None of your info
+              will ever be used to train or improve the AI.
             </p>
             <button
               onClick={() => {}}
@@ -295,20 +301,16 @@ export default function GrantDetailPage() {
       </div>
 
       {/* Organizations open to collaborating on this grant (item 2) */}
-      <div className="mb-3.5 rounded-2xl border border-border bg-surface p-6">
-        <div className="text-base font-bold">
-          Organizations open to collaborating on this
-        </div>
-        <p className="mt-1.5 text-xs leading-relaxed text-ink-muted">
-          New Sun Rising members who opted in for this grant. Every introduction
-          is one human reaching out to another - you write it, you send it, you
-          decide.
-        </p>
-        {collabOrgs.length === 0 ? (
-          <p className="mt-4 text-sm leading-relaxed text-ink-muted">
-            No organizations are open to collaborating on this grant yet.
+      {collabOrgs.length > 0 && (
+        <div className="mb-3.5 rounded-2xl border border-border bg-surface p-6">
+          <div className="text-base font-bold">
+            Organizations open to collaborating on this grant
+          </div>
+          <p className="mt-1.5 text-xs leading-relaxed text-ink-muted">
+            New Sun Rising members who opted in for this grant. Every
+            introduction is one human reaching out to another - you write it,
+            you send it, you decide.
           </p>
-        ) : (
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             {collabOrgs.slice(0, 4).map((org) => (
               <div
@@ -317,9 +319,16 @@ export default function GrantDetailPage() {
               >
                 <OrgAvatar size="sm" />
                 <div className="min-w-0 flex-1">
-                  <div className="text-sm leading-tight font-bold">
+                  <button
+                    onClick={() =>
+                      router.push(
+                        `/grants/${grant.id}/collaborate/${org.initiativeId}`,
+                      )
+                    }
+                    className="block text-left text-sm leading-tight font-bold transition duration-150 hover:text-accent"
+                  >
                     {org.name}
-                  </div>
+                  </button>
                   <div className="mt-0.5 text-xs text-ink-muted">
                     Serves {org.place}
                   </div>
@@ -327,14 +336,14 @@ export default function GrantDetailPage() {
               </div>
             ))}
           </div>
-        )}
-        <button
-          onClick={() => router.push(`/grants/${grant.id}/collaborate`)}
-          className="mt-4 inline-flex items-center gap-2 rounded-lg border border-border-strong bg-white px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 hover:border-accent"
-        >
-          See details <ArrowRight size={16} className="shrink-0" />
-        </button>
-      </div>
+          <button
+            onClick={() => router.push(`/grants/${grant.id}/collaborate`)}
+            className="mt-4 inline-flex items-center gap-2 rounded-lg border border-border-strong bg-white px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 hover:border-accent"
+          >
+            See details <ArrowRight size={16} className="shrink-0" />
+          </button>
+        </div>
+      )}
 
       <div className="flex flex-col flex-wrap gap-3.5">
         {isAwarded ? (

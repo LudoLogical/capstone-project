@@ -19,7 +19,9 @@ export default function BulletList({
           <span aria-hidden className="flex-none font-bold text-accent-ink-2">
             {ordered ? `${i + 1}.` : "•"}
           </span>
-          <span>{item}</span>
+          <span>
+            {".?!".includes(item.charAt(item.length - 1)) ? item : item + "."}
+          </span>
         </li>
       ))}
     </Tag>
