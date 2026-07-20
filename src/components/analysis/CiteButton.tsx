@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Modal from "./Modal";
+import Modal from "@/components/primitives/Modal";
 import { PROVENANCE } from "@/data/seed";
 import { FileText, Link, Download, ArrowUpRight } from "lucide-react";
 

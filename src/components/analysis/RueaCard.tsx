@@ -1,58 +1,23 @@
 "use client";
 
-import type { RueaBar } from "@/data/seed";
-import CiteButton from "./CiteButton";
+import type { DatumAnalysis } from "@/types/analysis";
+import CiteButton from "@/components/analysis/CiteButton";
+import StatBars, { type RueaBar } from "@/components/analysis/StatBars";
 import { Check, ChevronUp, ChevronDown } from "lucide-react";
 
 /**
- * What the card actually needs to render. `RueaSection` satisfies this, and so
- * does a data point analyzed without an authoritative datum behind it - those
- * simply have no comparison bars and nothing to cite.
+ * What the card needs to render: a canonical DatumAnalysis plus the optional
+ * presentation extras. `RueaSection` satisfies this directly, and so does a
+ * data point analysed without a RUEA section behind it - those simply have no
+ * comparison bars and nothing to cite.
  */
 export type AnalysisCardSection = {
   id: string;
   provenanceKey?: string;
-  analysis: {
-    datum: { content: string; citation?: string };
-    result: { understand: string[]; apply: string[] };
-  };
+  analysis: DatumAnalysis;
   bars?: RueaBar[];
   evalNote?: string;
 };
-
-const BAR_COLORS: Record<string, string> = {
-  me: "bg-accent",
-  average: "bg-bar-average",
-  max: "bg-bar-max",
-  other: "bg-info-ink",
-};
-
-function StatBars({ bars }: { bars: RueaBar[] }) {
-  const max = Math.max(...bars.map((b) => b.value));
-  return (
-    <div className="flex flex-col gap-2.5">
-      {bars.map((bar) => {
-        const barColor = BAR_COLORS[bar.role];
-        return (
-          <div key={bar.label}>
-            <div className="mb-1 flex justify-between text-xs">
-              <span className="text-ink-muted">{bar.label}</span>
-              <strong>
-                {bar.value.toLocaleString()} {bar.unit}
-              </strong>
-            </div>
-            <div className="h-2 overflow-hidden rounded-full bg-divider-2">
-              <div
-                className={`h-full rounded-full ${barColor}`}
-                style={{ width: `${Math.max(4, (bar.value / max) * 100)}%` }}
-              />
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
 
 type RueaCardProps = {
   section: AnalysisCardSection;

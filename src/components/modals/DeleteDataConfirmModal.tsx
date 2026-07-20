@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import Modal from "./Modal";
+import Modal from "@/components/primitives/Modal";
 
 /**
  * Confirmation shown before deleting a found data point in the report flow.

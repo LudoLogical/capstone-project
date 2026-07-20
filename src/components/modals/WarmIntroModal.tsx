@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import Modal from "./Modal";
+import Modal from "@/components/primitives/Modal";
+import EmailRow from "@/components/modals/EmailRow";
 import type { OrgProfileContent } from "@/data/seed";
 import { Check, BarChart3, X, Info } from "lucide-react";
 
@@ -139,19 +140,3 @@ export default function WarmIntroModal({
   );
 }
 
-function EmailRow({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="flex items-center gap-2.5 border-b border-divider py-2.5 text-sm">
-      <span className="w-16 flex-none font-mono text-xs tracking-wide text-ink-muted">
-        {label}
-      </span>
-      <span className="min-w-0 text-ink-body">{children}</span>
-    </div>
-  );
-}

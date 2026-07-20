@@ -1,26 +1,18 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useAppStore } from "@/store/useAppStore";
+import { NSRService } from "@/types/data";
 import { useGrantView } from "@/store/derived";
-import { DATA_DETAILS, RUEA_SECTIONS, dataActionLabel } from "@/data/seed";
-import CheckboxRow from "@/components/CheckboxRow";
-import RueaCard from "@/components/RueaCard";
-import Modal from "@/components/Modal";
-import BackButton from "@/components/BackButton";
-import DataUploadField from "@/components/DataUploadField";
-import AddDataChatBox from "@/components/AddDataChatBox";
-import ResetAnalysisButton from "@/components/ResetAnalysisButton";
-import ShareModal from "@/components/ShareModal";
-import {
-  Bookmark,
-  Check,
-  X,
-  ChevronDown,
-  ArrowRight,
-  ArrowUpRight,
-} from "lucide-react";
+import { DATA_DETAILS, RUEA_SECTIONS, SHARE_KEYS } from "@/data/seed";
+import Modal from "@/components/primitives/Modal";
+import BackButton from "@/components/primitives/BackButton";
+import ShareModal from "@/components/modals/ShareModal";
+import CollectStepRail from "@/app/grants/[grantId]/collect/CollectStepRail";
+import CollectContextStep from "@/app/grants/[grantId]/collect/CollectContextStep";
+import CollectReviewStep from "@/app/grants/[grantId]/collect/CollectReviewStep";
+import CollectAnalysisStep from "@/app/grants/[grantId]/collect/CollectAnalysisStep";
 
 /**
  * The application flow is three steps: share your context, review the data we
@@ -42,11 +34,10 @@ function stepPlan() {
 
 export default function DataCollectionWizardPage() {
   const { grantId = "" } = useParams<{ grantId: string }>();
-  const router = useRouter();
   const view = useGrantView(grantId);
   const wizard = useAppStore((s) => s.getWizard(grantId));
   const updateWizard = useAppStore((s) => s.updateWizard);
-  const [usageKey, setUsageKey] = useState<string | null>(null);
+  const [usageKey, setUsageKey] = useState<NSRService | null>(null);
   // Export controls on the Analyze step.
   const [exportMode, setExportMode] = useState<"selected" | "all">("selected");
   const [downloadOpen, setDownloadOpen] = useState(false);
@@ -60,7 +51,7 @@ export default function DataCollectionWizardPage() {
   // isn't undone on the next render.
   const autoCheckedRef = useRef<Record<string, boolean>>({});
   useEffect(() => {
-    (["surveys", "budget", "orgAssess"] as const).forEach((key) => {
+    SHARE_KEYS.forEach((key) => {
       const completed = DATA_DETAILS[key].completed;
       if (!completed || autoCheckedRef.current[key]) return;
       autoCheckedRef.current[key] = true;
@@ -230,471 +221,64 @@ export default function DataCollectionWizardPage() {
       <BackButton fallback={`/grants/${grant.id}`} />
       <div className="flex items-start gap-7">
         {/* Same shell as the report flow: a sticky step rail beside the work. */}
-        <aside className="sticky top-22 w-56 flex-none rounded-2xl border border-border bg-surface p-4">
-          <div className="mb-1 text-sm font-bold">{grant.name}</div>
-          <button
-            onClick={() => router.push("/account")}
-            className="mb-4 inline-block p-0 text-xs font-semibold text-accent-ink-2 underline"
-          >
-            Manage Your Data
-          </button>
-          <div className="flex flex-col gap-3">
-            {STEP_GROUPS.map((group, gi) => (
-              <div
-                key={group.title}
-                className={gi > 0 ? "border-t border-divider-2 pt-3" : ""}
-              >
-                <div className="mb-1.5 px-1 text-xs font-bold tracking-wider text-ink-muted uppercase">
-                  {group.title}
-                </div>
-                <div className="flex flex-col gap-0.5">
-                  {group.steps.map((n) => {
-                    const label = STEP_LABELS[n - 1];
-                    const current = wizard.step === n;
-                    const visited = !!wizard.visited[n];
-                    // Analysis stays locked until unlocked from Review.
-                    const locked = n === ANALYSIS_STEP && !analysisUnlocked;
-                    return (
-                      <button
-                        key={n}
-                        onClick={() => {
-                          if (!locked) setStep(n);
-                        }}
-                        disabled={locked}
-                        aria-current={current ? "step" : undefined}
-                        className={`flex items-center gap-2.5 rounded-lg border px-2 py-2 text-left transition duration-150 ${
-                          current
-                            ? "border-accent bg-accent-tint"
-                            : "border-transparent hover:bg-surface-alt"
-                        } ${locked ? "cursor-not-allowed" : "cursor-pointer"}`}
-                      >
-                        <div
-                          className={`flex h-5 w-5 flex-none items-center justify-center rounded-full text-xs font-bold ${
-                            current
-                              ? "bg-accent text-white"
-                              : !locked && visited
-                                ? "bg-success-ink-2 text-white"
-                                : "bg-divider-2 text-ink-muted"
-                          }`}
-                        >
-                          {locked ? (
-                            <Bookmark size={11} />
-                          ) : !current && visited ? (
-                            <Check size={12} />
-                          ) : (
-                            n
-                          )}
-                        </div>
-                        <span
-                          className={`text-sm ${
-                            current
-                              ? "font-bold text-ink"
-                              : locked
-                                ? "font-medium text-ink-muted"
-                                : "font-medium text-ink-muted"
-                          }`}
-                        >
-                          {label}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
-        </aside>
+        <CollectStepRail
+          grant={grant}
+          wizard={wizard}
+          STEP_LABELS={STEP_LABELS}
+          STEP_GROUPS={STEP_GROUPS}
+          ANALYSIS_STEP={ANALYSIS_STEP}
+          analysisUnlocked={analysisUnlocked}
+          setStep={setStep}
+        />
 
         <div className="min-w-0 flex-1">
           {wizard.step === 1 && (
-            <div>
-              <h1 className="mb-2 font-serif text-xl leading-tight font-bold">
-                Share Your Context
-              </h1>
-              <p className="mb-5 text-sm leading-relaxed text-ink-muted">
-                The AI only reads what you check below. Your data remains
-                private and is never used to train our AI.
-              </p>
-
-              <div className="mb-2.5 text-xs font-bold tracking-wider text-ink-muted uppercase">
-                From the Vibrancy Portal
-              </div>
-              <div className="mb-5 flex flex-col gap-3.5 rounded-2xl border border-border bg-surface p-6">
-                {(["surveys", "budget", "orgAssess"] as const).map((key) => {
-                  const d = DATA_DETAILS[key];
-                  const completed = d.completed;
-                  return (
-                    <div
-                      key={key}
-                      className="flex flex-wrap items-center justify-between gap-3"
-                    >
-                      <CheckboxRow
-                        checked={wizard.share[key]}
-                        onToggle={() => toggleShare(key)}
-                        label={d.label}
-                        hint={completed ? "Completed" : d.meta}
-                      />
-                      <div className="flex flex-none gap-2">
-                        <button
-                          onClick={() => setUsageKey(key)}
-                          className="inline-flex items-center gap-2 rounded-lg border border-border-strong bg-white px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 hover:border-accent"
-                        >
-                          How is this used?
-                        </button>
-                        <button
-                          // Intentionally inert: the deployment integration wires
-                          // this to the matching Vibrancy Portal flow.
-                          onClick={() => {}}
-                          className="inline-flex items-center gap-2 rounded-lg border border-border-strong bg-white px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 enabled:hover:border-accent disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                          {dataActionLabel(key, completed)}{" "}
-                          <ArrowUpRight size={14} className="shrink-0" />
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className="mb-2.5 text-xs font-bold tracking-wider text-ink-muted uppercase">
-                From Your Organization
-              </div>
-              <div className="mb-6 rounded-2xl border border-border bg-surface p-6">
-                <p className="mb-3.5 text-sm leading-relaxed text-ink-muted">
-                  Attendance sheets, surveys, photos, past reports, participant
-                  counts, or letters of support all help.
-                </p>
-                <DataUploadField
-                  uploads={wizard.uploads}
-                  onAddFiles={addUploads}
-                  onAddLink={(link) => addUploads([link])}
-                  onRemove={removeUpload}
-                />
-              </div>
-
-              <div className="flex items-center justify-between gap-2.5">
-                <div />
-                <button
-                  onClick={() => setStep(REVIEW_STEP)}
-                  className="inline-flex items-center gap-2 rounded-xl bg-accent-ink px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  Save and Continue{" "}
-                  <ArrowRight size={16} className="shrink-0" />
-                </button>
-              </div>
-            </div>
+            <CollectContextStep
+              wizard={wizard}
+              toggleShare={toggleShare}
+              setUsageKey={setUsageKey}
+              addUploads={addUploads}
+              removeUpload={removeUpload}
+              setStep={setStep}
+              REVIEW_STEP={REVIEW_STEP}
+            />
           )}
 
           {wizard.step === REVIEW_STEP && (
-            <div>
-              <h1 className="mb-2 font-serif text-xl leading-tight font-bold">
-                Review Your Data
-              </h1>
-              <div className="mb-4 flex items-center justify-between gap-3">
-                <p className="text-sm leading-relaxed text-ink-muted">
-                  Based on the data sources you approved and data from the
-                  Vibrancy Portal, we identified{" "}
-                  {RUEA_SECTIONS.length + wizard.customFound.length} data points
-                  that are relevant to this grant.
-                </p>
-                <button
-                  onClick={toggleAllFound}
-                  className="inline-flex flex-none items-center gap-2 rounded-lg border border-border-strong bg-white px-4 py-2 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 hover:border-accent"
-                >
-                  {allFound ? "Remove all" : "Add all"}
-                </button>
-              </div>
-
-              <div className="mb-2.5 text-xs font-bold tracking-wider text-ink-muted uppercase">
-                From the Vibrancy Portal
-              </div>
-              <div className="mb-5 flex flex-col gap-2.5">
-                {RUEA_SECTIONS.map((s) => {
-                  const selected = isFound(s.id);
-                  return (
-                    <button
-                      key={s.id}
-                      onClick={() => toggleFound(s.id)}
-                      aria-pressed={selected}
-                      className={`flex cursor-pointer items-start gap-3 rounded-2xl border p-4 text-left ${
-                        selected
-                          ? "border-accent bg-accent-tint-soft"
-                          : "border-border bg-surface"
-                      }`}
-                    >
-                      <span
-                        aria-hidden
-                        className={`mt-0.5 flex h-[22px] w-[22px] flex-none items-center justify-center rounded-md border-2 text-sm font-extrabold text-white ${
-                          selected
-                            ? "border-accent bg-accent"
-                            : "border-ink-muted"
-                        }`}
-                      >
-                        {selected ? <Check size={14} /> : null}
-                      </span>
-                      <div>
-                        <div className="text-sm font-semibold">
-                          {s.analysis.datum.content}
-                        </div>
-                        <div className="text-xs text-ink-muted">
-                          {s.analysis.datum.citation}
-                        </div>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-
-              <div className="mb-2.5 text-xs font-bold tracking-wider text-ink-muted uppercase">
-                From Your Organization
-              </div>
-              <div className="mb-4 flex flex-col gap-2.5">
-                {wizard.customFound.length === 0 ? (
-                  <p className="text-sm leading-relaxed text-ink-muted">
-                    Nothing added yet. Use the box below to add a data point in
-                    your own words.
-                  </p>
-                ) : (
-                  wizard.customFound.map((text, i) => {
-                    const selected = isFound(`custom:${text}`);
-                    return (
-                      <div key={`custom-${i}`} className="relative">
-                        <button
-                          onClick={() => toggleFound(`custom:${text}`)}
-                          aria-pressed={selected}
-                          className={`flex w-full cursor-pointer items-start gap-3 rounded-2xl border p-4 pr-11 text-left ${
-                            selected
-                              ? "border-accent bg-accent-tint-soft"
-                              : "border-border bg-surface"
-                          }`}
-                        >
-                          <span
-                            aria-hidden
-                            className={`mt-0.5 flex h-[22px] w-[22px] flex-none items-center justify-center rounded-md border-2 text-sm font-extrabold text-white ${
-                              selected
-                                ? "border-accent bg-accent"
-                                : "border-ink-muted"
-                            }`}
-                          >
-                            {selected ? <Check size={14} /> : null}
-                          </span>
-                          <div>
-                            <div className="text-sm font-semibold">{text}</div>
-                            <div className="text-xs text-ink-muted">
-                              Added by you
-                            </div>
-                          </div>
-                        </button>
-                        <button
-                          onClick={() => removeCustomFound(i)}
-                          aria-label={`Delete ${text}`}
-                          title="Delete"
-                          className="absolute top-3 right-3 flex h-7 w-7 items-center justify-center rounded-lg text-base text-ink-muted transition duration-150 hover:bg-accent-tint hover:text-accent-ink"
-                        >
-                          <X size={13} />
-                        </button>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-              <div className="mb-6">
-                <div className="mb-2 text-xs font-bold tracking-wider text-ink-muted uppercase">
-                  Add more data
-                </div>
-                <AddDataChatBox onAdd={addCustomFound} />
-              </div>
-              <div className="flex gap-2.5">
-                <button
-                  onClick={() => setStep(REVIEW_STEP - 1)}
-                  className="inline-flex items-center gap-2 rounded-xl border border-border-strong bg-white px-5 py-3 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 enabled:hover:border-accent disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  Back
-                </button>
-                <button
-                  onClick={unlockAnalysis}
-                  className="inline-flex items-center gap-2 rounded-xl bg-accent-ink px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {analysisUnlocked ? (
-                    <>
-                      See updated analysis{" "}
-                      <ArrowRight size={16} className="shrink-0" />
-                    </>
-                  ) : (
-                    <>
-                      Unlock your analysis{" "}
-                      <ArrowRight size={16} className="shrink-0" />
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
+            <CollectReviewStep
+              wizard={wizard}
+              isFound={isFound}
+              toggleFound={toggleFound}
+              allFound={allFound}
+              toggleAllFound={toggleAllFound}
+              addCustomFound={addCustomFound}
+              removeCustomFound={removeCustomFound}
+              analysisUnlocked={analysisUnlocked}
+              unlockAnalysis={unlockAnalysis}
+              setStep={setStep}
+              REVIEW_STEP={REVIEW_STEP}
+            />
           )}
 
           {wizard.step === ANALYSIS_STEP && (
-            <div>
-              <h1 className="mb-2 font-serif text-xl leading-tight font-bold">
-                Analyze Your Data
-              </h1>
-              <p className="mb-5 text-sm leading-relaxed text-ink-muted">
-                Each card below breaks down each of the data points you
-                selected: what it means in plain English (In Other Words), how
-                it compares to county and peer benchmarks (In Context), and how
-                to use it in your grant writing or reporting (In Your
-                Application). Review each card and use the language in “In Your
-                Application” to strengthen your application.
-              </p>
-              <div className="mb-6 flex flex-col gap-3">
-                {foundSections.length === 0 && foundCustom.length === 0 ? (
-                  <p className="text-sm leading-relaxed text-ink-muted">
-                    Go back and select at least one data point to see it
-                    explained here.
-                  </p>
-                ) : (
-                  <>
-                    {foundSections.map((s, i) => {
-                      // Default the first card open, the rest collapsed; an explicit
-                      // toggle (stored value) always wins.
-                      const expanded = wizard.rueaExpanded[s.id] ?? i === 0;
-                      return (
-                        <RueaCard
-                          key={s.id}
-                          section={s}
-                          expanded={expanded}
-                          onToggle={() => setRueaExpanded(s.id, !expanded)}
-                          selected={isExportSelected(s.id)}
-                          onSelectChange={() =>
-                            setExportSelected(s.id, !isExportSelected(s.id))
-                          }
-                        />
-                      );
-                    })}
-                    {foundCustom.map((text, i) => {
-                      const key = `custom:${text}`;
-                      const selected = isExportSelected(key);
-                      return (
-                        <div
-                          key={`custom-${i}`}
-                          className="flex items-start gap-3 rounded-2xl border border-border bg-surface px-5 py-4"
-                        >
-                          <button
-                            onClick={() => setExportSelected(key, !selected)}
-                            aria-pressed={selected}
-                            aria-label={
-                              selected ? "Deselect card" : "Select card"
-                            }
-                            className="flex flex-none items-start pt-0.5"
-                          >
-                            <span
-                              aria-hidden
-                              className={`flex h-[22px] w-[22px] items-center justify-center rounded-md border-2 text-sm font-extrabold text-white ${
-                                selected
-                                  ? "border-accent bg-accent"
-                                  : "border-ink-muted"
-                              }`}
-                            >
-                              {selected ? <Check size={14} /> : null}
-                            </span>
-                          </button>
-                          <div>
-                            <div className="mb-1 text-xs font-bold tracking-wider text-ink-muted uppercase">
-                              Added by you
-                            </div>
-                            <div className="text-sm font-bold">{text}</div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </>
-                )}
-              </div>
-
-              {(foundSections.length > 0 || foundCustom.length > 0) && (
-                <div className="mb-6 rounded-2xl border border-border bg-surface p-5">
-                  {/* Selected / all segmented toggle */}
-                  <div className="mb-4 inline-flex rounded-lg border border-border-strong bg-surface-alt p-1">
-                    <button
-                      onClick={useSelectedExportMode}
-                      aria-pressed={exportMode === "selected"}
-                      className={`rounded-md px-3.5 py-1.5 text-sm font-semibold transition duration-150 ${
-                        exportMode === "selected"
-                          ? "bg-white text-ink shadow-sm"
-                          : "text-ink-muted hover:text-ink"
-                      }`}
-                    >
-                      Export selected cards
-                    </button>
-                    <button
-                      onClick={selectAllForExport}
-                      aria-pressed={exportMode === "all"}
-                      className={`rounded-md px-3.5 py-1.5 text-sm font-semibold transition duration-150 ${
-                        exportMode === "all" && allExportSelected
-                          ? "bg-white text-ink shadow-sm"
-                          : "text-ink-muted hover:text-ink"
-                      }`}
-                    >
-                      Export all cards
-                    </button>
-                  </div>
-
-                  {/* Download (with format menu) + Share link */}
-                  <div className="flex flex-wrap items-start gap-2.5">
-                    <div className="relative">
-                      <button
-                        onClick={() => setDownloadOpen((v) => !v)}
-                        aria-expanded={downloadOpen}
-                        className="inline-flex items-center gap-2 rounded-lg bg-accent-ink px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 hover:bg-accent-ink-2 active:translate-y-px"
-                      >
-                        Download <ChevronDown size={16} className="shrink-0" />
-                      </button>
-                      {downloadOpen && (
-                        <div className="absolute z-10 mt-1.5 w-64 overflow-hidden rounded-xl border border-border-strong bg-white shadow-float">
-                          <button
-                            onClick={() => setDownloadOpen(false)}
-                            className="block w-full px-4 py-3 text-left text-sm font-semibold text-ink transition duration-150 hover:bg-surface-alt"
-                          >
-                            Download as PDF
-                          </button>
-                          <button
-                            onClick={() => setDownloadOpen(false)}
-                            className="block w-full border-t border-divider px-4 py-3 text-left text-sm font-semibold text-ink transition duration-150 hover:bg-surface-alt"
-                          >
-                            Download Word document (.docx)
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                    <button
-                      onClick={() => setShareOpen(true)}
-                      className="inline-flex items-center gap-2 rounded-lg border border-border-strong bg-white px-5 py-3 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 hover:border-accent"
-                    >
-                      Share link
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              <div className="flex gap-2.5">
-                <button
-                  onClick={() => setStep(REVIEW_STEP)}
-                  className="inline-flex items-center gap-2 rounded-xl border border-border-strong bg-white px-5 py-3 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 enabled:hover:border-accent disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  Back
-                </button>
-                <button
-                  onClick={() => router.push("/")}
-                  className="inline-flex items-center gap-2 rounded-xl bg-accent-ink px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  Save and exit <ArrowRight size={16} className="shrink-0" />
-                </button>
-              </div>
-
-              {(foundSections.length > 0 || foundCustom.length > 0) && (
-                <div className="mt-8 border-t border-divider pt-6">
-                  <ResetAnalysisButton onReset={resetAnalysis} />
-                </div>
-              )}
-            </div>
+            <CollectAnalysisStep
+              wizard={wizard}
+              foundSections={foundSections}
+              foundCustom={foundCustom}
+              setRueaExpanded={setRueaExpanded}
+              isExportSelected={isExportSelected}
+              setExportSelected={setExportSelected}
+              exportMode={exportMode}
+              allExportSelected={allExportSelected}
+              selectAllForExport={selectAllForExport}
+              useSelectedExportMode={useSelectedExportMode}
+              downloadOpen={downloadOpen}
+              setDownloadOpen={setDownloadOpen}
+              setShareOpen={setShareOpen}
+              resetAnalysis={resetAnalysis}
+              setStep={setStep}
+              REVIEW_STEP={REVIEW_STEP}
+            />
           )}
         </div>
       </div>

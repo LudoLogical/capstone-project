@@ -8,20 +8,11 @@ import {
   ORG_PROFILES,
   type OrgProfileContent,
 } from "@/data/seed";
-import WarmIntroModal from "@/components/WarmIntroModal";
-import ShareModal from "@/components/ShareModal";
-import BackButton from "@/components/BackButton";
+import { initialsOf } from "@/utils/format";
+import WarmIntroModal from "@/components/modals/WarmIntroModal";
+import ShareModal from "@/components/modals/ShareModal";
+import BackButton from "@/components/primitives/BackButton";
 import { Users, ArrowUpRight } from "lucide-react";
-
-/** Initials for the avatar chip, e.g. "Hilltop Harvest Collective" → "HH". */
-function initialsOf(name: string): string {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0]?.toUpperCase() ?? "")
-    .join("");
-}
 
 export default function CollaboratePage() {
   const { grantId = "" } = useParams<{ grantId: string }>();

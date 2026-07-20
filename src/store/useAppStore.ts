@@ -3,6 +3,7 @@ import { persist } from "zustand/middleware";
 import { GrantLifecycleStage } from "@/types/grantRecord";
 import type { SearchFilters, SortOption } from "@/data/selectors";
 import { DEFAULT_FILTERS } from "@/data/selectors";
+import { NSRService } from "@/types/data";
 
 export type OnboardOrg = {
   // The person filling this out - their name greets them across the portal.
@@ -56,7 +57,7 @@ export type ReportState = {
   requirementsSet: boolean;
   step: number;
   stepStatus: Record<number, StepStatus>;
-  share: { surveys: boolean; budget: boolean; orgAssess: boolean };
+  share: Record<NSRService, boolean>;
   uploads: string[];
   chat: {
     commitment: ReportChatState;
@@ -76,7 +77,7 @@ export type ReportState = {
 
 export type WizardState = {
   step: number;
-  share: { surveys: boolean; budget: boolean; orgAssess: boolean };
+  share: Record<NSRService, boolean>;
   uploads: string[];
   found: Record<string, boolean>;
   // Extra data points the user typed in themselves on the "supporting data we
@@ -105,7 +106,11 @@ const emptyChat = (): ReportChatState => ({
 export function makeWizardState(): WizardState {
   return {
     step: 1,
-    share: { surveys: true, budget: true, orgAssess: false },
+    share: {
+      [NSRService.AnnualImpactSurvey]: true,
+      [NSRService.BudgetManagementSystem]: true,
+      [NSRService.OrganizationalAssessmentTool]: false,
+    },
     uploads: [],
     found: {},
     customFound: [],
@@ -137,7 +142,11 @@ export function makeReportState(): ReportState {
     requirementsSet: false,
     step: 1,
     stepStatus: { 1: "in-progress" },
-    share: { surveys: true, budget: true, orgAssess: false },
+    share: {
+      [NSRService.AnnualImpactSurvey]: true,
+      [NSRService.BudgetManagementSystem]: true,
+      [NSRService.OrganizationalAssessmentTool]: false,
+    },
     uploads: [],
     chat: {
       commitment: emptyChat(),

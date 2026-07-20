@@ -8,7 +8,7 @@ import { useAppStore } from "@/store/useAppStore";
 import { isPastDeadline } from "@/store/derived";
 import { GrantLifecycleStage } from "@/types/grantRecord";
 import { INTERESTED_BY_GRANT } from "@/data/seed";
-import ClosedGrantModal from "./ClosedGrantModal";
+import ClosedGrantModal from "@/components/modals/ClosedGrantModal";
 import { Users, Star, ArrowRight } from "lucide-react";
 
 export default function GrantCard({

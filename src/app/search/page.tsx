@@ -12,14 +12,15 @@ import {
   sortGrants,
   type SortOption,
 } from "@/data/selectors";
-import { Search, Plus, Minus } from "lucide-react";
-import CheckboxRow from "@/components/CheckboxRow";
-import RadioRow from "@/components/RadioRow";
-import RangeHistogram from "@/components/RangeHistogram";
-import GrantCard from "@/components/GrantCard";
-import EmptyState from "@/components/EmptyState";
-import BackButton from "@/components/BackButton";
-import Pagination from "@/components/Pagination";
+import { Search } from "lucide-react";
+import CheckboxRow from "@/components/primitives/CheckboxRow";
+import RadioRow from "@/components/primitives/RadioRow";
+import RangeHistogram from "@/components/grants/RangeHistogram";
+import GrantCard from "@/components/grants/GrantCard";
+import EmptyState from "@/components/primitives/EmptyState";
+import BackButton from "@/components/primitives/BackButton";
+import Pagination from "@/components/primitives/Pagination";
+import ShowMoreButton from "@/components/primitives/ShowMoreButton";
 
 const SORTS: { key: SortOption; label: string }[] = [
   { key: "relevance", label: "Relevance" },
@@ -37,33 +38,6 @@ const COLLAPSED_COUNT = 4;
 
 // Results per page in the Explore list.
 const RESULTS_PER_PAGE = 5;
-
-function ShowMoreButton({
-  expanded,
-  hiddenCount,
-  onToggle,
-}: {
-  expanded: boolean;
-  hiddenCount: number;
-  onToggle: () => void;
-}) {
-  return (
-    <button
-      onClick={onToggle}
-      className="mt-0.5 inline-flex items-center gap-1 self-start text-xs font-bold text-ink-secondary underline underline-offset-2 transition-colors duration-150 hover:text-ink"
-    >
-      {expanded ? (
-        <>
-          <Minus size={14} className="shrink-0" /> Show less
-        </>
-      ) : (
-        <>
-          <Plus size={14} className="shrink-0" /> Show {hiddenCount} more
-        </>
-      )}
-    </button>
-  );
-}
 
 export default function SearchPage() {
   const draftFilters = useAppStore((s) => s.draftFilters);

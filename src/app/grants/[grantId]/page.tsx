@@ -5,109 +5,20 @@ import { useParams, useRouter } from "next/navigation";
 import { useAppStore } from "@/store/useAppStore";
 import { useGrantView, isSavedStage } from "@/store/derived";
 import { GrantLifecycleStage } from "@/types/grantRecord";
-import { formatCurrencyFull, formatDate } from "@/utils/format";
+import {
+  formatCurrencyFull,
+  formatDate,
+  formatReportFrequency,
+  initialsOf,
+} from "@/utils/format";
 import { INTERESTED_BY_GRANT, ORG_PROFILES } from "@/data/seed";
-import ShareModal from "@/components/ShareModal";
-import BackButton from "@/components/BackButton";
-import ClosedGrantModal from "@/components/ClosedGrantModal";
+import ShareModal from "@/components/modals/ShareModal";
+import BackButton from "@/components/primitives/BackButton";
+import ClosedGrantModal from "@/components/modals/ClosedGrantModal";
+import DetailCard from "@/components/primitives/DetailCard";
+import BulletList from "@/components/primitives/BulletList";
+import TimelineCell from "@/app/grants/[grantId]/TimelineCell";
 import { Star, BarChart3, ArrowUpRight, ArrowRight } from "lucide-react";
-
-/** Initials for an org avatar chip, e.g. "Hilltop Harvest" → "HH". */
-function initialsOf(name: string): string {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0]?.toUpperCase() ?? "")
-    .join("");
-}
-
-// "How your work lines up" - the fit read, expressed as sourced observations
-// rather than a single score (see items 2 & 9). Each line traces back to your
-// living profile or the funder's stated priorities.
-type AlignmentPoint = { text: string; source: string };
-
-const STRENGTHS: AlignmentPoint[] = [
-  {
-    text: "You work in the neighborhoods this funder targets.",
-    source: "Your living profile · Who We Serve → Service area",
-  },
-  {
-    text: "Your requested range sits comfortably within this grant's award size.",
-    source: "Funder · stated award size",
-  },
-  {
-    text: "Your focus areas line up directly with this grant's priorities.",
-    source: "Your living profile · issue tags",
-  },
-];
-
-const GAPS: AlignmentPoint[] = [
-  {
-    text: "This funder has favored applicants with an existing relationship - consider requesting a warm introduction.",
-    source: "Funder · past awardee patterns",
-  },
-  {
-    text: "Your reporting history for a grant of this size is still thin - pair your application with strong baseline data.",
-    source: "Your records · reporting history",
-  },
-];
-
-function formatReportFrequency(months: number): string {
-  if (months < 0) return "None required";
-  if (months === 0) return "Single report";
-  if (months === 12) return "Annually";
-  return `Every ${months} months`;
-}
-
-function TimelineCell({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-xl border border-divider-2 p-3.5">
-      <div className="mb-1 text-xs text-ink-muted">{label}</div>
-      <div className="text-sm font-semibold">{value}</div>
-    </div>
-  );
-}
-
-function DetailCard({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="mb-3.5 rounded-2xl border border-border bg-surface p-6">
-      <div className="mb-3 text-base font-bold">{title}</div>
-      {children}
-    </div>
-  );
-}
-
-function BulletList({
-  items,
-  ordered = false,
-}: {
-  items: string[];
-  ordered?: boolean;
-}) {
-  const Tag = ordered ? "ol" : "ul";
-  return (
-    <Tag className="flex flex-col gap-2">
-      {items.map((item, i) => (
-        <li key={i} className="flex gap-2.5 text-sm leading-relaxed text-ink-body">
-          <span
-            aria-hidden
-            className="flex-none font-bold text-accent-ink-2"
-          >
-            {ordered ? `${i + 1}.` : "•"}
-          </span>
-          <span>{item}</span>
-        </li>
-      ))}
-    </Tag>
-  );
-}
 
 export default function GrantDetailPage() {
   const { grantId = "" } = useParams<{ grantId: string }>();
@@ -300,39 +211,41 @@ export default function GrantDetailPage() {
           It&apos;s input for your call, not a yes/no.
         </p>
 
-        <div className="mt-4 text-xs font-bold tracking-wider text-success-ink uppercase">
-          Working in your favor
-        </div>
-        <div className="mt-2.5 flex flex-col gap-2.5">
-          {STRENGTHS.map((s) => (
-            <div
-              key={s.text}
-              className="rounded-xl border border-success-border-2 bg-success-bg-2 px-4 py-3"
-            >
-              <div className="text-sm leading-relaxed text-ink-body">
-                {s.text}
-              </div>
-              <div className="mt-1 text-xs text-ink-muted">{s.source}</div>
+        {view.alignmentAnalysis ? (
+          <>
+            <div className="mt-4 text-xs font-bold tracking-wider text-success-ink uppercase">
+              Working in your favor
             </div>
-          ))}
-        </div>
+            <div className="mt-2.5">
+              <BulletList items={view.alignmentAnalysis.pros} />
+            </div>
 
-        <div className="mt-4 text-xs font-bold tracking-wider text-warning-ink uppercase">
-          Where to strengthen
-        </div>
-        <div className="mt-2.5 flex flex-col gap-2.5">
-          {GAPS.map((g) => (
-            <div
-              key={g.text}
-              className="rounded-xl border border-warning-border-2 bg-warning-bg-2 px-4 py-3"
-            >
-              <div className="text-sm leading-relaxed text-ink-body">
-                {g.text}
-              </div>
-              <div className="mt-1 text-xs text-ink-muted">{g.source}</div>
+            <div className="mt-4 text-xs font-bold tracking-wider text-warning-ink uppercase">
+              Where to strengthen
             </div>
-          ))}
-        </div>
+            <div className="mt-2.5">
+              <BulletList items={view.alignmentAnalysis.cons} />
+            </div>
+          </>
+        ) : (
+          // No analysis has been generated for this grant yet. The button is
+          // intentionally inert: the deployment integration wires it to the
+          // generation call and creates the GrantRecord behind it.
+          <div className="mt-4">
+            <p className="mb-3.5 text-sm leading-relaxed text-ink-muted">
+              We haven&apos;t looked at how this grant lines up with your work
+              yet. Generate an analysis to see what&apos;s working in your favor
+              and where you&apos;d want to strengthen an application.
+            </p>
+            <button
+              onClick={() => {}}
+              className="inline-flex items-center gap-2 rounded-lg bg-accent-ink px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px"
+            >
+              <BarChart3 size={14} className="shrink-0" />
+              Generate with AI
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Organizations open to collaborating on this grant (item 2) */}

@@ -5,8 +5,8 @@ import { useParams } from "next/navigation";
 import { useAppStore } from "@/store/useAppStore";
 import { ORG_PROFILES } from "@/data/seed";
 import { Check, Hourglass } from "lucide-react";
-import WarmIntroModal from "@/components/WarmIntroModal";
-import BackButton from "@/components/BackButton";
+import WarmIntroModal from "@/components/modals/WarmIntroModal";
+import BackButton from "@/components/primitives/BackButton";
 
 export default function OrgProfilePage() {
   const { grantId = "", orgId = "" } = useParams<{

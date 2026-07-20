@@ -1,7 +1,8 @@
 import type {
+  AISDatum,
   AuthoritativeDatum,
-  InitiativeDatum,
   DocumentSource,
+  InitiativeDatum,
   NSRServiceDatum,
 } from "@/types/data";
 import {
@@ -15,6 +16,11 @@ import { REGION_HILLTOP_TRACT } from "./geo";
 // The signed-in user (Maya Torres of Hilltop Wellness Collective) uploaded
 // every InitiativeSource in this seed.
 export const USER_MAYA_ID = "user-maya-torres";
+
+/** Portal usernames shown beside a source, keyed by user id. */
+export const USER_DISPLAY_NAME: Record<string, string> = {
+  [USER_MAYA_ID]: "Maya123",
+};
 
 export const SRC_ANNUAL_IMPACT_SURVEY: DocumentSource = {
   kind: InitiativeSourceKind.Document,
@@ -94,21 +100,121 @@ export const DATUM_OAT_RESOURCES: NSRServiceDatum = {
 
 // ---- Initiative-supplied data ----------------------------------------------
 
-export const DATUM_RESIDENTS_REACHED: InitiativeDatum = {
+export const DATUM_RESIDENTS_REACHED: AISDatum = {
   id: 6,
   content:
     "1,240 unique residents served by Hilltop Wellness Collective programs in 2025",
   citation: "Hilltop Wellness Collective, 2025 Annual Impact Survey",
-  visualizationMethod: VisualizationMethod.None,
-  source: SRC_ANNUAL_IMPACT_SURVEY,
+  visualizationMethod: VisualizationMethod.LineChartOrBigNumberDisplay,
+  service: NSRService.AnnualImpactSurvey,
+  samples: [
+    { value: 980, year: 2024 },
+    { value: 1240, year: 2025 },
+  ],
+  unit: "residents",
 };
 
-export const DATUM_PROGRAM_RETENTION: InitiativeDatum = {
+export const DATUM_PROGRAM_RETENTION: AISDatum = {
   id: 7,
   content: "68% of program participants returned for a second season",
   citation: "Hilltop Wellness Collective, 2025 Annual Impact Survey",
+  visualizationMethod: VisualizationMethod.LineChartOrBigNumberDisplay,
+  service: NSRService.AnnualImpactSurvey,
+  samples: [
+    { value: 54, year: 2024 },
+    { value: 68, year: 2025 },
+  ],
+  unit: "%",
+};
+
+// ---- Report data points (the four question sections) -----------------------
+
+// Two stand-in sources for report data points the user reports themselves: one
+// for figures restated from the grant application, one for facts already on the
+// org profile. InitiativeDatum requires a source, and neither has a document
+// behind it in this prototype.
+export const SRC_GRANT_APPLICATION: DocumentSource = {
+  kind: InitiativeSourceKind.Document,
+  folder: null,
+  creationTime: new Date("2026-01-15T00:00:00Z"),
+  creator: USER_MAYA_ID,
+  isDeleted: false,
+  file: new File(["Grant application (seed placeholder)"], "application.pdf"),
+  name: "Grant application",
+  type: "pdf",
+};
+
+export const SRC_ORG_PROFILE: DocumentSource = {
+  kind: InitiativeSourceKind.Document,
+  folder: null,
+  creationTime: new Date("2026-01-15T00:00:00Z"),
+  creator: USER_MAYA_ID,
+  isDeleted: false,
+  file: new File(["Account profile (seed placeholder)"], "profile.pdf"),
+  name: "Account profile",
+  type: "pdf",
+};
+
+const commitment = (
+  id: number,
+  content: string,
+): InitiativeDatum => ({
+  id,
+  content,
+  citation: "From your application",
   visualizationMethod: VisualizationMethod.None,
-  source: SRC_ANNUAL_IMPACT_SURVEY,
+  source: SRC_GRANT_APPLICATION,
+});
+
+const surveyCount = (
+  id: number,
+  content: string,
+  value: number,
+  unit: string,
+): AISDatum => ({
+  id,
+  content,
+  citation: "From your Annual Impact Survey",
+  visualizationMethod: VisualizationMethod.LineChartOrBigNumberDisplay,
+  service: NSRService.AnnualImpactSurvey,
+  samples: [{ value, year: 2025 }],
+  unit,
+});
+
+export const DATUM_COMMIT_WALKING_GROUPS = commitment(
+  10,
+  "Weekly neighborhood walking groups across 4 Hilltop blocks",
+);
+export const DATUM_COMMIT_SCREENING = commitment(
+  11,
+  "Blood-pressure screening every other walking-group session",
+);
+export const DATUM_WALKING_SESSIONS = surveyCount(
+  12,
+  "42 walking-group sessions held across 2025",
+  42,
+  "sessions",
+);
+export const DATUM_NUTRITION_WORKSHOPS = surveyCount(
+  13,
+  "12 nutrition workshops held across 2025",
+  12,
+  "workshops",
+);
+export const DATUM_SCREENING_SESSIONS = surveyCount(
+  14,
+  "18 blood-pressure screening sessions",
+  18,
+  "sessions",
+);
+
+export const DATUM_NEIGHBORHOODS_SERVED: InitiativeDatum = {
+  id: 15,
+  content:
+    "Primarily Mount Oliver, Knoxville, St. Clair, and Bon Air residents",
+  citation: "From your Account Profile",
+  visualizationMethod: VisualizationMethod.None,
+  source: SRC_ORG_PROFILE,
 };
 
 // ---- DatumAnalysis wrappers (feed the RUEA cards) --------------------------

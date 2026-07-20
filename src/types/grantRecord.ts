@@ -99,7 +99,8 @@ type GrantRecord = {
 
   /**
    * An AI-generated analysis of the alignment between the associated
-   * Initiative and the associated Grant.
+   * Initiative and the associated Grant, or null if that analysis has not
+   * been generated yet.
    */
   alignmentAnalysis: {
     /**
@@ -113,7 +114,7 @@ type GrantRecord = {
      * to consider before persuing the associated Grant.
      */
     cons: string[];
-  };
+  } | null;
 
   /**
    * True if the Initiative associated with this GrantRecord has expressed

@@ -3,7 +3,7 @@
 import { useParams, useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import { STORIES } from "@/data/seed";
-import BackButton from "@/components/BackButton";
+import BackButton from "@/components/primitives/BackButton";
 
 export default function StoryDetailPage() {
   const { storyId } = useParams<{ storyId: string }>();

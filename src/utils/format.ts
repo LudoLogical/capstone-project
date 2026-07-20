@@ -13,6 +13,37 @@ export function formatDate(date: Date): string {
   });
 }
 
+/**
+ * A long-form date, e.g. "June 6, 2026". Pinned to UTC for the same reason
+ * `formatDate` is - the seed encodes UTC midnights and SSR must be deterministic.
+ */
+export function formatLongDate(date: Date): string {
+  return date.toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+}
+
+/** Initials for an avatar chip, e.g. "Hilltop Harvest" → "HH". */
+export function initialsOf(name: string): string {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() ?? "")
+    .join("");
+}
+
+/** Human phrasing for a grant's reporting cadence, in months. */
+export function formatReportFrequency(months: number): string {
+  if (months < 0) return "None required";
+  if (months === 0) return "Single report";
+  if (months === 12) return "Annually";
+  return `Every ${months} months`;
+}
+
 export function formatCurrency(amount: number): string {
   if (amount >= 1000) {
     return `$${Math.round(amount / 1000)}K`;

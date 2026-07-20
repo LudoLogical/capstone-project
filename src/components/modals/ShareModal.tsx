@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import Modal from "./Modal";
+import Modal from "@/components/primitives/Modal";
 
 /**
  * Share popup: social tiles plus a copy-link row. The tiles open the

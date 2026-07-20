@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Modal from "./Modal";
+import Modal from "@/components/primitives/Modal";
 
 /**
  * A red "Reset this analysis" button shown under the export controls. It clears

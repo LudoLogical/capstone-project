@@ -1,53 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import Modal from "./Modal";
+import Modal from "@/components/primitives/Modal";
 import { useAppStore } from "@/store/useAppStore";
 import { useGrantView, isSavedStage } from "@/store/derived";
 import type { CouplingModal } from "@/store/useAppStore";
-import { Check } from "lucide-react";
-
-/** The "also do the coupled action" checkbox each prompt offers. */
-function CoupledCheckbox({
-  checked,
-  onToggle,
-  label,
-  hint,
-}: {
-  checked: boolean;
-  onToggle: () => void;
-  label: string;
-  hint: string;
-}) {
-  return (
-    <div
-      onClick={onToggle}
-      role="checkbox"
-      aria-checked={checked}
-      tabIndex={0}
-      className="mt-4 flex cursor-pointer items-start gap-2.5 rounded-xl border border-border bg-surface-alt px-4 py-3.5"
-    >
-      <div
-        className={`mt-0.5 flex h-[22px] w-[22px] flex-none items-center justify-center rounded-sm border-2 text-xs font-extrabold text-white ${
-          checked ? "border-accent bg-accent" : "border-ink-muted"
-        }`}
-      >
-        {checked ? <Check size={14} /> : null}
-      </div>
-      <div>
-        <div className="text-sm leading-tight font-bold">{label}</div>
-        <p className="mt-1 text-xs leading-normal text-ink-muted">{hint}</p>
-      </div>
-    </div>
-  );
-}
+import CoupledCheckbox from "@/components/modals/CoupledCheckbox";
 
 /**
  * The body of one coupling prompt. Rendered with a key of type+grantId so each
  * time a prompt opens it remounts with the checkbox freshly pre-checked - no
  * effect needed to reset it.
  */
-function CouplingPrompt({ modal }: { modal: NonNullable<CouplingModal> }) {
+export default function CouplingPrompt({ modal }: { modal: NonNullable<CouplingModal> }) {
   const closeCouplingModal = useAppStore((s) => s.closeCouplingModal);
   const confirmSave = useAppStore((s) => s.confirmSave);
   const confirmUnsave = useAppStore((s) => s.confirmUnsave);
@@ -253,10 +218,3 @@ function CouplingPrompt({ modal }: { modal: NonNullable<CouplingModal> }) {
  * coupled action via a checkbox, and pre-checks it, but the user can decline
  * so `saved` and `discoverable` may diverge.
  */
-export default function CouplingModals() {
-  const modal = useAppStore((s) => s.couplingModal);
-  if (!modal) return null;
-  return (
-    <CouplingPrompt key={`${modal.type}:${modal.grantId}`} modal={modal} />
-  );
-}
