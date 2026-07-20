@@ -52,13 +52,13 @@ export default function StoryDetailPage() {
             ))}
           </div>
           <div className="mt-7 flex flex-wrap gap-2.5 border-t border-divider-2 pt-6">
+            <BackButton className="inline-flex items-center gap-2 rounded-xl border border-border-strong bg-white px-5 py-3 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 enabled:hover:border-accent" />
             <button
               onClick={() => router.push("/search")}
-              className="inline-flex items-center gap-2 rounded-xl bg-accent-ink px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
+              className="ml-auto inline-flex items-center gap-2 rounded-xl bg-accent-ink px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Start your own <ArrowRight size={16} className="shrink-0" />
+              Find your next grant <ArrowRight size={16} className="shrink-0" />
             </button>
-            <BackButton className="inline-flex items-center gap-2 rounded-xl border border-border-strong bg-white px-5 py-3 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 enabled:hover:border-accent" />
           </div>
         </div>
       </div>
