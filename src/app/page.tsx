@@ -192,9 +192,7 @@ export default function HomePage() {
                   closed={v.isClosed}
                   onClosedClick={() => setClosedGrantId(v.grant.id)}
                   primary={{
-                    label: v.writingStarted
-                      ? "Continue Application"
-                      : "Start Application",
+                    label: `${v.writingStarted ? "Continue" : "Start"} gathering data for application`,
                     to: `/grants/${v.grant.id}/collect`,
                   }}
                   deadline={v.grant.timeline.applicationWindowEnd}
@@ -237,7 +235,7 @@ export default function HomePage() {
                   deadline={v.reportDue ?? undefined}
                   onClosedClick={() => setClosedGrantId(v.grant.id)}
                   primary={{
-                    label: v.reportStarted ? "Continue Report" : "Start Report",
+                    label: `${v.reportStarted ? "Continue" : "Start"} gathering data for report(s)`,
                     to: `/grants/${v.grant.id}/report`,
                   }}
                   menu={[
@@ -287,7 +285,7 @@ export default function HomePage() {
                   closed={v.isClosed}
                   onClosedClick={() => setClosedGrantId(v.grant.id)}
                   primary={{
-                    label: "Start Gathering Data for Application",
+                    label: `${v.writingStarted ? "Continue" : "Start"} gathering data for application`,
                     onClick: () => {
                       startApplication(v.grant.id);
                       router.push(`/grants/${v.grant.id}/collect`);

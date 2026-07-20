@@ -145,7 +145,7 @@ export default function GrantDetailPage() {
             {formatCurrencyFull(grant.award.totalAmount)} total
           </span>
           <span className="text-sm text-ink-muted">
-            · {formatCurrencyFull(grant.award.annualAmount)}/year avg over{" "}
+            · {formatCurrencyFull(grant.award.annualAmount)}/year avg. over{" "}
             {grant.timeline.awardTerm} months
           </span>
         </div>
@@ -213,11 +213,11 @@ export default function GrantDetailPage() {
               before you apply.
               <br />
             </strong>
-            The info on this page was extracted from the original listing using
-            AI, which can make mistakes.
+            The info on this page was gathered using AI, which can make
+            mistakes.
             <br />
-            Also, some details might have changed since that extraction took
-            place.
+            Also, some details might have changed since this grant entered our
+            database.
           </div>
         </div>
       </div>
@@ -349,19 +349,20 @@ export default function GrantDetailPage() {
         {isAwarded ? (
           <div className="rounded-2xl border border-success-border bg-success-bg px-6 py-5">
             <div className="mb-1.5 text-base font-bold text-success-ink">
-              You&apos;ve won this grant
+              You&apos;ve won this grant!
             </div>
             <p className="mb-3.5 text-sm leading-relaxed text-ink-body">
-              It now lives under Report for Awarded Grants on your dashboard.
-              Turn your records into an outcome report when you&apos;re ready.
+              You can find it in the &quot;awarded&quot; section of your
+              dashboard. When you&apos;re ready, we can help you gather
+              supporting data and weave it into your outcome report(s).
             </p>
             <div className="flex flex-wrap items-center gap-4">
               <button
                 onClick={() => router.push(`/grants/${grant.id}/report`)}
                 className="inline-flex items-center gap-2 rounded-lg bg-accent-ink px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px"
               >
-                Go to outcome report{" "}
-                <ArrowRight size={16} className="shrink-0" />
+                {view.reportStarted ? "Continue" : "Start"} gathering data for
+                report(s) <ArrowRight size={16} className="shrink-0" />
               </button>
               {view.status === "awarded" && (
                 <button
@@ -371,7 +372,7 @@ export default function GrantDetailPage() {
                   }}
                   className="text-sm font-semibold text-ink-muted underline underline-offset-2 transition duration-150 hover:text-ink"
                 >
-                  Undo - you weren&apos;t awarded this grant
+                  Mark this grant as not awarded
                 </button>
               )}
             </div>
@@ -384,9 +385,9 @@ export default function GrantDetailPage() {
             </div>
             <div className="mb-1.5 text-base font-bold">Ready to apply?</div>
             <p className="mb-3.5 text-sm leading-relaxed text-ink-muted">
-              We&apos;ll help you gather your context and supporting data first
-              - you choose what to share. This adds the grant to Grant
-              Applications on your dashboard.
+              We&apos;ll help you gather supporting data and weave it into your
+              application. We&apos;ll also move this grant to the applications
+              section in your dashboard.
             </p>
             <button
               onClick={() => {
@@ -395,7 +396,8 @@ export default function GrantDetailPage() {
               }}
               className="inline-flex items-center gap-2 rounded-lg bg-accent-ink px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Start Gathering Data for Application
+              {view.writingStarted ? "Continue" : "Start"} gathering data for
+              application
             </button>
           </div>
         )}
@@ -408,8 +410,8 @@ export default function GrantDetailPage() {
               Already won this grant?
             </div>
             <p className="text-sm leading-relaxed text-ink-muted">
-              Mark it as awarded to move it into Report for Awarded Grants and
-              start your outcome report.
+              Let us know to start gathering data for your outcome report(s)
+              instead.
             </p>
           </div>
           <button
