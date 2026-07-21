@@ -3,7 +3,7 @@
 import { REQUIREMENT_SUGGESTIONS } from "@/app/grants/[grantId]/report/reportModel";
 import type Grant from "@/types/grant";
 import BackButton from "@/components/primitives/BackButton";
-import { BarChart3, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 /** The gate shown before a report starts: capture the funder's requirements. */
 export default function ReportRequirementsGate({
