@@ -60,7 +60,7 @@ export default function BoardColumn<T>({
         <div className="rounded-full bg-white px-2 py-0.5 text-xs font-bold text-ink-secondary">
           {items.length}
         </div>
-        {toolbar && <div className="ml-auto">{toolbar}</div>}
+        {toolbar}
       </div>
       <div className="flex flex-col gap-3">
         {items.length === 0 ? (

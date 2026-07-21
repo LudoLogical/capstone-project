@@ -221,7 +221,7 @@ export const STATUS_LABEL: Record<GrantStatus, string> = {
   reported: "Report Completed",
   withdrawn: "Withdrawn",
   "not-awarded": "Not Awarded",
-  "deadline-past": "Deadline Past",
+  "deadline-past": "Deadline Passed",
 };
 
 /**
@@ -237,10 +237,10 @@ export const UNSUCCESSFUL_STATUSES: GrantStatus[] = [
 /** The Archived filter chips, in display order. */
 export const ARCHIVE_FILTERS: { key: GrantStatus | "all"; label: string }[] = [
   { key: "all", label: "All" },
-  { key: "deadline-past", label: "Deadline Past" },
+  { key: "deadline-past", label: "Deadline Passed" },
+  { key: "withdrawn", label: "Withdrawn" },
   { key: "not-awarded", label: "Not Awarded" },
   { key: "reported", label: "Report Completed" },
-  { key: "withdrawn", label: "Withdrawn" },
 ];
 
 export type Toast = { id: number; text: string };

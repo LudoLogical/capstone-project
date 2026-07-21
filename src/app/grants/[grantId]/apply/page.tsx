@@ -199,10 +199,10 @@ export default function ApplyWizardPage() {
     <div className="animate-nc-rise mx-auto w-full max-w-6xl px-8 pt-7 pb-16">
       <BackButton fallback={`/grants/${grant.id}`} />
       <div className="mb-6">
-        <h1 className="max-w-3xl font-serif text-3xl leading-tight font-bold">
+        <h1 className="max-w-4xl font-serif text-3xl leading-tight font-bold">
           Gather data for {grant.name}
         </h1>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-muted">
+        <p className="mt-2 max-w-3xl text-sm leading-relaxed text-ink-muted">
           Share what you already have, review what we found, and turn it into an
           analysis you can use in your application.
         </p>

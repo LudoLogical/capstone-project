@@ -128,7 +128,7 @@ export default function ResolvePastDueModal({
             />
             <ResolveOption
               label="We never submitted"
-              hint="Archives it as Deadline Past."
+              hint="Archives it as Deadline Passed."
               onClick={() => onResolve("deadline-past")}
             />
           </>

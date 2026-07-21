@@ -347,11 +347,15 @@ export default function GrantDetailPage() {
 
       <div className="flex flex-col flex-wrap gap-3.5">
         {isAwarded ? (
-          <div className="rounded-2xl border border-success-border bg-success-bg px-6 py-5">
-            <div className="mb-1.5 text-base font-bold text-success-ink">
+          <div className="rounded-2xl border border-accent-tint-border bg-accent-tint-soft px-6 py-5">
+            <div className="mb-2.5 inline-flex items-center gap-1 rounded-full border border-accent-tint-border bg-accent-tint px-3 py-1 text-xs font-bold text-accent-ink">
+              <BarChart3 size={12} />
+              AI-ASSISTED
+            </div>
+            <div className="mb-1.5 text-base font-bold">
               You&apos;ve won this grant!
             </div>
-            <p className="mb-3.5 text-sm leading-relaxed text-ink-body">
+            <p className="mb-3.5 text-sm leading-relaxed text-ink-muted">
               You can find it in the &quot;awarded&quot; section of your
               dashboard. When you&apos;re ready, we can help you gather
               supporting data and weave it into your outcome report(s).

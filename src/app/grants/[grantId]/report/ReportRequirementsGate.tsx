@@ -22,21 +22,17 @@ export default function ReportRequirementsGate({
   return (
     <div className="mx-auto w-full max-w-2xl animate-nc-rise px-8 pt-7 pb-16">
       <BackButton fallback="/" />
-      <div className="mb-3 inline-flex items-center gap-1 rounded-full border border-accent-tint-border bg-accent-tint px-3 py-1 text-xs font-bold text-accent-ink">
-        <BarChart3 size={12} />
-        AI-ASSISTED
-      </div>
       <h1 className="mb-2 font-serif text-3xl leading-tight font-bold">
         What does {grant.name} ask for in a report?
       </h1>
-      <p className="mb-5 text-sm leading-relaxed text-ink-muted">
-        Paste or type this grant&apos;s reporting requirements. We&apos;ll keep
-        them in front of you and use them to shape every step of your report -
-        the questions, the data we surface, and the final pack.
+      <p className="mb-5 max-w-xl text-sm leading-relaxed text-ink-muted">
+        Paste or type the reporting requirements for this grant. We&apos;ll use
+        them to figure out what questions we need to ask to get the data
+        you&apos;ll need for your report(s).
       </p>
       {/* Common requirements: tap to build the list without typing it out. */}
       <div className="mb-2 text-xs font-bold tracking-wider text-ink-muted uppercase">
-        Most grants ask for these - tap to add
+        Most grants ask for these - click to add
       </div>
       <div className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
         {REQUIREMENT_SUGGESTIONS.map((s) => {
@@ -67,15 +63,10 @@ export default function ReportRequirementsGate({
       <div className="flex gap-2.5">
         <button
           onClick={submitRequirements}
-          className="inline-flex items-center gap-2 rounded-xl bg-accent-ink px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px"
+          disabled={!reqDraft.trim()}
+          className="inline-flex items-center gap-2 rounded-xl bg-accent-ink px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px"
         >
           Start report <ArrowRight size={16} className="shrink-0" />
-        </button>
-        <button
-          onClick={submitRequirements}
-          className="inline-flex items-center gap-2 rounded-xl border border-border-strong bg-white px-5 py-3 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 hover:border-accent"
-        >
-          Skip for now
         </button>
       </div>
     </div>

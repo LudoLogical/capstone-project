@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { STORIES } from "@/data/seed";
 import {
@@ -58,7 +58,7 @@ export default function HomePage() {
   const requestDeleteGrant = (grantId: string) => {
     if (suppressDeleteRef.current) {
       deleteGrant(grantId);
-      addToast("Deleted from your board.");
+      addToast("Deleted from your dashboard.");
     } else {
       setDontAskDelete(false);
       setPendingDeleteGrant(grantId);
@@ -76,7 +76,7 @@ export default function HomePage() {
       );
     }
     deleteGrant(pendingDeleteGrant);
-    addToast("Deleted from your board.");
+    addToast("Deleted from your dashboard.");
     setPendingDeleteGrant(null);
   };
   const { inProgress, submitted, awarded, saved, collaborating, archived } =
@@ -96,10 +96,22 @@ export default function HomePage() {
   };
 
   const showPersonal = true;
+  // Only offer a reason as a chip if something in the archive actually has it -
+  // an empty filter is a dead end. "All" is always offered.
+  const shownFilters = useMemo(() => {
+    const present = new Set(archived.map((v) => v.status));
+    return ARCHIVE_FILTERS.filter((f) => f.key === "all" || present.has(f.key));
+  }, [archived]);
+  // The active reason can vanish underneath us (reopening the last withdrawn
+  // grant, say), which would leave the column empty with its chip gone. Fall
+  // back to "all" so there's always a way back.
+  const activeFilter = shownFilters.some((f) => f.key === archiveFilter)
+    ? archiveFilter
+    : "all";
   const shownArchived =
-    archiveFilter === "all"
+    activeFilter === "all"
       ? archived
-      : archived.filter((v) => v.status === archiveFilter);
+      : archived.filter((v) => v.status === activeFilter);
   const closedGrant =
     [
       ...saved,
@@ -422,25 +434,27 @@ export default function HomePage() {
               items={shownArchived}
               empty="There's nothing in your archive. Grants will appear here once they're no longer relevant to you."
               toolbar={
-                <div className="flex flex-wrap gap-1.5">
-                  {ARCHIVE_FILTERS.map((f) => {
-                    const active = archiveFilter === f.key;
-                    return (
-                      <button
-                        key={f.key}
-                        onClick={() => setArchiveFilter(f.key)}
-                        aria-pressed={active}
-                        className={`rounded-full border px-3 py-1 text-xs font-bold transition duration-150 ${
-                          active
-                            ? "border-ink bg-ink text-white"
-                            : "border-border-strong bg-white text-ink-secondary hover:border-accent"
-                        }`}
-                      >
-                        {f.label}
-                      </button>
-                    );
-                  })}
-                </div>
+                archived.length === 0 ? undefined : (
+                  <div className="flex flex-wrap gap-1.5">
+                    {shownFilters.map((f) => {
+                      const active = activeFilter === f.key;
+                      return (
+                        <button
+                          key={f.key}
+                          onClick={() => setArchiveFilter(f.key)}
+                          aria-pressed={active}
+                          className={`rounded-full border px-3 py-1 text-xs font-bold transition duration-150 ${
+                            active
+                              ? "border-ink bg-ink text-white"
+                              : "border-border-strong bg-white text-ink-secondary hover:border-accent"
+                          }`}
+                        >
+                          {f.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )
               }
               renderItem={(v) => {
                 // A finished report ended a grant the user actually held, so

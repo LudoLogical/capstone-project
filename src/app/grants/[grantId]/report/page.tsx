@@ -325,10 +325,10 @@ export default function ReportFlowPage() {
     <div className="animate-nc-rise mx-auto w-full max-w-6xl px-8 pt-7 pb-16">
       <BackButton fallback="/" />
       <div className="mb-6">
-        <h1 className="max-w-3xl font-serif text-3xl leading-tight font-bold">
+        <h1 className="max-w-4xl font-serif text-3xl leading-tight font-bold">
           Build your report for {grant.name}
         </h1>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-muted">
+        <p className="mt-2 max-w-3xl text-sm leading-relaxed text-ink-muted">
           We&apos;ll walk you through each reporting requirement and help you
           pull together all of the data that you&apos;ll need.
         </p>
@@ -352,7 +352,7 @@ export default function ReportFlowPage() {
             <div className="mb-5 rounded-2xl border border-accent-tint-border bg-accent-tint-soft p-5">
               <div className="mb-1 flex items-center justify-between gap-3">
                 <div className="text-xs font-bold tracking-wider text-accent-ink uppercase">
-                  This grant&apos;s reporting requirements
+                  Reporting requirements
                 </div>
                 <button
                   onClick={() => {
