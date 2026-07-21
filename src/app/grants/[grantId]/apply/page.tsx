@@ -9,7 +9,7 @@ import { DATA_DETAILS, RUEA_SECTIONS, SHARE_KEYS } from "@/data/seed";
 import Modal from "@/components/primitives/Modal";
 import BackButton from "@/components/primitives/BackButton";
 import ApplyStepRail from "@/app/grants/[grantId]/apply/ApplyStepRail";
-import ApplyContextStep from "@/app/grants/[grantId]/apply/ApplyContextStep";
+import ContextStep from "@/components/analysis/ContextStep";
 import ApplyReviewStep from "@/app/grants/[grantId]/apply/ApplyReviewStep";
 import ApplyAnalysisStep from "@/app/grants/[grantId]/apply/ApplyAnalysisStep";
 
@@ -224,14 +224,14 @@ export default function ApplyWizardPage() {
 
         <div className="min-w-0 max-w-3xl flex-1">
           {wizard.step === 1 && (
-            <ApplyContextStep
-              wizard={wizard}
+            <ContextStep
+              share={wizard.share}
+              uploads={wizard.uploads}
               toggleShare={toggleShare}
               setUsageKey={setUsageKey}
               addUploads={addUploads}
               removeUpload={removeUpload}
-              setStep={setStep}
-              REVIEW_STEP={REVIEW_STEP}
+              onContinue={() => setStep(REVIEW_STEP)}
             />
           )}
 

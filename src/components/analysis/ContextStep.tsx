@@ -2,26 +2,36 @@
 
 import { DATA_DETAILS, SHARE_KEYS, dataActionLabel } from "@/data/seed";
 import type { NSRService } from "@/types/data";
-import type { ReportState } from "@/store/useAppStore";
 import CheckboxRow from "@/components/primitives/CheckboxRow";
 import DataUploadField from "@/components/inputs/DataUploadField";
 import { ArrowRight, ExternalLink } from "lucide-react";
 
-/** Step 1: choose which Vibrancy Portal sources to share, and add your own. */
-export default function ReportContextStep({
-  report,
+/**
+ * Step 1 of both the data collection wizard and the report flow: choose which
+ * Vibrancy Portal sources to share, and add your own.
+ *
+ * Takes `share` and `uploads` structurally rather than a
+ * `WizardState | ReportState` union - both states expose the same two shapes,
+ * and staying structural keeps this component free of any store coupling.
+ */
+export default function ContextStep({
+  share,
+  uploads,
   toggleShare,
   setUsageKey,
   addUploads,
   removeUpload,
-  saveAndContinue,
+  onContinue,
 }: {
-  report: ReportState;
-  toggleShare: (key: keyof ReportState["share"]) => void;
+  share: Record<NSRService, boolean>;
+  uploads: string[];
+  toggleShare: (key: NSRService) => void;
   setUsageKey: (key: NSRService) => void;
   addUploads: (names: string[]) => void;
   removeUpload: (index: number) => void;
-  saveAndContinue: (n: number) => void;
+  // Advancing differs by flow: the wizard only records the step as visited,
+  // while the report also marks this step complete. Each page supplies its own.
+  onContinue: () => void;
 }) {
   return (
     <div>
@@ -34,6 +44,7 @@ export default function ReportContextStep({
         situation. None of your info will ever be used to train or improve the
         AI.
       </p>
+
       <div className="mb-2.5 text-xs font-bold tracking-wider text-ink-muted uppercase">
         From the Vibrancy Portal
       </div>
@@ -47,7 +58,7 @@ export default function ReportContextStep({
               className="flex flex-wrap items-center justify-between gap-3"
             >
               <CheckboxRow
-                checked={report.share[key]}
+                checked={share[key]}
                 onToggle={() => toggleShare(key)}
                 label={d.label}
                 hint={completed ? "Completed" : d.meta}
@@ -60,8 +71,8 @@ export default function ReportContextStep({
                   How is this used?
                 </button>
                 <button
-                  // Intentionally inert: the deployment integration
-                  // wires this to the matching Vibrancy Portal flow.
+                  // Intentionally inert: the deployment integration wires
+                  // this to the matching Vibrancy Portal flow.
                   onClick={() => {}}
                   className="inline-flex items-center gap-2 rounded-lg border border-border-strong bg-white px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 enabled:hover:border-accent disabled:cursor-not-allowed disabled:opacity-50"
                 >
@@ -73,6 +84,7 @@ export default function ReportContextStep({
           );
         })}
       </div>
+
       <div className="mb-2.5 text-xs font-bold tracking-wider text-ink-muted uppercase">
         From Your Organization
       </div>
@@ -83,16 +95,17 @@ export default function ReportContextStep({
           counts, and letters of support.
         </p>
         <DataUploadField
-          uploads={report.uploads}
+          uploads={uploads}
           onAddFiles={addUploads}
           onAddLink={(link) => addUploads([link])}
           onRemove={removeUpload}
         />
       </div>
+
       <div className="flex items-center justify-between gap-2.5">
         <div />
         <button
-          onClick={() => saveAndContinue(1)}
+          onClick={onContinue}
           className="inline-flex items-center gap-2 rounded-xl bg-accent-ink px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
         >
           Save and continue <ArrowRight size={16} className="shrink-0" />

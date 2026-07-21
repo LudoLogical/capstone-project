@@ -1,14 +1,13 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useAppStore } from "@/store/useAppStore";
 import { NSRService } from "@/types/data";
 import type { ReportState } from "@/store/useAppStore";
 import { useGrantView } from "@/store/derived";
 import {
   DATA_DETAILS,
-  SHARE_KEYS,
   POINT_ANALYSES,
   POINT_CONTEXT,
   REPORT_QUESTION_STEPS,
@@ -25,7 +24,7 @@ import {
 } from "@/app/grants/[grantId]/report/reportModel";
 import ReportRequirementsGate from "@/app/grants/[grantId]/report/ReportRequirementsGate";
 import ReportStepRail from "@/app/grants/[grantId]/report/ReportStepRail";
-import ReportContextStep from "@/app/grants/[grantId]/report/ReportContextStep";
+import ContextStep from "@/components/analysis/ContextStep";
 import ReportChatStepPane from "@/app/grants/[grantId]/report/ReportChatStepPane";
 import ReportReviewStep from "@/app/grants/[grantId]/report/ReportReviewStep";
 import ReportAnalysisStep from "@/app/grants/[grantId]/report/ReportAnalysisStep";
@@ -47,20 +46,9 @@ export default function ReportFlowPage() {
   // switching back to "Export selected cards" can restore them.
   const picksBeforeAllRef = useRef<Record<string, boolean> | null>(null);
 
-  // Once a data form is completed, auto-check its "Share your context" box so
-  // it's included by default. Tracked per key so a manual uncheck afterward
-  // isn't undone on the next render.
-  const autoCheckedRef = useRef<Record<string, boolean>>({});
-  useEffect(() => {
-    SHARE_KEYS.forEach((key) => {
-      const completed = DATA_DETAILS[key].completed;
-      if (!completed || autoCheckedRef.current[key]) return;
-      autoCheckedRef.current[key] = true;
-      updateReport(grantId, (r) =>
-        r.share[key] ? r : { ...r, share: { ...r.share, [key]: true } },
-      );
-    });
-  }, [report.share, grantId, updateReport]);
+  // Which sources start shared comes solely from the seeded defaults in
+  // `makeReportState()` - matching the wizard, and leaving a manual uncheck
+  // intact across reloads.
 
   if (!view) return null;
   const { grant } = view;
@@ -373,13 +361,14 @@ export default function ReportFlowPage() {
             </div>
           )}
           {report.step === 1 && (
-            <ReportContextStep
-              report={report}
+            <ContextStep
+              share={report.share}
+              uploads={report.uploads}
               toggleShare={toggleShare}
               setUsageKey={setUsageKey}
               addUploads={addUploads}
               removeUpload={removeUpload}
-              saveAndContinue={saveAndContinue}
+              onContinue={() => saveAndContinue(1)}
             />
           )}
 
