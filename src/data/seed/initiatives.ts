@@ -18,7 +18,7 @@ const SRC_WEBSITE: WebpageSource = {
   creationTime: new Date("2026-06-06T14:03:00Z"),
   creator: USER_MAYA_ID,
   isDeleted: false,
-  link: "https://hilltopwellness.org",
+  link: "https://hilltopwellness.org/",
   content:
     "<!doctype html><html><head><title>Hilltop Wellness Collective</title></head>" +
     "<body><h1>Hilltop Wellness Collective</h1>" +

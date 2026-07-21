@@ -3,7 +3,7 @@
 import { DATA_DETAILS, SHARE_KEYS, dataActionLabel } from "@/data/seed";
 import type { NSRService } from "@/types/data";
 import CheckboxRow from "@/components/primitives/CheckboxRow";
-import DataUploadField from "@/components/inputs/DataUploadField";
+import DataUploadField from "@/components/analysis/DataUploadField";
 import { ArrowRight, ExternalLink } from "lucide-react";
 
 /**

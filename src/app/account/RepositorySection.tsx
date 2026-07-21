@@ -12,6 +12,7 @@ import type { LucideIcon } from "lucide-react";
 import { Download, ExternalLink, Trash2 } from "lucide-react";
 import Pagination from "@/components/primitives/Pagination";
 import { DOCUMENT_SOURCE_TYPES, DocumentSourceType } from "@/types/constants";
+import { formatWebpageLabel, normalizeWebpageUrl } from "@/utils/url";
 
 const PAGE_SIZE = 6;
 
@@ -28,13 +29,18 @@ function documentType(fileName: string): DocumentSourceType | null {
   return DOCUMENT_SOURCE_TYPES.find((t) => t === ext) ?? null;
 }
 
-/** The field that is used as a source's label varies by its kind. */
+/**
+ * The field that is used as a source's label varies by its kind. A webpage's
+ * stored link is canonical (`https://example.org/`), which is more than the
+ * user needs to read, so it's shortened for display; the full link is still
+ * what the row's anchor points at.
+ */
 function sourceLabel(source: InitiativeSource): string {
   switch (source.kind) {
     case InitiativeSourceKind.Document:
       return source.name;
     case InitiativeSourceKind.Webpage:
-      return source.link;
+      return formatWebpageLabel(source.link);
     case InitiativeSourceKind.Chat:
       return source.content;
   }
@@ -74,6 +80,9 @@ export default function RepositorySection({
   const [draft, setDraft] = useState("");
   // Names of files from the most recent pick that we couldn't accept.
   const [rejected, setRejected] = useState<string[]>([]);
+  // Set when the draft holds something that isn't a URL, cleared as soon as the
+  // user edits it again so the message doesn't outlive the mistake.
+  const [draftError, setDraftError] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const idCounter = useRef(0);
 
@@ -115,10 +124,15 @@ export default function RepositorySection({
     });
 
   const addWebpage = () => {
-    const url = draft.trim();
-    if (!url) return;
+    if (!draft.trim()) return;
+    const url = normalizeWebpageUrl(draft);
+    if (!url) {
+      setDraftError(true);
+      return;
+    }
     appendWebpage(url);
     setDraft("");
+    setDraftError(false);
     setAdding(false);
   };
 
@@ -158,15 +172,16 @@ export default function RepositorySection({
    * clicked (the download isn't wired up yet, so only the affordance is here),
    * a link opens in a new tab, and a captured message isn't interactive at all.
    */
-  const renderLabel = (label: string) => {
+  const renderLabel = (source: InitiativeSource, label: string) => {
     if (kind === InitiativeSourceKind.Chat) {
       return <div className={labelText}>{label}</div>;
     }
-    if (kind === InitiativeSourceKind.Webpage) {
-      const href = label.startsWith("http") ? label : `https://${label}`;
+    if (source.kind === InitiativeSourceKind.Webpage) {
       return (
         <a
-          href={href}
+          // The stored link, not the shortened label - the latter has had its
+          // scheme trimmed off for display.
+          href={source.link}
           target="_blank"
           rel="noopener noreferrer"
           className="group inline-flex items-center gap-1.5"
@@ -267,14 +282,20 @@ export default function RepositorySection({
               <input
                 autoFocus
                 value={draft}
-                onChange={(e) => setDraft(e.target.value)}
+                onChange={(e) => {
+                  setDraft(e.target.value);
+                  setDraftError(false);
+                }}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") addWebpage();
                   if (e.key === "Escape") setAdding(false);
                 }}
                 placeholder={addPlaceholder}
                 aria-label={addLabel}
-                className="min-w-64 flex-1 rounded-lg border border-border-strong bg-white px-3 py-2 text-sm text-ink outline-none focus:border-accent"
+                aria-invalid={draftError}
+                className={`min-w-64 flex-1 rounded-lg border bg-white px-3 py-2 text-sm text-ink outline-none focus:border-accent ${
+                  draftError ? "border-accent-ink" : "border-border-strong"
+                }`}
               />
               <button
                 onClick={addWebpage}
@@ -287,11 +308,21 @@ export default function RepositorySection({
                 onClick={() => {
                   setAdding(false);
                   setDraft("");
+                  setDraftError(false);
                 }}
                 className="inline-flex items-center gap-2 rounded-lg border border-border-strong bg-white px-4 py-2 text-sm font-semibold text-ink transition duration-150 hover:border-accent"
               >
                 Cancel
               </button>
+              {draftError && (
+                <p
+                  role="alert"
+                  className="w-full max-w-2xl text-sm text-accent-ink"
+                >
+                  That doesn&apos;t look like a webpage address. Links should
+                  look like example.org or https://example.org/page.
+                </p>
+              )}
             </div>
           )}
         </div>
@@ -312,7 +343,7 @@ export default function RepositorySection({
                   className="flex flex-wrap items-center gap-3 rounded-xl border border-border-soft bg-surface-alt px-4 py-3"
                 >
                   <div className="min-w-48 flex-1">
-                    {renderLabel(label)}
+                    {renderLabel(item, label)}
                     <div className="mt-0.5 text-xs text-ink-muted">
                       {verb} {formatLongDate(item.creationTime)} by{" "}
                       {USER_DISPLAY_NAME[item.creator] ?? item.creator}

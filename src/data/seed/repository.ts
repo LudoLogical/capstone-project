@@ -248,7 +248,7 @@ export const REPOSITORY_LINKS: WebpageSource[] = [
     creationTime: at("2026-06-06T00:00:00Z"),
     creator: USER_MAYA_ID,
     isDeleted: false,
-    link: "hilltopwellness.org",
+    link: "https://hilltopwellness.org/",
     content: "<html><!-- hilltopwellness.org (seed placeholder) --></html>",
   },
   {
@@ -258,7 +258,7 @@ export const REPOSITORY_LINKS: WebpageSource[] = [
     creationTime: at("2026-06-06T00:00:00Z"),
     creator: USER_MAYA_ID,
     isDeleted: false,
-    link: "hilltopwellness.org/programs",
+    link: "https://hilltopwellness.org/programs",
     content:
       "<html><!-- hilltopwellness.org/programs (seed placeholder) --></html>",
   },
@@ -269,7 +269,7 @@ export const REPOSITORY_LINKS: WebpageSource[] = [
     creationTime: at("2026-06-06T00:00:00Z"),
     creator: USER_MAYA_ID,
     isDeleted: false,
-    link: "hilltopwellness.org/impact-2025",
+    link: "https://hilltopwellness.org/impact-2025",
     content:
       "<html><!-- hilltopwellness.org/impact-2025 (seed placeholder) --></html>",
   },
@@ -280,7 +280,7 @@ export const REPOSITORY_LINKS: WebpageSource[] = [
     creationTime: at("2026-06-16T00:00:00Z"),
     creator: USER_MAYA_ID,
     isDeleted: false,
-    link: "guidestar.org/profile/hilltop-wellness",
+    link: "https://guidestar.org/profile/hilltop-wellness",
     content:
       "<html><!-- guidestar.org/profile/hilltop-wellness (seed placeholder) --></html>",
   },
@@ -291,7 +291,7 @@ export const REPOSITORY_LINKS: WebpageSource[] = [
     creationTime: at("2026-06-16T00:00:00Z"),
     creator: USER_MAYA_ID,
     isDeleted: false,
-    link: "facebook.com/HilltopWellnessPGH",
+    link: "https://facebook.com/HilltopWellnessPGH",
     content:
       "<html><!-- facebook.com/HilltopWellnessPGH (seed placeholder) --></html>",
   },
@@ -302,7 +302,7 @@ export const REPOSITORY_LINKS: WebpageSource[] = [
     creationTime: at("2026-07-08T00:00:00Z"),
     creator: USER_MAYA_ID,
     isDeleted: false,
-    link: "instagram.com/hilltopwellness",
+    link: "https://instagram.com/hilltopwellness",
     content:
       "<html><!-- instagram.com/hilltopwellness (seed placeholder) --></html>",
   },
@@ -313,7 +313,7 @@ export const REPOSITORY_LINKS: WebpageSource[] = [
     creationTime: at("2026-07-08T00:00:00Z"),
     creator: USER_MAYA_ID,
     isDeleted: false,
-    link: "linkedin.com/company/hilltop-wellness",
+    link: "https://linkedin.com/company/hilltop-wellness",
     content:
       "<html><!-- linkedin.com/company/hilltop-wellness (seed placeholder) --></html>",
   },
@@ -324,7 +324,7 @@ export const REPOSITORY_LINKS: WebpageSource[] = [
     creationTime: at("2026-07-08T00:00:00Z"),
     creator: USER_MAYA_ID,
     isDeleted: false,
-    link: "youtube.com/@hilltopwellness",
+    link: "https://youtube.com/@hilltopwellness",
     content:
       "<html><!-- youtube.com/@hilltopwellness (seed placeholder) --></html>",
   },
@@ -335,7 +335,7 @@ export const REPOSITORY_LINKS: WebpageSource[] = [
     creationTime: at("2026-07-09T00:00:00Z"),
     creator: USER_MAYA_ID,
     isDeleted: false,
-    link: "hilltopwellness.org/annual-report",
+    link: "https://hilltopwellness.org/annual-report",
     content:
       "<html><!-- hilltopwellness.org/annual-report (seed placeholder) --></html>",
   },
@@ -346,7 +346,7 @@ export const REPOSITORY_LINKS: WebpageSource[] = [
     creationTime: at("2026-07-09T00:00:00Z"),
     creator: USER_MAYA_ID,
     isDeleted: false,
-    link: "candid.org/profile/hilltop-wellness",
+    link: "https://candid.org/profile/hilltop-wellness",
     content:
       "<html><!-- candid.org/profile/hilltop-wellness (seed placeholder) --></html>",
   },
@@ -357,7 +357,7 @@ export const REPOSITORY_LINKS: WebpageSource[] = [
     creationTime: at("2026-07-10T00:00:00Z"),
     creator: USER_MAYA_ID,
     isDeleted: false,
-    link: "hilltopwellness.org/board",
+    link: "https://hilltopwellness.org/board",
     content:
       "<html><!-- hilltopwellness.org/board (seed placeholder) --></html>",
   },
@@ -368,7 +368,7 @@ export const REPOSITORY_LINKS: WebpageSource[] = [
     creationTime: at("2026-07-10T00:00:00Z"),
     creator: USER_MAYA_ID,
     isDeleted: false,
-    link: "pghfoodbank.org/partners",
+    link: "https://pghfoodbank.org/partners",
     content:
       "<html><!-- pghfoodbank.org/partners (seed placeholder) --></html>",
   },
@@ -379,7 +379,7 @@ export const REPOSITORY_LINKS: WebpageSource[] = [
     creationTime: at("2026-07-11T00:00:00Z"),
     creator: USER_MAYA_ID,
     isDeleted: false,
-    link: "hilltopwellness.org/volunteer",
+    link: "https://hilltopwellness.org/volunteer",
     content:
       "<html><!-- hilltopwellness.org/volunteer (seed placeholder) --></html>",
   },
@@ -390,7 +390,7 @@ export const REPOSITORY_LINKS: WebpageSource[] = [
     creationTime: at("2026-07-11T00:00:00Z"),
     creator: USER_MAYA_ID,
     isDeleted: false,
-    link: "greatnonprofits.org/org/hilltop-wellness",
+    link: "https://greatnonprofits.org/org/hilltop-wellness",
     content:
       "<html><!-- greatnonprofits.org/org/hilltop-wellness (seed placeholder) --></html>",
   },
@@ -401,7 +401,7 @@ export const REPOSITORY_LINKS: WebpageSource[] = [
     creationTime: at("2026-07-12T00:00:00Z"),
     creator: USER_MAYA_ID,
     isDeleted: false,
-    link: "hilltopwellness.org/news/heat-resilience",
+    link: "https://hilltopwellness.org/news/heat-resilience",
     content:
       "<html><!-- hilltopwellness.org/news/heat-resilience (seed placeholder) --></html>",
   },
@@ -412,7 +412,7 @@ export const REPOSITORY_LINKS: WebpageSource[] = [
     creationTime: at("2026-07-13T00:00:00Z"),
     creator: USER_MAYA_ID,
     isDeleted: false,
-    link: "post-gazette.com/local/hilltop-clinic",
+    link: "https://post-gazette.com/local/hilltop-clinic",
     content:
       "<html><!-- post-gazette.com/local/hilltop-clinic (seed placeholder) --></html>",
   },

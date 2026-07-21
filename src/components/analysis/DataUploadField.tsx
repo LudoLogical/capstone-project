@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { Paperclip, FileText, X } from "lucide-react";
 import { DOCUMENT_SOURCE_TYPES } from "@/types/constants";
+import { formatWebpageLabel, normalizeWebpageUrl } from "@/utils/url";
 
 /** The `accept` attribute for the file picker, e.g. ".txt,.md,...". */
 const ACCEPTED_EXTENSIONS = DOCUMENT_SOURCE_TYPES.map((t) => `.${t}`).join(",");
@@ -38,6 +39,9 @@ export default function DataUploadField({
   const [linkDraft, setLinkDraft] = useState("");
   // Names of files from the most recent pick that we couldn't accept.
   const [rejected, setRejected] = useState<string[]>([]);
+  // Set when the link field holds something that isn't a URL, cleared as soon
+  // as the user edits it again so the message doesn't outlive the mistake.
+  const [linkError, setLinkError] = useState(false);
 
   // Files whose type we don't accept are dropped and named back to the user,
   // so a rejected upload is never mistaken for a successful one.
@@ -50,10 +54,15 @@ export default function DataUploadField({
   };
 
   const addLink = () => {
-    const v = linkDraft.trim();
-    if (!v) return;
-    onAddLink(v);
+    if (!linkDraft.trim()) return;
+    const url = normalizeWebpageUrl(linkDraft);
+    if (!url) {
+      setLinkError(true);
+      return;
+    }
+    onAddLink(url);
     setLinkDraft("");
+    setLinkError(false);
   };
 
   return (
@@ -91,11 +100,17 @@ export default function DataUploadField({
       <div className="mb-3 flex gap-2.5">
         <input
           value={linkDraft}
-          onChange={(e) => setLinkDraft(e.target.value)}
+          onChange={(e) => {
+            setLinkDraft(e.target.value);
+            setLinkError(false);
+          }}
           onKeyDown={(e) => e.key === "Enter" && addLink()}
           placeholder="Or paste a link to a webpage"
           aria-label="Paste a link"
-          className="w-full rounded-xl border border-border-strong bg-white px-4 py-3 text-sm text-ink outline-none focus:border-accent"
+          aria-invalid={linkError}
+          className={`w-full rounded-xl border bg-white px-4 py-3 text-sm text-ink outline-none focus:border-accent ${
+            linkError ? "border-accent-ink" : "border-border-strong"
+          }`}
         />
         <button
           onClick={addLink}
@@ -104,25 +119,36 @@ export default function DataUploadField({
           Add link
         </button>
       </div>
+      {linkError && (
+        <p role="alert" className="mb-3 max-w-2xl text-sm text-accent-ink">
+          That doesn&apos;t look like a webpage address. Links should look like
+          example.org or https://example.org/page.
+        </p>
+      )}
 
       {uploads.length > 0 && (
         <div className="flex flex-wrap gap-2">
-          {uploads.map((u, i) => (
-            <span
-              key={`${u}-${i}`}
-              className="inline-flex items-center gap-1.5 rounded-full border border-border-strong bg-surface-alt py-1 pr-1.5 pl-3 text-xs font-bold text-ink-secondary"
-            >
-              <FileText size={12} className="shrink-0" />
-              {u}
-              <button
-                onClick={() => onRemove(i)}
-                aria-label={`Remove ${u}`}
-                className="flex h-4 w-4 flex-none items-center justify-center rounded-full text-ink-muted transition duration-150 hover:bg-divider-2 hover:text-ink"
+          {uploads.map((u, i) => {
+            // A chip holds either a file name or a canonical link; only the
+            // latter is shortened, and only for display.
+            const label = formatWebpageLabel(u);
+            return (
+              <span
+                key={`${u}-${i}`}
+                className="inline-flex items-center gap-1.5 rounded-full border border-border-strong bg-surface-alt py-1 pr-1.5 pl-3 text-xs font-bold text-ink-secondary"
               >
-                <X size={11} />
-              </button>
-            </span>
-          ))}
+                <FileText size={12} className="shrink-0" />
+                {label}
+                <button
+                  onClick={() => onRemove(i)}
+                  aria-label={`Remove ${label}`}
+                  className="flex h-4 w-4 flex-none items-center justify-center rounded-full text-ink-muted transition duration-150 hover:bg-divider-2 hover:text-ink"
+                >
+                  <X size={11} />
+                </button>
+              </span>
+            );
+          })}
         </div>
       )}
     </div>
