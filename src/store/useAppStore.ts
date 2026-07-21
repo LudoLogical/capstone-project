@@ -6,7 +6,7 @@ import { DEFAULT_FILTERS } from "@/data/selectors";
 import { NSRService } from "@/types/data";
 
 export type OnboardOrg = {
-  // The person filling this out - their name greets them across the portal.
+  // The person filling this out - their name greets them across the app.
   person: string;
   name: string;
   // Where collaborators reach the org - shown as the sender on warm intros.
@@ -187,7 +187,7 @@ function hydrateReport(r: ReportState | undefined): ReportState {
  * cannot also be "awarded". Absent = the user hasn't started anything with it
  * beyond saving it.
  *
- * The portal can't submit applications or hear verdicts, so every transition
+ * This app can't submit applications or hear verdicts, so every transition
  * past `applying` is the user telling us what happened.
  */
 export type GrantStatus =
@@ -323,7 +323,7 @@ type AppState = {
   setDiscoverable: (grantId: string, on: boolean) => void;
 
   // Move a grant to a lifecycle status, or clear it back to saved-only. Every
-  // transition is explicit: the portal never infers that an application was
+  // transition is explicit: the app never infers that an application was
   // submitted or a verdict received.
   setGrantStatus: (grantId: string, status: GrantStatus) => void;
   clearGrantStatus: (grantId: string) => void;
@@ -607,7 +607,7 @@ export const useAppStore = create<AppState>()(
         set((state) => ({ toasts: state.toasts.filter((t) => t.id !== id) })),
     }),
     {
-      name: "vibrancy-portal-store",
+      name: "vibrant-grants-store",
 
       // localStorage does not exist on the server. Without this, zustand would
       // rehydrate during module init on the client and the very first client

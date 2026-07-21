@@ -19,7 +19,7 @@ const lato = Lato({
 });
 
 export const metadata: Metadata = {
-  title: "Vibrancy Portal App",
+  title: "Vibrant Grants",
 };
 
 /**

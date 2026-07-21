@@ -151,8 +151,8 @@ export default function HomePage() {
       <div className="mb-6">
         <h1 className="font-serif text-3xl leading-tight font-bold">
           {showPersonal && hasPersonName
-            ? `Welcome to the Vibrancy Portal, ${firstName}.`
-            : "Welcome to the Vibrancy Portal."}
+            ? `Welcome to Vibrant Grants, ${firstName}.`
+            : "Welcome to Vibrant Grants."}
         </h1>
         {showPersonal && (
           <div className="mt-2 flex flex-wrap items-baseline gap-x-1.5">

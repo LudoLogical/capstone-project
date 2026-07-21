@@ -6,7 +6,7 @@ import { formatDate } from "@/utils/format";
 import type { GrantStatus } from "@/store/useAppStore";
 
 /**
- * A grant whose outcome only the user knows. The portal can't submit
+ * A grant whose outcome only the user knows. This application can't submit
  * applications or hear back from funders, so rather than guessing (or quietly
  * filing the grant away) it asks - and every answer lands the grant somewhere
  * that explains itself.

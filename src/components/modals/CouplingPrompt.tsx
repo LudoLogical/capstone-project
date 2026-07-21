@@ -45,8 +45,8 @@ export default function CouplingPrompt({
         <p className="mt-3 text-sm leading-normal text-ink-muted">
           Would you also like to list your organization as open to collaborate
           on this grant? If you opt in, your organization and its contact email
-          will be shown to others when they encounter this grant on the Vibrancy
-          Portal. You can undo this action at any time from this page or on your
+          will be shown to others when they encounter this grant here on Vibrant
+          Grants. You can undo this action at any time from this page or on your
           dashboard.
         </p>
         <div className="mt-5 flex justify-end gap-2.5">

@@ -86,7 +86,7 @@ export default function WarmIntroModal({
             </span>
             <div className="min-w-0 flex-1 leading-tight">
               <div className="text-sm font-bold">
-                Warm introduction via the New Sun Rising Vibrancy Portal
+                Warm introduction via Vibrant Grants
               </div>
               <div className="mt-0.5 text-xs text-white/80">
                 NSR only facilitates the delivery of this email. If {org.name}{" "}

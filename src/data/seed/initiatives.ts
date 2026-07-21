@@ -42,8 +42,8 @@ const SRC_CHAT_WORKSHOP_REACH: ChatSource = {
   content: "Your chronic-disease workshops reached 240 residents last quarter.",
 };
 
-// Grant-readiness ID of the org that is signed in to the portal in this
-// build. All dashboard/account/search screens are scoped to this Initiative.
+// Grant-readiness ID of the org that is signed in to this app.
+// All dashboard/account/search screens are scoped to this Initiative.
 export const MAIN_INITIATIVE_ID = "init-hilltop-wellness";
 
 export const INITIATIVE_HILLTOP_WELLNESS: Initiative = {

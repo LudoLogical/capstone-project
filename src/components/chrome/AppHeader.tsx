@@ -55,7 +55,7 @@ export default function AppHeader() {
         <div className="leading-none">
           <div className="text-lg leading-tight font-bold">New Sun Rising</div>
           <div className="text-sm tracking-wide text-ink-muted">
-            Vibrancy Portal
+            Vibrant Grants
           </div>
         </div>
       </div>

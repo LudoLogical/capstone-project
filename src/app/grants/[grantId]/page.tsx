@@ -77,7 +77,7 @@ export default function GrantDetailPage() {
     }`;
 
   // Copies the funder's own URL - the same destination as "View grant on
-  // website", not this portal page.
+  // website", not this page.
   const copyLink = () => {
     navigator.clipboard
       ?.writeText(grant.link)

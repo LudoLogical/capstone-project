@@ -40,7 +40,7 @@ export default function CollaboratePage() {
       </div>
       <p className="mt-3 mb-6 w-full max-w-2xl text-sm leading-relaxed text-ink-muted">
         New Sun Rising client organizations who opted in for{" "}
-        <strong className="text-ink">{grant.name}</strong>. The Vibrancy Portal
+        <strong className="text-ink">{grant.name}</strong>. Vibrant Grants
         facilitates warm introductions, but each one is authored and sent by a
         real person, not a robot.
       </p>

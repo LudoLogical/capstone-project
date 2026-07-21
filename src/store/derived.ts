@@ -58,7 +58,7 @@ export type GrantView = {
   reportProgress: Progress;
 };
 
-// Stand-in names used until the user gives their own, so the portal never shows
+// Stand-in names used until the user gives their own, so the app never shows
 // a blank where a name belongs.
 export const DEFAULT_PERSON_NAME = "Your Name";
 export const DEFAULT_ORG_NAME = "Your Organization";

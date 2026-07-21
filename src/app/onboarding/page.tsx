@@ -75,7 +75,7 @@ export default function OnboardingPage() {
             <div className="leading-none">
               <div className="text-sm font-bold">New Sun Rising</div>
               <div className="text-xs tracking-wide text-ink-muted">
-                Vibrancy Portal
+                Vibrant Grants
               </div>
             </div>
           </div>
