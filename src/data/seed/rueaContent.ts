@@ -47,13 +47,12 @@ const authoritativeBars = (
  * marked as this org's own figure.
  */
 const sampleBars = (datum: AISDatum, unit: string): RueaBar[] =>
-  (datum.samples ?? []).map((sample, i, all) => {
-    const latest = i === all.length - 1;
+  (datum.samples ?? []).map((sample) => {
     return {
-      label: latest ? `${sample.year} (you)` : `${sample.year}`,
+      label: `${sample.year}`,
       value: sample.value,
       unit,
-      role: latest ? "me" : "other",
+      role: "me",
     };
   });
 
@@ -63,8 +62,7 @@ export const RUEA_SECTIONS: RueaSection[] = [
     provenanceKey: "cvd",
     analysis: ANALYSIS_CVD_RATE,
     bars: authoritativeBars(DATUM_CVD_RATE, "%"),
-    evalNote:
-      "36% below the county average - a sign prevention work is paying off.",
+    evalNote: "36% below the county average.",
   },
   {
     id: "ruea-produce",

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { ReviewGroup } from "@/app/grants/[grantId]/report/reportModel";
 import DeleteDataConfirmModal from "@/components/modals/DeleteDataConfirmModal";
-import { Check, X, ArrowRight } from "lucide-react";
+import { Check, X, ArrowLeft, ArrowRight } from "lucide-react";
 
 /** Step 6: the consolidated review of every data point gathered. */
 export default function ReportReviewStep({
@@ -29,6 +29,8 @@ export default function ReportReviewStep({
     stepId: ReviewGroup["stepId"];
     itemId: string;
   } | null>(null);
+  // Nothing to analyze until at least one data point is checked.
+  const anyPicked = reviewGroups.some((g) => g.items.some((it) => it.picked));
   return (
     <div>
       <h1 className="mb-2 font-serif text-xl leading-tight font-bold">
@@ -108,10 +110,11 @@ export default function ReportReviewStep({
           onClick={() => setStep(5)}
           className="inline-flex items-center gap-2 rounded-xl border border-border-strong bg-white px-5 py-3 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 enabled:hover:border-accent disabled:cursor-not-allowed disabled:opacity-50"
         >
-          Back
+          <ArrowLeft size={16} className="shrink-0" /> Previous step
         </button>
         <button
           onClick={() => saveAndContinue(6)}
+          disabled={!anyPicked}
           className="inline-flex items-center gap-2 rounded-xl bg-accent-ink px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isComplete(6) ? (
@@ -120,7 +123,7 @@ export default function ReportReviewStep({
             </>
           ) : (
             <>
-              Unlock your analysis <ArrowRight size={16} className="shrink-0" />
+              Save and analyze <ArrowRight size={16} className="shrink-0" />
             </>
           )}
         </button>

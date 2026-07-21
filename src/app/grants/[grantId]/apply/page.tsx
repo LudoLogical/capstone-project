@@ -39,7 +39,6 @@ export default function ApplyWizardPage() {
   const [usageKey, setUsageKey] = useState<NSRService | null>(null);
   // Export controls on the Analyze step.
   const [exportMode, setExportMode] = useState<"selected" | "all">("selected");
-  const [downloadOpen, setDownloadOpen] = useState(false);
   // The ticks in place before "Export all cards" auto-selected everything, so
   // switching back to "Export selected cards" can restore them.
   const picksBeforeAllRef = useRef<Record<string, boolean> | null>(null);
@@ -123,18 +122,6 @@ export default function ApplyWizardPage() {
       found: Object.fromEntries(RUEA_SECTIONS.map((s) => [s.id, !allFound])),
     }));
 
-  const addCustomFound = (text: string) =>
-    updateWizard(grantId, (w) => ({
-      ...w,
-      customFound: [...w.customFound, text],
-    }));
-
-  const removeCustomFound = (index: number) =>
-    updateWizard(grantId, (w) => ({
-      ...w,
-      customFound: w.customFound.filter((_, i) => i !== index),
-    }));
-
   const setRueaExpanded = (id: string, value: boolean) =>
     updateWizard(grantId, (w) => ({
       ...w,
@@ -142,13 +129,10 @@ export default function ApplyWizardPage() {
     }));
 
   const foundSections = RUEA_SECTIONS.filter((s) => isFound(s.id));
-  // Custom entries are also selected by default; a `custom:` prefix keeps their
-  // selection in the same map without colliding with section ids.
-  const foundCustom = wizard.customFound.filter((t) => isFound(`custom:${t}`));
 
   // Export selection on the Analyze step. Each card's checkbox starts unchecked;
-  // the user opts cards in. Reuses the persisted `analysisAdded` map (section
-  // id, or "custom:<text>").
+  // the user opts cards in. Reuses the persisted `analysisAdded` map, keyed by
+  // section id.
   const isExportSelected = (key: string) => !!wizard.analysisAdded[key];
   const setExportSelected = (key: string, value: boolean) => {
     if (!value) setExportMode("selected");
@@ -159,10 +143,7 @@ export default function ApplyWizardPage() {
       analysisAdded: { ...w.analysisAdded, [key]: value },
     }));
   };
-  const exportKeys = [
-    ...foundSections.map((s) => s.id),
-    ...foundCustom.map((t) => `custom:${t}`),
-  ];
+  const exportKeys = foundSections.map((s) => s.id);
   const allExportSelected =
     exportKeys.length > 0 && exportKeys.every((k) => isExportSelected(k));
   const selectAllForExport = () => {
@@ -232,8 +213,11 @@ export default function ApplyWizardPage() {
           wizard={wizard}
           STEP_LABELS={STEP_LABELS}
           STEP_GROUPS={STEP_GROUPS}
+          REVIEW_STEP={REVIEW_STEP}
           ANALYSIS_STEP={ANALYSIS_STEP}
           analysisUnlocked={analysisUnlocked}
+          analysisHasData={foundSections.length > 0}
+          reviewHasSelection={foundSections.length > 0}
           setStep={setStep}
           resetAnalysis={resetAnalysis}
         />
@@ -253,13 +237,10 @@ export default function ApplyWizardPage() {
 
           {wizard.step === REVIEW_STEP && (
             <ApplyReviewStep
-              wizard={wizard}
               isFound={isFound}
               toggleFound={toggleFound}
               allFound={allFound}
               toggleAllFound={toggleAllFound}
-              addCustomFound={addCustomFound}
-              removeCustomFound={removeCustomFound}
               analysisUnlocked={analysisUnlocked}
               unlockAnalysis={unlockAnalysis}
               setStep={setStep}
@@ -271,7 +252,6 @@ export default function ApplyWizardPage() {
             <ApplyAnalysisStep
               wizard={wizard}
               foundSections={foundSections}
-              foundCustom={foundCustom}
               setRueaExpanded={setRueaExpanded}
               isExportSelected={isExportSelected}
               setExportSelected={setExportSelected}
@@ -279,8 +259,6 @@ export default function ApplyWizardPage() {
               allExportSelected={allExportSelected}
               selectAllForExport={selectAllForExport}
               useSelectedExportMode={useSelectedExportMode}
-              downloadOpen={downloadOpen}
-              setDownloadOpen={setDownloadOpen}
               setStep={setStep}
               REVIEW_STEP={REVIEW_STEP}
             />

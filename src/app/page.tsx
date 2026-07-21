@@ -189,7 +189,7 @@ export default function HomePage() {
               title="Applying"
               tone="accent"
               items={inProgress}
-              empty="No applications yet. Open a saved grant and start an application."
+              empty="You aren't applying to any grants right now. Grants will appear here once you've started collecting data to apply for them."
               renderItem={(v) => (
                 <GrantMiniCard
                   key={v.grant.id}
@@ -231,7 +231,7 @@ export default function HomePage() {
               title="Awarded"
               tone="success"
               items={awarded}
-              empty="No awarded grants yet. Reports appear here once you win funding."
+              empty="You don't have any awarded grants right now. Grants will appear here once you let us know that you've won them."
               renderItem={(v) => (
                 <GrantMiniCard
                   key={v.grant.id}
@@ -284,7 +284,7 @@ export default function HomePage() {
               title="Saved"
               tone="neutral"
               items={saved}
-              empty="No saved grants yet. Save any grant to keep it here."
+              empty="You don't have any saved grants right now."
               renderItem={(v) => (
                 <GrantMiniCard
                   key={v.grant.id}
@@ -321,7 +321,7 @@ export default function HomePage() {
               title="Open to Collaborate"
               tone="accent"
               items={collaborating}
-              empty="Not listed on any grants yet. Open a grant and list yourself as open to collaborate."
+              empty="You aren't listed as open to collaborate on any grants right now."
               renderItem={(v) => (
                 <GrantMiniCard
                   key={v.grant.id}
@@ -357,7 +357,7 @@ export default function HomePage() {
               title="Submitted"
               tone="accent"
               items={submitted}
-              empty="Nothing submitted yet. Mark an application as applied once it's with the funder."
+              empty="You aren't waiting to hear back about any grant applications right now. Grants will appear here once you let us know that you've applied for them."
               renderItem={(v) => {
                 const decided = isPastDecisionDate(v.grant);
                 return (
@@ -420,7 +420,7 @@ export default function HomePage() {
               title="Archived"
               tone="neutral"
               items={shownArchived}
-              empty="Nothing archived yet. Grants land here once they're finished, withdrawn, or out of time."
+              empty="There's nothing in your archive. Grants will appear here once they're no longer relevant to you."
               toolbar={
                 <div className="flex flex-wrap gap-1.5">
                   {ARCHIVE_FILTERS.map((f) => {

@@ -24,7 +24,7 @@ export default function ResetWorkflowButton({
         className="flex cursor-pointer items-center gap-2.5 rounded-lg border border-transparent px-2 py-2 text-left transition duration-150 hover:bg-error-bg"
       >
         <div className="flex h-5 w-5 flex-none items-center justify-center rounded-full bg-error-bg text-error-ink">
-          <RotateCcw size={11} />
+          <RotateCcw size={12} />
         </div>
         <span className="text-sm font-medium text-error-ink">
           Reset this workflow

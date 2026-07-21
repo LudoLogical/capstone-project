@@ -83,13 +83,10 @@ export type WizardState = {
   share: Record<NSRService, boolean>;
   uploads: string[];
   found: Record<string, boolean>;
-  // Extra data points the user typed in themselves on the "supporting data we
-  // found" step. Always treated as selected.
-  customFound: string[];
   rueaExpanded: Record<string, boolean>;
   // Data-analysis cards the user explicitly added on the "Analyze Your Data"
-  // step (keyed by section id, or "custom:<text>"). When any are added, the
-  // exported pack is limited to them.
+  // step, keyed by section id. When any are added, the exported pack is limited
+  // to them.
   analysisAdded: Record<string, boolean>;
   // Which of the application steps the user has actually opened. Drives the
   // n/3 progress shown on the dashboard.
@@ -116,7 +113,6 @@ export function makeWizardState(): WizardState {
     },
     uploads: [],
     found: {},
-    customFound: [],
     rueaExpanded: {},
     analysisAdded: {},
     visited: { 1: true },
@@ -132,7 +128,6 @@ function hydrateWizard(w: WizardState | undefined): WizardState {
     ...base,
     ...w,
     share: { ...base.share, ...w.share },
-    customFound: w.customFound ?? base.customFound,
     analysisAdded: w.analysisAdded ?? base.analysisAdded,
     visited: w.visited ?? base.visited,
     analysisUnlocked: w.analysisUnlocked ?? base.analysisUnlocked,

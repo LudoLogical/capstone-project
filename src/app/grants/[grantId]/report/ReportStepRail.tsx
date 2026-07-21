@@ -4,17 +4,21 @@ import { useRouter } from "next/navigation";
 import { STEP_GROUPS } from "@/app/grants/[grantId]/report/reportModel";
 import type { ReportState } from "@/store/useAppStore";
 import ResetWorkflowButton from "@/components/analysis/ResetWorkflowButton";
-import { Bookmark, Database } from "lucide-react";
+import { Check, Database, Sparkles } from "lucide-react";
 
 /** The sticky step rail beside the report flow. */
 export default function ReportStepRail({
   report,
   isComplete,
+  analysisHasData,
+  reviewHasSelection,
   setStep,
   resetAnalysis,
 }: {
   report: ReportState;
   isComplete: (n: number) => boolean;
+  analysisHasData: boolean;
+  reviewHasSelection: boolean;
   setStep: (step: number) => void;
   resetAnalysis: () => void;
 }) {
@@ -30,9 +34,16 @@ export default function ReportStepRail({
             <div className="flex flex-col gap-0.5">
               {group.steps.map((s) => {
                 const current = report.step === s.n;
-                // The Analysis step stays locked until the Review is
-                // completed (via "Unlock your analysis").
-                const locked = s.n === 7 && !isComplete(6);
+                // The Analysis step stays locked until the Review is completed
+                // (via "Save and analyze") and there is at least one data point
+                // to analyze.
+                const isAnalysis = s.n === 7;
+                const locked =
+                  isAnalysis && (!isComplete(6) || !analysisHasData);
+                // Visiting Review isn't finishing it - it only counts as done
+                // once the user has picked at least one data point and unlocked
+                // the analysis from it.
+                const done = s.n === 6 && isComplete(6) && reviewHasSelection;
                 return (
                   <button
                     key={s.n}
@@ -51,10 +62,20 @@ export default function ReportStepRail({
                       className={`flex h-5 w-5 flex-none items-center justify-center rounded-full text-xs font-bold ${
                         current
                           ? "bg-accent text-white"
-                          : "bg-divider-2 text-ink-muted"
+                          : done
+                            ? "bg-success-ink-2 text-white"
+                            : "bg-divider-2 text-ink-muted"
                       }`}
                     >
-                      {locked ? <Bookmark size={11} /> : s.n}
+                      {/* Analysis always keeps its own icon rather than a step
+                          number: it's a destination, not a numbered task. */}
+                      {isAnalysis ? (
+                        <Sparkles size={12} />
+                      ) : !current && done ? (
+                        <Check size={12} />
+                      ) : (
+                        s.n
+                      )}
                     </div>
                     <span
                       className={`text-sm ${
@@ -79,7 +100,7 @@ export default function ReportStepRail({
             className="flex cursor-pointer items-center gap-2.5 rounded-lg border border-transparent px-2 py-2 text-left transition duration-150 hover:bg-surface-alt"
           >
             <div className="flex h-5 w-5 flex-none items-center justify-center rounded-full bg-divider-2 text-ink-muted">
-              <Database size={11} />
+              <Database size={12} />
             </div>
             <span className="text-sm font-medium text-ink-muted">
               Manage your data

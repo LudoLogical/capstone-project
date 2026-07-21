@@ -3,23 +3,29 @@
 import { useRouter } from "next/navigation";
 import type { WizardState } from "@/store/useAppStore";
 import ResetWorkflowButton from "@/components/analysis/ResetWorkflowButton";
-import { Bookmark, Check, Database } from "lucide-react";
+import { Check, Database, Sparkles } from "lucide-react";
 
 /** The sticky step rail beside the collection wizard. */
 export default function ApplyStepRail({
   wizard,
   STEP_LABELS,
   STEP_GROUPS,
+  REVIEW_STEP,
   ANALYSIS_STEP,
   analysisUnlocked,
+  analysisHasData,
+  reviewHasSelection,
   setStep,
   resetAnalysis,
 }: {
   wizard: WizardState;
   STEP_LABELS: string[];
   STEP_GROUPS: { title: string; steps: number[] }[];
+  REVIEW_STEP: number;
   ANALYSIS_STEP: number;
   analysisUnlocked: boolean;
+  analysisHasData: boolean;
+  reviewHasSelection: boolean;
   setStep: (step: number) => void;
   resetAnalysis: () => void;
 }) {
@@ -37,8 +43,19 @@ export default function ApplyStepRail({
                 const label = STEP_LABELS[n - 1];
                 const current = wizard.step === n;
                 const visited = !!wizard.visited[n];
-                // Analysis stays locked until unlocked from Review.
-                const locked = n === ANALYSIS_STEP && !analysisUnlocked;
+                // Analysis stays locked until it has been unlocked from Review
+                // and there is at least one data point to analyze.
+                const isAnalysis = n === ANALYSIS_STEP;
+                const locked =
+                  isAnalysis && (!analysisUnlocked || !analysisHasData);
+                // Visiting Review isn't finishing it - it only counts as done
+                // once the user has picked at least one data point and unlocked
+                // the analysis from it.
+                const done =
+                  visited &&
+                  !isAnalysis &&
+                  (n !== REVIEW_STEP ||
+                    (analysisUnlocked && reviewHasSelection));
                 return (
                   <button
                     key={n}
@@ -57,14 +74,16 @@ export default function ApplyStepRail({
                       className={`flex h-5 w-5 flex-none items-center justify-center rounded-full text-xs font-bold ${
                         current
                           ? "bg-accent text-white"
-                          : !locked && visited
+                          : done
                             ? "bg-success-ink-2 text-white"
                             : "bg-divider-2 text-ink-muted"
                       }`}
                     >
-                      {locked ? (
-                        <Bookmark size={11} />
-                      ) : !current && visited ? (
+                      {/* Analysis always keeps its own icon, never a tick:
+                          it's a destination, not a task to complete. */}
+                      {locked || isAnalysis ? (
+                        <Sparkles size={12} />
+                      ) : !current && done ? (
                         <Check size={12} />
                       ) : (
                         n
@@ -93,7 +112,7 @@ export default function ApplyStepRail({
             className="flex cursor-pointer items-center gap-2.5 rounded-lg border border-transparent px-2 py-2 text-left transition duration-150 hover:bg-surface-alt"
           >
             <div className="flex h-5 w-5 flex-none items-center justify-center rounded-full bg-divider-2 text-ink-muted">
-              <Database size={11} />
+              <Database size={12} />
             </div>
             <span className="text-sm font-medium text-ink-muted">
               Manage your data

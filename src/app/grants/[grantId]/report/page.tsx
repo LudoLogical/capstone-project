@@ -337,6 +337,12 @@ export default function ReportFlowPage() {
         <ReportStepRail
           report={report}
           isComplete={isComplete}
+          analysisHasData={
+            analysisSections.length > 0 || report.customSupporting.length > 0
+          }
+          reviewHasSelection={reviewGroups.some((g) =>
+            g.items.some((it) => it.picked),
+          )}
           setStep={setStep}
           resetAnalysis={resetAnalysis}
         />

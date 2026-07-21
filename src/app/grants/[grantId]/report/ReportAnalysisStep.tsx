@@ -4,7 +4,7 @@ import { useState } from "react";
 import type { ReportState } from "@/store/useAppStore";
 import type { AnalysisCardSection } from "@/components/analysis/RueaCard";
 import RueaCard from "@/components/analysis/RueaCard";
-import { Check, ChevronDown, ArrowRight } from "lucide-react";
+import { Check, ArrowLeft, ArrowRight } from "lucide-react";
 
 /** Step 7: the generated analysis cards, with export selection and save. */
 export default function ReportAnalysisStep({
@@ -38,7 +38,6 @@ export default function ReportAnalysisStep({
 }) {
   const [editingCustom, setEditingCustom] = useState<number | null>(null);
   const [editDraft, setEditDraft] = useState("");
-  const [downloadOpen, setDownloadOpen] = useState(false);
   return (
     <div>
       <h1 className="mb-2 font-serif text-xl leading-tight font-bold">
@@ -149,9 +148,9 @@ export default function ReportAnalysisStep({
       </div>
 
       {analysisSections.length > 0 && (
-        <div className="mb-6 rounded-2xl border border-border bg-surface p-5">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-surface p-5">
           {/* Selected / all segmented toggle */}
-          <div className="mb-4 inline-flex rounded-lg border border-border-strong bg-surface-alt p-1">
+          <div className="inline-flex rounded-lg border border-border-strong bg-surface-alt p-1">
             <button
               onClick={useSelectedExportMode}
               aria-pressed={exportMode === "selected"}
@@ -176,34 +175,9 @@ export default function ReportAnalysisStep({
             </button>
           </div>
 
-          {/* Download (with format menu) */}
-          <div className="flex flex-wrap items-start gap-2.5">
-            <div className="relative">
-              <button
-                onClick={() => setDownloadOpen((v) => !v)}
-                aria-expanded={downloadOpen}
-                className="inline-flex items-center gap-2 rounded-lg bg-accent-ink px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 hover:bg-accent-ink-2 active:translate-y-px"
-              >
-                Download <ChevronDown size={16} className="shrink-0" />
-              </button>
-              {downloadOpen && (
-                <div className="absolute z-10 mt-1.5 w-64 overflow-hidden rounded-xl border border-border-strong bg-white shadow-float">
-                  <button
-                    onClick={() => setDownloadOpen(false)}
-                    className="block w-full px-4 py-3 text-left text-sm font-semibold text-ink transition duration-150 hover:bg-surface-alt"
-                  >
-                    Download as PDF
-                  </button>
-                  <button
-                    onClick={() => setDownloadOpen(false)}
-                    className="block w-full border-t border-divider px-4 py-3 text-left text-sm font-semibold text-ink transition duration-150 hover:bg-surface-alt"
-                  >
-                    Download Word document (.docx)
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
+          <button className="inline-flex items-center gap-2 rounded-lg bg-accent-ink px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 hover:bg-accent-ink-2 active:translate-y-px">
+            Download PDF
+          </button>
         </div>
       )}
 
@@ -225,12 +199,12 @@ export default function ReportAnalysisStep({
         </ul>
       </div>
 
-      <div className="flex gap-2.5">
+      <div className="flex items-center justify-between gap-2.5">
         <button
           onClick={() => setStep(6)}
           className="inline-flex items-center gap-2 rounded-xl border border-border-strong bg-white px-5 py-3 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 enabled:hover:border-accent disabled:cursor-not-allowed disabled:opacity-50"
         >
-          Back
+          <ArrowLeft size={16} className="shrink-0" /> Previous step
         </button>
         <button
           onClick={saveToGrant}

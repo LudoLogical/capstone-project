@@ -8,7 +8,7 @@ import {
   type QuestionStepId,
 } from "@/app/grants/[grantId]/report/reportModel";
 import ReportQuestionStep from "@/components/analysis/ReportQuestionStep";
-import { ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 
 /** Steps 2-5: one chat-style question section, wrapped in Back/Continue. */
 export default function ReportChatStepPane({
@@ -190,7 +190,7 @@ export default function ReportChatStepPane({
           onClick={() => setStep(report.step - 1)}
           className="inline-flex items-center gap-2 rounded-xl border border-border-strong bg-white px-5 py-3 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 enabled:hover:border-accent disabled:cursor-not-allowed disabled:opacity-50"
         >
-          Back
+          <ArrowLeft size={16} className="shrink-0" /> Previous step
         </button>
         <button
           onClick={() => saveAndContinue(report.step)}
