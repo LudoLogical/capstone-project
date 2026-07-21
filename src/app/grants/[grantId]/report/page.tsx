@@ -324,12 +324,21 @@ export default function ReportFlowPage() {
   return (
     <div className="mx-auto w-full animate-nc-rise px-8 pt-7 pb-28">
       <BackButton fallback="/" />
+      <div className="mb-6">
+        <h1 className="max-w-3xl font-serif text-3xl leading-tight font-bold">
+          Build your report for {grant.name}
+        </h1>
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-muted">
+          We&apos;ll walk you through each reporting requirement and help you
+          pull together all of the data that you&apos;ll need.
+        </p>
+      </div>
       <div className="flex items-start gap-7">
         <ReportStepRail
-          grant={grant}
           report={report}
           isComplete={isComplete}
           setStep={setStep}
+          resetAnalysis={resetAnalysis}
         />
 
         <div className="min-w-0 flex-1">
@@ -409,7 +418,6 @@ export default function ReportFlowPage() {
               deleteCustomSupporting={deleteCustomSupporting}
               setStep={setStep}
               saveToGrant={saveToGrant}
-              resetAnalysis={resetAnalysis}
             />
           )}
         </div>

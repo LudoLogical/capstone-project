@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import type { RueaSection } from "@/data/seed";
 import type { WizardState } from "@/store/useAppStore";
 import RueaCard from "@/components/analysis/RueaCard";
-import ResetAnalysisButton from "@/components/analysis/ResetAnalysisButton";
 import { ArrowRight, Check, ChevronDown } from "lucide-react";
 
 /** Step 3: the generated analysis cards, with export selection. */
@@ -22,7 +21,6 @@ export default function CollectAnalysisStep({
   useSelectedExportMode,
   downloadOpen,
   setDownloadOpen,
-  resetAnalysis,
   setStep,
   REVIEW_STEP,
 }: {
@@ -38,7 +36,6 @@ export default function CollectAnalysisStep({
   useSelectedExportMode: () => void;
   downloadOpen: boolean;
   setDownloadOpen: Dispatch<SetStateAction<boolean>>;
-  resetAnalysis: () => void;
   setStep: (step: number) => void;
   REVIEW_STEP: number;
 }) {
@@ -190,12 +187,6 @@ export default function CollectAnalysisStep({
           Save and exit <ArrowRight size={16} className="shrink-0" />
         </button>
       </div>
-
-      {(foundSections.length > 0 || foundCustom.length > 0) && (
-        <div className="mt-8 border-t border-divider pt-6">
-          <ResetAnalysisButton onReset={resetAnalysis} />
-        </div>
-      )}
     </div>
   );
 }

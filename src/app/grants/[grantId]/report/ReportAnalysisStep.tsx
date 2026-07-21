@@ -4,7 +4,6 @@ import { useState } from "react";
 import type { ReportState } from "@/store/useAppStore";
 import type { AnalysisCardSection } from "@/components/analysis/RueaCard";
 import RueaCard from "@/components/analysis/RueaCard";
-import ResetAnalysisButton from "@/components/analysis/ResetAnalysisButton";
 import { Check, ChevronDown, ArrowRight } from "lucide-react";
 
 /** Step 7: the generated analysis cards, with export selection and save. */
@@ -22,7 +21,6 @@ export default function ReportAnalysisStep({
   deleteCustomSupporting,
   setStep,
   saveToGrant,
-  resetAnalysis,
 }: {
   report: ReportState;
   analysisSections: AnalysisCardSection[];
@@ -37,7 +35,6 @@ export default function ReportAnalysisStep({
   deleteCustomSupporting: (index: number) => void;
   setStep: (step: number) => void;
   saveToGrant: () => void;
-  resetAnalysis: () => void;
 }) {
   const [editingCustom, setEditingCustom] = useState<number | null>(null);
   const [editDraft, setEditDraft] = useState("");
@@ -242,12 +239,6 @@ export default function ReportAnalysisStep({
           Save and exit <ArrowRight size={16} className="shrink-0" />
         </button>
       </div>
-
-      {analysisSections.length > 0 && (
-        <div className="mt-8 border-t border-divider pt-6">
-          <ResetAnalysisButton onReset={resetAnalysis} />
-        </div>
-      )}
     </div>
   );
 }

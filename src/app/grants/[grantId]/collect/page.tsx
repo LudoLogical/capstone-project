@@ -19,7 +19,7 @@ import CollectAnalysisStep from "@/app/grants/[grantId]/collect/CollectAnalysisS
  */
 function stepPlan() {
   return {
-    labels: ["Share Your Context", "Review", "Analysis"],
+    labels: ["Share your context", "Review", "Analysis"],
     reviewStep: 2,
     analysisStep: 3,
     total: 3,
@@ -217,16 +217,25 @@ export default function DataCollectionWizardPage() {
   return (
     <div className="mx-auto w-full animate-nc-rise px-8 pt-7 pb-28">
       <BackButton fallback={`/grants/${grant.id}`} />
+      <div className="mb-6">
+        <h1 className="max-w-3xl font-serif text-3xl leading-tight font-bold">
+          Gather data for {grant.name}
+        </h1>
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-muted">
+          Share what you already have, review what we found, and turn it into an
+          analysis you can use in your application.
+        </p>
+      </div>
       <div className="flex items-start gap-7">
         {/* Same shell as the report flow: a sticky step rail beside the work. */}
         <CollectStepRail
-          grant={grant}
           wizard={wizard}
           STEP_LABELS={STEP_LABELS}
           STEP_GROUPS={STEP_GROUPS}
           ANALYSIS_STEP={ANALYSIS_STEP}
           analysisUnlocked={analysisUnlocked}
           setStep={setStep}
+          resetAnalysis={resetAnalysis}
         />
 
         <div className="min-w-0 flex-1">
@@ -272,7 +281,6 @@ export default function DataCollectionWizardPage() {
               useSelectedExportMode={useSelectedExportMode}
               downloadOpen={downloadOpen}
               setDownloadOpen={setDownloadOpen}
-              resetAnalysis={resetAnalysis}
               setStep={setStep}
               REVIEW_STEP={REVIEW_STEP}
             />
