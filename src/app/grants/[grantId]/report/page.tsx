@@ -322,7 +322,7 @@ export default function ReportFlowPage() {
   };
 
   return (
-    <div className="mx-auto w-full animate-nc-rise px-8 pt-7 pb-28">
+    <div className="animate-nc-rise mx-auto w-full max-w-6xl px-8 pt-7 pb-16">
       <BackButton fallback="/" />
       <div className="mb-6">
         <h1 className="max-w-3xl font-serif text-3xl leading-tight font-bold">
@@ -341,7 +341,7 @@ export default function ReportFlowPage() {
           resetAnalysis={resetAnalysis}
         />
 
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 max-w-3xl flex-1">
           {report.requirements.trim() && (
             <div className="mb-5 rounded-2xl border border-accent-tint-border bg-accent-tint-soft p-5">
               <div className="mb-1 flex items-center justify-between gap-3">

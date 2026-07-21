@@ -28,11 +28,13 @@ export default function CollectContextStep({
   return (
     <div>
       <h1 className="mb-2 font-serif text-xl leading-tight font-bold">
-        Share Your Context
+        Share your context
       </h1>
-      <p className="mb-5 text-sm leading-relaxed text-ink-muted">
-        The AI only reads what you check below. Your data remains private and is
-        never used to train our AI.
+      <p className="mb-5 max-w-2xl text-sm leading-relaxed text-ink-muted">
+        This tool uses AI to help you gather and understand your data. Sharing
+        your context allows the AI to customize its guidance to your specific
+        situation. None of your info will ever be used to train or improve the
+        AI.
       </p>
 
       <div className="mb-2.5 text-xs font-bold tracking-wider text-ink-muted uppercase">
@@ -79,9 +81,10 @@ export default function CollectContextStep({
         From Your Organization
       </div>
       <div className="mb-6 rounded-2xl border border-border bg-surface p-6">
-        <p className="mb-3.5 text-sm leading-relaxed text-ink-muted">
-          Attendance sheets, surveys, photos, past reports, participant counts,
-          or letters of support all help.
+        <p className="mb-3.5 max-w-2xl text-sm leading-relaxed text-ink-muted">
+          There are many different kinds of data that can be helpful here.
+          Examples include attendance sheets, surveys, past reports, participant
+          counts, and letters of support.
         </p>
         <DataUploadField
           uploads={wizard.uploads}
@@ -97,7 +100,7 @@ export default function CollectContextStep({
           onClick={() => setStep(REVIEW_STEP)}
           className="inline-flex items-center gap-2 rounded-xl bg-accent-ink px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
         >
-          Save and Continue <ArrowRight size={16} className="shrink-0" />
+          Save and continue <ArrowRight size={16} className="shrink-0" />
         </button>
       </div>
     </div>

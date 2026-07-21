@@ -20,7 +20,7 @@ export default function ReportRequirementsGate({
   submitRequirements: () => void;
 }) {
   return (
-    <div className="mx-auto w-full max-w-2xl animate-nc-rise px-8 pt-7 pb-28">
+    <div className="mx-auto w-full max-w-2xl animate-nc-rise px-8 pt-7 pb-16">
       <BackButton fallback="/" />
       <div className="mb-3 inline-flex items-center gap-1 rounded-full border border-accent-tint-border bg-accent-tint px-3 py-1 text-xs font-bold text-accent-ink">
         <BarChart3 size={12} />

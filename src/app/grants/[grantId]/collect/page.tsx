@@ -215,7 +215,7 @@ export default function DataCollectionWizardPage() {
   };
 
   return (
-    <div className="mx-auto w-full animate-nc-rise px-8 pt-7 pb-28">
+    <div className="animate-nc-rise mx-auto w-full max-w-6xl px-8 pt-7 pb-16">
       <BackButton fallback={`/grants/${grant.id}`} />
       <div className="mb-6">
         <h1 className="max-w-3xl font-serif text-3xl leading-tight font-bold">
@@ -238,7 +238,7 @@ export default function DataCollectionWizardPage() {
           resetAnalysis={resetAnalysis}
         />
 
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 max-w-3xl flex-1">
           {wizard.step === 1 && (
             <CollectContextStep
               wizard={wizard}

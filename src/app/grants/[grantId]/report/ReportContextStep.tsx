@@ -5,7 +5,7 @@ import type { NSRService } from "@/types/data";
 import type { ReportState } from "@/store/useAppStore";
 import CheckboxRow from "@/components/primitives/CheckboxRow";
 import DataUploadField from "@/components/inputs/DataUploadField";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
 
 /** Step 1: choose which Vibrancy Portal sources to share, and add your own. */
 export default function ReportContextStep({
@@ -28,11 +28,11 @@ export default function ReportContextStep({
       <h1 className="mb-2 font-serif text-xl leading-tight font-bold">
         Share your context
       </h1>
-      <p className="mb-5 text-sm leading-relaxed text-ink-muted">
-        This tool uses AI to help you understand your data. Sharing your context
-        allows the AI to customize its explanations to your specific situation.
-        You&apos;re in control - none of the information below will be used
-        without your permission.
+      <p className="mb-5 max-w-2xl text-sm leading-relaxed text-ink-muted">
+        This tool uses AI to help you gather and understand your data. Sharing
+        your context allows the AI to customize its guidance to your specific
+        situation. None of your info will ever be used to train or improve the
+        AI.
       </p>
       <div className="mb-2.5 text-xs font-bold tracking-wider text-ink-muted uppercase">
         From the Vibrancy Portal
@@ -65,7 +65,8 @@ export default function ReportContextStep({
                   onClick={() => {}}
                   className="inline-flex items-center gap-2 rounded-lg border border-border-strong bg-white px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 enabled:hover:border-accent disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {dataActionLabel(key, completed)}
+                  {dataActionLabel(key, completed)}{" "}
+                  <ArrowUpRight size={14} className="shrink-0" />
                 </button>
               </div>
             </div>
@@ -76,6 +77,11 @@ export default function ReportContextStep({
         From Your Organization
       </div>
       <div className="mb-6 rounded-2xl border border-border bg-surface p-6">
+        <p className="mb-3.5 max-w-2xl text-sm leading-relaxed text-ink-muted">
+          There are many different kinds of data that can be helpful here.
+          Examples include attendance sheets, surveys, past reports, participant
+          counts, and letters of support.
+        </p>
         <DataUploadField
           uploads={report.uploads}
           onAddFiles={addUploads}

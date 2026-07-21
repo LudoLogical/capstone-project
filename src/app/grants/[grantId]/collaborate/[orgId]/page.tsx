@@ -16,7 +16,7 @@ export default function OrgProfilePage() {
   const [emailOpen, setEmailOpen] = useState(false);
 
   return (
-    <div className="mx-auto w-full max-w-3xl animate-nc-rise px-8 pt-7 pb-28">
+    <div className="mx-auto w-full max-w-3xl animate-nc-rise px-8 pt-7 pb-16">
       <BackButton fallback={`/grants/${grantId}/collaborate`} />
       {profile ? (
         <>

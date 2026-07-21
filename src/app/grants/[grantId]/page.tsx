@@ -90,7 +90,7 @@ export default function GrantDetailPage() {
     .filter(Boolean);
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-8 pt-7 pb-28 animate-nc-rise">
+    <div className="mx-auto w-full max-w-3xl px-8 pt-7 pb-16 animate-nc-rise">
       <BackButton fallback="/search" />
 
       <div className="mb-5 rounded-2xl border border-border bg-surface p-8">
