@@ -8,7 +8,7 @@ import DataUploadField from "@/components/inputs/DataUploadField";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 
 /** Step 1: choose which Vibrancy Portal sources to share, and add your own. */
-export default function CollectContextStep({
+export default function ApplyContextStep({
   wizard,
   toggleShare,
   setUsageKey,

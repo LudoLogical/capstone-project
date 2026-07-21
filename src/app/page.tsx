@@ -199,7 +199,7 @@ export default function HomePage() {
                   onClosedClick={() => setClosedGrantId(v.grant.id)}
                   primary={{
                     label: `${v.writingStarted ? "Continue" : "Start"} gathering data for application`,
-                    to: `/grants/${v.grant.id}/collect`,
+                    to: `/grants/${v.grant.id}/apply`,
                   }}
                   secondary={{
                     label: "Grant Details",
@@ -301,7 +301,7 @@ export default function HomePage() {
                     label: `${v.writingStarted ? "Continue" : "Start"} gathering data for application`,
                     onClick: () => {
                       startApplication(v.grant.id);
-                      router.push(`/grants/${v.grant.id}/collect`);
+                      router.push(`/grants/${v.grant.id}/apply`);
                     },
                   }}
                   secondary={{

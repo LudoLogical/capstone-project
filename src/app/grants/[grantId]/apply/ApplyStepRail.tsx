@@ -6,7 +6,7 @@ import ResetWorkflowButton from "@/components/analysis/ResetWorkflowButton";
 import { Bookmark, Check, Database } from "lucide-react";
 
 /** The sticky step rail beside the collection wizard. */
-export default function CollectStepRail({
+export default function ApplyStepRail({
   wizard,
   STEP_LABELS,
   STEP_GROUPS,

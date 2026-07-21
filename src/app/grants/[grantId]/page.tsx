@@ -392,7 +392,7 @@ export default function GrantDetailPage() {
             <button
               onClick={() => {
                 startApplication(grant.id);
-                router.push(`/grants/${grant.id}/collect`);
+                router.push(`/grants/${grant.id}/apply`);
               }}
               className="inline-flex items-center gap-2 rounded-lg bg-accent-ink px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
             >

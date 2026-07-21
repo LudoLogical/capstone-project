@@ -6,7 +6,7 @@ import AddDataChatBox from "@/components/inputs/AddDataChatBox";
 import { ArrowRight, Check, X } from "lucide-react";
 
 /** Step 2: review the data we found and opt each point in or out. */
-export default function CollectReviewStep({
+export default function ApplyReviewStep({
   wizard,
   isFound,
   toggleFound,

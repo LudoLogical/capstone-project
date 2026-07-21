@@ -8,7 +8,7 @@ import RueaCard from "@/components/analysis/RueaCard";
 import { ArrowRight, Check, ChevronDown } from "lucide-react";
 
 /** Step 3: the generated analysis cards, with export selection. */
-export default function CollectAnalysisStep({
+export default function ApplyAnalysisStep({
   wizard,
   foundSections,
   foundCustom,

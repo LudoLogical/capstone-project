@@ -8,10 +8,10 @@ import { useGrantView } from "@/store/derived";
 import { DATA_DETAILS, RUEA_SECTIONS, SHARE_KEYS } from "@/data/seed";
 import Modal from "@/components/primitives/Modal";
 import BackButton from "@/components/primitives/BackButton";
-import CollectStepRail from "@/app/grants/[grantId]/collect/CollectStepRail";
-import CollectContextStep from "@/app/grants/[grantId]/collect/CollectContextStep";
-import CollectReviewStep from "@/app/grants/[grantId]/collect/CollectReviewStep";
-import CollectAnalysisStep from "@/app/grants/[grantId]/collect/CollectAnalysisStep";
+import ApplyStepRail from "@/app/grants/[grantId]/apply/ApplyStepRail";
+import ApplyContextStep from "@/app/grants/[grantId]/apply/ApplyContextStep";
+import ApplyReviewStep from "@/app/grants/[grantId]/apply/ApplyReviewStep";
+import ApplyAnalysisStep from "@/app/grants/[grantId]/apply/ApplyAnalysisStep";
 
 /**
  * The application flow is three steps: share your context, review the data we
@@ -31,7 +31,7 @@ function stepPlan() {
   };
 }
 
-export default function DataCollectionWizardPage() {
+export default function ApplyWizardPage() {
   const { grantId = "" } = useParams<{ grantId: string }>();
   const view = useGrantView(grantId);
   const wizard = useAppStore((s) => s.getWizard(grantId));
@@ -228,7 +228,7 @@ export default function DataCollectionWizardPage() {
       </div>
       <div className="flex items-start gap-7">
         {/* Same shell as the report flow: a sticky step rail beside the work. */}
-        <CollectStepRail
+        <ApplyStepRail
           wizard={wizard}
           STEP_LABELS={STEP_LABELS}
           STEP_GROUPS={STEP_GROUPS}
@@ -240,7 +240,7 @@ export default function DataCollectionWizardPage() {
 
         <div className="min-w-0 max-w-3xl flex-1">
           {wizard.step === 1 && (
-            <CollectContextStep
+            <ApplyContextStep
               wizard={wizard}
               toggleShare={toggleShare}
               setUsageKey={setUsageKey}
@@ -252,7 +252,7 @@ export default function DataCollectionWizardPage() {
           )}
 
           {wizard.step === REVIEW_STEP && (
-            <CollectReviewStep
+            <ApplyReviewStep
               wizard={wizard}
               isFound={isFound}
               toggleFound={toggleFound}
@@ -268,7 +268,7 @@ export default function DataCollectionWizardPage() {
           )}
 
           {wizard.step === ANALYSIS_STEP && (
-            <CollectAnalysisStep
+            <ApplyAnalysisStep
               wizard={wizard}
               foundSections={foundSections}
               foundCustom={foundCustom}
