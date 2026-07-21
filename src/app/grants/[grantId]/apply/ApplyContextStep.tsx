@@ -5,7 +5,7 @@ import type { NSRService } from "@/types/data";
 import type { WizardState } from "@/store/useAppStore";
 import CheckboxRow from "@/components/primitives/CheckboxRow";
 import DataUploadField from "@/components/inputs/DataUploadField";
-import { ArrowRight, ArrowUpRight } from "lucide-react";
+import { ArrowRight, ExternalLink } from "lucide-react";
 
 /** Step 1: choose which Vibrancy Portal sources to share, and add your own. */
 export default function ApplyContextStep({
@@ -69,7 +69,7 @@ export default function ApplyContextStep({
                   className="inline-flex items-center gap-2 rounded-lg border border-border-strong bg-white px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 enabled:hover:border-accent disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {dataActionLabel(key, completed)}{" "}
-                  <ArrowUpRight size={14} className="shrink-0" />
+                  <ExternalLink size={14} className="shrink-0" />
                 </button>
               </div>
             </div>

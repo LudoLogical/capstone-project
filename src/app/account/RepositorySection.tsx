@@ -9,12 +9,8 @@ import {
 import { USER_DISPLAY_NAME, USER_MAYA_ID } from "@/data/seed";
 import { formatLongDate } from "@/utils/format";
 import type { LucideIcon } from "lucide-react";
-import { Trash2 } from "lucide-react";
-import Modal from "@/components/primitives/Modal";
+import { Download, ExternalLink, Trash2 } from "lucide-react";
 import Pagination from "@/components/primitives/Pagination";
-import RepositoryPreview, {
-  type FileBlob,
-} from "@/app/account/RepositoryPreview";
 import { DOCUMENT_SOURCE_TYPES, DocumentSourceType } from "@/types/constants";
 
 const PAGE_SIZE = 6;
@@ -76,10 +72,6 @@ export default function RepositorySection({
   const [helpOpen, setHelpOpen] = useState(false);
   const [adding, setAdding] = useState(false);
   const [draft, setDraft] = useState("");
-  const [preview, setPreview] = useState<(typeof sources)[number] | null>(null);
-  // Object URLs for files the user actually uploaded this session, keyed by
-  // item id, so their preview can show the real file instead of a placeholder.
-  const [blobs, setBlobs] = useState<Record<string, FileBlob>>({});
   // Names of files from the most recent pick that we couldn't accept.
   const [rejected, setRejected] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -95,10 +87,9 @@ export default function RepositorySection({
       return next;
     });
 
-  const appendDocument = (file: File, type: DocumentSource["type"]) => {
-    const id = nextId();
+  const appendDocument = (file: File, type: DocumentSource["type"]) =>
     append({
-      id,
+      id: nextId(),
       kind: InitiativeSourceKind.Document,
       folder: null,
       creationTime: new Date(),
@@ -108,12 +99,6 @@ export default function RepositorySection({
       name: file.name,
       type,
     });
-    // Only files picked this session have bytes we can preview.
-    setBlobs((prev) => ({
-      ...prev,
-      [id]: { url: URL.createObjectURL(file), type: file.type },
-    }));
-  };
 
   const appendWebpage = (link: string) =>
     append({
@@ -160,6 +145,52 @@ export default function RepositorySection({
 
   const remove = (id: string) =>
     setSources((prev) => prev.filter((it) => it.id !== id));
+
+  const labelText = `text-sm font-semibold text-ink ${
+    underlineLabel ? "underline underline-offset-2" : ""
+  }`;
+  // Applied to both the text and the trailing icon so the whole label reacts as
+  // one, whichever half the cursor is over.
+  const labelHover = "transition duration-150 group-hover:text-accent";
+
+  /**
+   * A row's label reads differently by kind: a file downloads itself when
+   * clicked (the download isn't wired up yet, so only the affordance is here),
+   * a link opens in a new tab, and a captured message isn't interactive at all.
+   */
+  const renderLabel = (label: string) => {
+    if (kind === InitiativeSourceKind.Chat) {
+      return <div className={labelText}>{label}</div>;
+    }
+    if (kind === InitiativeSourceKind.Webpage) {
+      const href = label.startsWith("http") ? label : `https://${label}`;
+      return (
+        <a
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group inline-flex items-center gap-1.5"
+        >
+          <span className={`${labelText} ${labelHover}`}>{label}</span>
+          <ExternalLink
+            size={13}
+            aria-hidden
+            className={`shrink-0 text-ink ${labelHover}`}
+          />
+        </a>
+      );
+    }
+    return (
+      <div className="group inline-flex items-center gap-1.5">
+        <span className={`${labelText} ${labelHover}`}>{label}</span>
+        <Download
+          size={13}
+          aria-hidden
+          className={`shrink-0 text-ink ${labelHover}`}
+        />
+      </div>
+    );
+  };
 
   return (
     <section className="mb-12">
@@ -281,14 +312,7 @@ export default function RepositorySection({
                   className="flex flex-wrap items-center gap-3 rounded-xl border border-border-soft bg-surface-alt px-4 py-3"
                 >
                   <div className="min-w-48 flex-1">
-                    <button
-                      onClick={() => setPreview(item)}
-                      className={`block text-left text-sm font-semibold text-ink transition duration-150 hover:text-accent ${
-                        underlineLabel ? "underline underline-offset-2" : ""
-                      }`}
-                    >
-                      {label}
-                    </button>
+                    {renderLabel(label)}
                     <div className="mt-0.5 text-xs text-ink-muted">
                       {verb} {formatLongDate(item.creationTime)} by{" "}
                       {USER_DISPLAY_NAME[item.creator] ?? item.creator}
@@ -328,23 +352,6 @@ export default function RepositorySection({
         label={title}
         className="mt-4"
       />
-
-      {preview && (
-        <Modal
-          open
-          onClose={() => setPreview(null)}
-          title={sourceLabel(preview)}
-        >
-          <RepositoryPreview
-            kind={kind}
-            label={sourceLabel(preview)}
-            date={formatLongDate(preview.creationTime)}
-            creator={USER_DISPLAY_NAME[preview.creator] ?? preview.creator}
-            verb={verb}
-            blob={blobs[preview.id]}
-          />
-        </Modal>
-      )}
     </section>
   );
 }

@@ -20,7 +20,7 @@ import TimelineCell from "@/app/grants/[grantId]/TimelineCell";
 import {
   Star,
   BarChart3,
-  ArrowUpRight,
+  ExternalLink,
   ArrowRight,
   Copy,
   TriangleAlert,
@@ -131,7 +131,7 @@ export default function GrantDetailPage() {
             className="inline-flex items-center gap-2 rounded-lg border border-border-strong bg-white px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-ink no-underline transition duration-150 hover:border-accent"
           >
             View grant on website{" "}
-            <ArrowUpRight size={15} className="shrink-0" />
+            <ExternalLink size={15} className="shrink-0" />
           </a>
           <button
             onClick={copyLink}

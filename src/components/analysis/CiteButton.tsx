@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Modal from "@/components/primitives/Modal";
 import { PROVENANCE } from "@/data/seed";
-import { FileText, Link, Download, ArrowUpRight } from "lucide-react";
+import { FileText, Link, Download, ExternalLink } from "lucide-react";
 
 export default function CiteButton({
   provenanceKey,
@@ -57,7 +57,7 @@ export default function CiteButton({
             {entry.linkKind === "file" ? (
               <Download size={13} />
             ) : (
-              <ArrowUpRight size={13} />
+              <ExternalLink size={13} />
             )}
           </span>
         </a>
