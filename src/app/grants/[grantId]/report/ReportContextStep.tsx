@@ -77,7 +77,7 @@ export default function ReportContextStep({
         From Your Organization
       </div>
       <div className="mb-6 rounded-2xl border border-border bg-surface p-6">
-        <p className="mb-3.5 max-w-2xl text-sm leading-relaxed text-ink-muted">
+        <p className="mb-3 max-w-2xl text-sm leading-relaxed text-ink-muted">
           There are many different kinds of data that can be helpful here.
           Examples include attendance sheets, surveys, past reports, participant
           counts, and letters of support.

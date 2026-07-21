@@ -41,7 +41,7 @@ export default function AccountProfilePage() {
         title="Files"
         kind={InitiativeSourceKind.Document}
         description="These are the documents you've uploaded while gathering data for grant applications and reports. We save them so that we can pull from them automatically whenever you gather data in the future."
-        addLabel="Upload new file"
+        addLabel="Upload new file(s)"
         addIcon={Paperclip}
         fileUpload
         verb="Uploaded"
@@ -53,7 +53,7 @@ export default function AccountProfilePage() {
         title="Webpages"
         kind={InitiativeSourceKind.Webpage}
         description="These are the links you've saved while gathering data for grant applications and reports. We save them so that we can pull from them automatially whenever you gather data in the future."
-        addLabel="Add new website link"
+        addLabel="Add new webpage"
         addIcon={Plus}
         addPlaceholder="https://example.org"
         verb="Uploaded"

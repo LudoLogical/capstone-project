@@ -2,13 +2,20 @@
 
 import { useRef, useState } from "react";
 import { Paperclip, FileText, X } from "lucide-react";
+import { DOCUMENT_SOURCE_TYPES } from "@/types/constants";
 
-// File types the portal accepts for supporting data, disclosed to the user and
-// enforced on the file picker via the accept attribute.
-const ACCEPT =
-  ".pdf,.doc,.docx,.xls,.xlsx,.csv,.jpg,.jpeg,.png,image/png,image/jpeg,application/pdf";
-const ALLOWED_LABEL =
-  "PDF, Word (DOC/DOCX), Excel (XLS/XLSX), CSV, or images (JPG, PNG)";
+/** The `accept` attribute for the file picker, e.g. ".txt,.md,...". */
+const ACCEPTED_EXTENSIONS = DOCUMENT_SOURCE_TYPES.map((t) => `.${t}`).join(",");
+
+/**
+ * Whether an uploaded document's file type, read off its name, is one we
+ * accept. The picker's `accept` filter is only a hint - a user can always
+ * override it in the OS dialog - so uploads are checked here too.
+ */
+function isDocument(fileName: string): boolean {
+  const ext = fileName.split(".").pop()?.toLowerCase();
+  return DOCUMENT_SOURCE_TYPES.some((t) => t === ext);
+}
 
 /**
  * Add-supporting-data control: a real file picker that opens the user's Finder
@@ -29,10 +36,17 @@ export default function DataUploadField({
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [linkDraft, setLinkDraft] = useState("");
+  // Names of files from the most recent pick that we couldn't accept.
+  const [rejected, setRejected] = useState<string[]>([]);
 
+  // Files whose type we don't accept are dropped and named back to the user,
+  // so a rejected upload is never mistaken for a successful one.
   const pickFiles = (files: FileList | null) => {
-    if (!files || files.length === 0) return;
-    onAddFiles(Array.from(files).map((f) => f.name));
+    if (!files) return;
+    const names = Array.from(files).map((f) => f.name);
+    const accepted = names.filter(isDocument);
+    if (accepted.length > 0) onAddFiles(accepted);
+    setRejected(names.filter((n) => !isDocument(n)));
   };
 
   const addLink = () => {
@@ -48,14 +62,14 @@ export default function DataUploadField({
         ref={fileInputRef}
         type="file"
         multiple
-        accept={ACCEPT}
+        accept={ACCEPTED_EXTENSIONS}
         className="hidden"
         onChange={(e) => {
           pickFiles(e.target.files);
           e.target.value = "";
         }}
       />
-      <div className="mb-2 flex flex-wrap gap-2.5">
+      <div className="mb-3 flex flex-wrap gap-2.5">
         <button
           onClick={() => fileInputRef.current?.click()}
           className="inline-flex items-center gap-2 rounded-xl bg-accent-ink px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px"
@@ -65,15 +79,21 @@ export default function DataUploadField({
         </button>
       </div>
       <p className="mb-3 text-xs text-ink-muted">
-        Accepted file types: {ALLOWED_LABEL}.
+        Accepted file types: {DOCUMENT_SOURCE_TYPES.join(", ")}.
       </p>
+      {rejected.length > 0 && (
+        <p role="alert" className="mb-3 max-w-2xl text-sm text-accent-ink">
+          We can&apos;t read {rejected.join(", ")}. The supported file types are
+          listed above.
+        </p>
+      )}
 
       <div className="mb-3 flex gap-2.5">
         <input
           value={linkDraft}
           onChange={(e) => setLinkDraft(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && addLink()}
-          placeholder="Or paste a link to a document or page"
+          placeholder="Or paste a link to a webpage"
           aria-label="Paste a link"
           className="w-full rounded-xl border border-border-strong bg-white px-4 py-3 text-sm text-ink outline-none focus:border-accent"
         />
