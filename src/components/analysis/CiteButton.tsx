@@ -7,7 +7,7 @@ import { FileText, Link, Download, ExternalLink } from "lucide-react";
 
 export default function CiteButton({
   provenanceKey,
-  label = "See Citation",
+  label = "View Citation",
 }: {
   provenanceKey: string;
   label?: string;

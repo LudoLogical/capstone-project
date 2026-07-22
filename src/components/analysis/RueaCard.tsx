@@ -23,8 +23,6 @@ type RueaCardProps = {
   section: AnalysisCardSection;
   expanded: boolean;
   onToggle: () => void;
-  onAdd?: () => void;
-  added?: boolean;
   // When provided, a checkbox is shown on the left of the card header and its
   // state is controlled by `selected` / `onSelectChange`.
   selected?: boolean;
@@ -38,8 +36,6 @@ export default function RueaCard({
   section,
   expanded,
   onToggle,
-  onAdd,
-  added = false,
   selected,
   onSelectChange,
   applyLabel = "In your application",
@@ -89,7 +85,7 @@ export default function RueaCard({
       </div>
 
       {expanded && (
-        <div className="border-t border-divider px-5 pb-5">
+        <div className="flex flex-col gap-4 border-t border-divider px-5 pb-5">
           <div className="mt-4">
             <div className="mb-2 text-xs font-bold tracking-wider text-ink-muted uppercase">
               In other words
@@ -105,7 +101,7 @@ export default function RueaCard({
 
           {/* Only shown when there's a real comparison to draw. */}
           {(section.bars?.length || section.evalNote) && (
-            <div className="my-4">
+            <div>
               <div className="mb-2.5 text-xs font-bold tracking-wider text-ink-muted uppercase">
                 In context
               </div>
@@ -118,7 +114,7 @@ export default function RueaCard({
             </div>
           )}
 
-          <div className="mb-4">
+          <div>
             <div className="mb-2 text-xs font-bold tracking-wider text-ink-muted uppercase">
               {applyLabel}
             </div>
@@ -131,24 +127,13 @@ export default function RueaCard({
             </ul>
           </div>
 
-          <div className="flex flex-wrap gap-2.5">
-            {section.provenanceKey && (
+          {/* The row keeps the button at its natural width - as a direct child
+              of the column it would stretch to fill. */}
+          {section.provenanceKey && (
+            <div className="flex flex-wrap gap-2.5">
               <CiteButton provenanceKey={section.provenanceKey} />
-            )}
-            {onAdd && (
-              <button
-                onClick={onAdd}
-                disabled={added}
-                className={`inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold whitespace-nowrap transition duration-150 disabled:cursor-default ${
-                  added
-                    ? "border border-success-border bg-success-bg text-success-ink"
-                    : "bg-accent-ink text-white shadow-cta enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px"
-                }`}
-              >
-                {added ? "Added to Data Analysis!" : "Add to Data Analysis"}
-              </button>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       )}
     </div>

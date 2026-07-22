@@ -4,7 +4,8 @@ import { useState } from "react";
 import type { ReportState } from "@/store/useAppStore";
 import type { AnalysisCardSection } from "@/components/analysis/RueaCard";
 import RueaCard from "@/components/analysis/RueaCard";
-import { Check, ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, Download } from "lucide-react";
+import BulletList from "@/components/primitives/BulletList";
 
 /** Step 7: the generated analysis cards, with export selection and save. */
 export default function ReportAnalysisStep({
@@ -14,9 +15,7 @@ export default function ReportAnalysisStep({
   isAnalysisSelected,
   toggleAnalysisSelected,
   allAnalysisSelected,
-  selectAllAnalysis,
-  useSelectedExportMode,
-  exportMode,
+  toggleAllAnalysisSelected,
   editCustomSupporting,
   deleteCustomSupporting,
   setStep,
@@ -28,9 +27,7 @@ export default function ReportAnalysisStep({
   isAnalysisSelected: (id: string) => boolean;
   toggleAnalysisSelected: (id: string) => void;
   allAnalysisSelected: boolean;
-  selectAllAnalysis: () => void;
-  useSelectedExportMode: () => void;
-  exportMode: "selected" | "all";
+  toggleAllAnalysisSelected: () => void;
   editCustomSupporting: (index: number, text: string) => void;
   deleteCustomSupporting: (index: number) => void;
   setStep: (step: number) => void;
@@ -38,33 +35,36 @@ export default function ReportAnalysisStep({
 }) {
   const [editingCustom, setEditingCustom] = useState<number | null>(null);
   const [editDraft, setEditDraft] = useState("");
+  // Nothing to put in the PDF until at least one card is ticked.
+  const anyAnalysisSelected = analysisSections.some((s) =>
+    isAnalysisSelected(s.id),
+  );
   return (
     <div>
       <h1 className="mb-2 font-serif text-xl leading-tight font-bold">
-        Analysis
+        Data Analysis
       </h1>
-      <p className="mb-3.5 text-sm leading-relaxed text-ink-muted">
-        Each card below breaks down each of the data points you selected: what
-        it means in plain English (In Other Words), how it compares to county
-        and peer benchmarks (In Context), and how to use it in your reporting
-        (In Your Report). Review each card and use the language in “In Your
-        Report” to strengthen your report.
-      </p>
-      <div className="mb-5 flex items-start gap-2.5 rounded-xl border border-accent-tint-border bg-accent-tint-soft px-4 py-3">
-        <Check size={14} className="mt-px shrink-0 text-accent" />
-        <p className="text-sm leading-relaxed text-ink-body">
-          <strong>Check the box on each card</strong> you want in your data
-          analysis. Only checked cards are included when you download or share
-          it below - everything else stays out.
+      <div className="flex flex-col gap-2 mb-4">
+        <p className="text-sm leading-relaxed text-ink-muted">
+          Each card below breaks down each of the data points you selected.
         </p>
+        <BulletList
+          items={[
+            "IN OTHER WORDS explains what it means in plain English",
+            "IN CONTEXT visualizes how it compares to other data points like it",
+            // The application flow pitches what an organization plans to do;
+            // a report accounts for what it has already done.
+            "IN YOUR REPORT shows you how you can use it to demonstrate the impact you've had",
+          ]}
+          muted
+        />
       </div>
 
       <div className="mb-6 flex flex-col gap-3">
         {analysisSections.map((s, i) => {
-          // The topmost card is always expanded; the rest default
-          // collapsed until the user opens them.
-          const expanded =
-            i === 0 ? true : (report.analysisExpanded[s.id] ?? false);
+          // The topmost card starts expanded and the rest start collapsed,
+          // but once the user has toggled a card, their choice wins.
+          const expanded = report.analysisExpanded[s.id] ?? i === 0;
           return (
             <RueaCard
               key={s.id}
@@ -147,54 +147,43 @@ export default function ReportAnalysisStep({
           )}
       </div>
 
+      {/* Sits below the cards: both actions here act on what's selected above. */}
       {analysisSections.length > 0 && (
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-surface p-5">
-          {/* Selected / all segmented toggle */}
-          <div className="inline-flex rounded-lg border border-border-strong bg-surface-alt p-1">
+        <div className="mb-6 flex items-center justify-between gap-3 rounded-xl border border-accent-tint-border bg-accent-tint-soft px-4 py-3">
+          <div className="flex items-center gap-2">
+            <Download size={16} className="shrink-0 text-accent" />
+            <p className="text-sm leading-relaxed text-ink-body">
+              If you&apos;d like, you can select cards to download them for
+              later.
+            </p>
+          </div>
+          <div className="flex flex-none items-center gap-2.5">
             <button
-              onClick={useSelectedExportMode}
-              aria-pressed={exportMode === "selected"}
-              className={`rounded-md px-3.5 py-1.5 text-sm font-semibold transition duration-150 ${
-                exportMode === "selected"
-                  ? "bg-white text-ink shadow-sm"
-                  : "text-ink-muted hover:text-ink"
-              }`}
+              onClick={toggleAllAnalysisSelected}
+              className="inline-flex items-center gap-2 rounded-lg border border-border-strong bg-white px-4 py-2 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 hover:border-accent"
             >
-              Export selected cards
+              {allAnalysisSelected ? "Deselect all" : "Select all"}
             </button>
             <button
-              onClick={selectAllAnalysis}
-              aria-pressed={exportMode === "all"}
-              className={`rounded-md px-3.5 py-1.5 text-sm font-semibold transition duration-150 ${
-                exportMode === "all" && allAnalysisSelected
-                  ? "bg-white text-ink shadow-sm"
-                  : "text-ink-muted hover:text-ink"
-              }`}
+              disabled={!anyAnalysisSelected}
+              className="inline-flex items-center gap-2 rounded-lg bg-accent-ink px-4 py-2 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Export all cards
+              Download as PDF
             </button>
           </div>
-
-          <button className="inline-flex items-center gap-2 rounded-lg bg-accent-ink px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 hover:bg-accent-ink-2 active:translate-y-px">
-            Download PDF
-          </button>
         </div>
       )}
 
       <div className="mb-6 rounded-2xl border border-border bg-surface p-6">
-        <div className="mb-2.5 text-sm font-bold">Next steps</div>
+        <div className="mb-2.5 text-md font-bold">What to do next</div>
         <ul className="flex list-disc flex-col gap-1.5 pl-4">
+          <li className="text-sm">Download the cards that look helpful</li>
           <li className="text-sm">
-            Copy language from the cards above into your narrative
+            Use the data and analysis in each one to support your narrative
           </li>
           <li className="text-sm">
-            Use the citations when a funder asks for a data source
-          </li>
-          <li className="text-sm">
-            Go back to add more data if something&apos;s missing
-          </li>
-          <li className="text-sm">
-            Export this report as a reference document
+            Revisit previous steps to add more data if you discover that
+            something&apos;s missing
           </li>
         </ul>
       </div>

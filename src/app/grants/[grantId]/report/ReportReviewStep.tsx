@@ -10,6 +10,8 @@ export default function ReportReviewStep({
   reviewGroups,
   isComplete,
   toggleReviewItem,
+  allReviewPicked,
+  toggleAllReviewPicked,
   deleteReviewItem,
   dontAskDeleteFound,
   setDontAskDeleteFound,
@@ -19,6 +21,8 @@ export default function ReportReviewStep({
   reviewGroups: ReviewGroup[];
   isComplete: (n: number) => boolean;
   toggleReviewItem: (stepId: ReviewGroup["stepId"], itemId: string) => void;
+  allReviewPicked: boolean;
+  toggleAllReviewPicked: () => void;
   deleteReviewItem: (stepId: ReviewGroup["stepId"], itemId: string) => void;
   dontAskDeleteFound: boolean;
   setDontAskDeleteFound: () => void;
@@ -36,11 +40,21 @@ export default function ReportReviewStep({
       <h1 className="mb-2 font-serif text-xl leading-tight font-bold">
         Review Your Data
       </h1>
-      <p className="mb-5 text-sm leading-relaxed text-ink-muted">
-        Below is every data point we gathered from you. We will analyze every
-        data point by default - remove any you don&apos;t want to analyze for
-        your report.
-      </p>
+      <div className="mb-5 flex items-center justify-between gap-3">
+        <p className="max-w-xl text-sm leading-relaxed text-ink-muted">
+          Below is every data point we gathered from you. We will analyze every
+          data point by default - remove any you don&apos;t want to analyze for
+          your report.
+        </p>
+        {reviewGroups.length > 0 && (
+          <button
+            onClick={toggleAllReviewPicked}
+            className="inline-flex flex-none items-center gap-2 rounded-lg border border-border-strong bg-white px-4 py-2 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 hover:border-accent"
+          >
+            {allReviewPicked ? "Deselect all" : "Select all"}
+          </button>
+        )}
+      </div>
 
       {reviewGroups.length === 0 ? (
         <p className="mb-5 rounded-2xl border border-dashed border-border-strong px-4 py-8 text-center text-sm text-ink-muted">

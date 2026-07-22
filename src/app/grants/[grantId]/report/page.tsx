@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useAppStore } from "@/store/useAppStore";
 import { NSRService } from "@/types/data";
 import type { ReportState } from "@/store/useAppStore";
@@ -40,11 +40,6 @@ export default function ReportFlowPage() {
   const setDontAskDeleteFound = useAppStore((s) => s.setDontAskDeleteFound);
   const [usageKey, setUsageKey] = useState<NSRService | null>(null);
   const [reqDraft, setReqDraft] = useState("");
-  // Export controls on the Analysis step.
-  const [exportMode, setExportMode] = useState<"selected" | "all">("selected");
-  // The ticks in place before "Export all cards" auto-selected everything, so
-  // switching back to "Export selected cards" can restore them.
-  const picksBeforeAllRef = useRef<Record<string, boolean> | null>(null);
 
   // Which sources start shared comes solely from the seeded defaults in
   // `makeReportState()` - matching the wizard, and leaving a manual uncheck
@@ -136,8 +131,6 @@ export default function ReportFlowPage() {
   // card cleared, and the Analysis step locked again until the user re-unlocks
   // it from Review.
   const resetAnalysis = () => {
-    setExportMode("selected");
-    picksBeforeAllRef.current = null;
     setReqDraft("");
     updateReport(grantId, (r) => ({
       ...r,
@@ -219,6 +212,28 @@ export default function ReportFlowPage() {
       },
     }));
 
+  const allReviewPicked =
+    reviewGroups.length > 0 &&
+    reviewGroups.every((g) => g.items.every((it) => it.picked));
+  // Every point still listed flips together. Items already removed with the ×
+  // aren't in `reviewGroups`, so they stay removed.
+  const toggleAllReviewPicked = () => {
+    const next = !allReviewPicked;
+    updateReport(grantId, (r) => {
+      const chat = { ...r.chat };
+      reviewGroups.forEach((g) => {
+        chat[g.stepId] = {
+          ...chat[g.stepId],
+          picks: {
+            ...chat[g.stepId].picks,
+            ...Object.fromEntries(g.items.map((it) => [it.itemId, next])),
+          },
+        };
+      });
+      return { ...r, chat };
+    });
+  };
+
   const deleteReviewItem = (stepId: QuestionStepId, itemId: string) =>
     updateReport(grantId, (r) => ({
       ...r,
@@ -236,41 +251,29 @@ export default function ReportFlowPage() {
   // unchecked; the user opts cards in. Reuses the now-free `supportingPicks`
   // map, keyed by section id.
   const isAnalysisSelected = (id: string) => !!report.supportingPicks[id];
-  const toggleAnalysisSelected = (id: string) => {
-    const next = !report.supportingPicks[id];
-    if (!next) setExportMode("selected");
-    // A manual tick makes the pre-"all" snapshot stale: this is now their choice.
-    picksBeforeAllRef.current = null;
-    updateReport(grantId, (r) => ({
-      ...r,
-      supportingPicks: { ...r.supportingPicks, [id]: next },
-    }));
-  };
-  const allAnalysisSelected =
-    analysisSections.length > 0 &&
-    analysisSections.every((s) => isAnalysisSelected(s.id));
-  const selectAllAnalysis = () => {
-    // Remember what was ticked so switching back to "selected" can restore it.
-    if (exportMode !== "all")
-      picksBeforeAllRef.current = report.supportingPicks;
-    setExportMode("all");
+  const toggleAnalysisSelected = (id: string) =>
     updateReport(grantId, (r) => ({
       ...r,
       supportingPicks: {
         ...r.supportingPicks,
-        ...Object.fromEntries(analysisSections.map((s) => [s.id, true])),
+        [id]: !r.supportingPicks[id],
       },
     }));
-  };
-  // Switching back to "selected" undoes the automatic select-all, restoring the
-  // ticks the user had before.
-  const useSelectedExportMode = () => {
-    setExportMode("selected");
-    const snapshot = picksBeforeAllRef.current;
-    if (!snapshot) return;
-    picksBeforeAllRef.current = null;
-    updateReport(grantId, (r) => ({ ...r, supportingPicks: snapshot }));
-  };
+  const allAnalysisSelected =
+    analysisSections.length > 0 &&
+    analysisSections.every((s) => isAnalysisSelected(s.id));
+  // Only the cards on screen are touched, so ticks belonging to data points the
+  // user has since deselected on Review are left as they were.
+  const toggleAllAnalysisSelected = () =>
+    updateReport(grantId, (r) => ({
+      ...r,
+      supportingPicks: {
+        ...r.supportingPicks,
+        ...Object.fromEntries(
+          analysisSections.map((s) => [s.id, !allAnalysisSelected]),
+        ),
+      },
+    }));
 
   const submitRequirements = () =>
     updateReport(grantId, (r) => ({
@@ -390,6 +393,8 @@ export default function ReportFlowPage() {
               reviewGroups={reviewGroups}
               isComplete={isComplete}
               toggleReviewItem={toggleReviewItem}
+              allReviewPicked={allReviewPicked}
+              toggleAllReviewPicked={toggleAllReviewPicked}
               deleteReviewItem={deleteReviewItem}
               dontAskDeleteFound={dontAskDeleteFound}
               setDontAskDeleteFound={setDontAskDeleteFound}
@@ -406,9 +411,7 @@ export default function ReportFlowPage() {
               isAnalysisSelected={isAnalysisSelected}
               toggleAnalysisSelected={toggleAnalysisSelected}
               allAnalysisSelected={allAnalysisSelected}
-              selectAllAnalysis={selectAllAnalysis}
-              useSelectedExportMode={useSelectedExportMode}
-              exportMode={exportMode}
+              toggleAllAnalysisSelected={toggleAllAnalysisSelected}
               editCustomSupporting={editCustomSupporting}
               deleteCustomSupporting={deleteCustomSupporting}
               setStep={setStep}

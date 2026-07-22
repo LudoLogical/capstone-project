@@ -37,11 +37,6 @@ export default function ApplyWizardPage() {
   const wizard = useAppStore((s) => s.getWizard(grantId));
   const updateWizard = useAppStore((s) => s.updateWizard);
   const [usageKey, setUsageKey] = useState<NSRService | null>(null);
-  // Export controls on the Analyze step.
-  const [exportMode, setExportMode] = useState<"selected" | "all">("selected");
-  // The ticks in place before "Export all cards" auto-selected everything, so
-  // switching back to "Export selected cards" can restore them.
-  const picksBeforeAllRef = useRef<Record<string, boolean> | null>(null);
 
   // Once a data form is completed, auto-check its "Share your context" box so
   // it's included by default. Tracked per key so a manual uncheck afterward
@@ -134,39 +129,24 @@ export default function ApplyWizardPage() {
   // the user opts cards in. Reuses the persisted `analysisAdded` map, keyed by
   // section id.
   const isExportSelected = (key: string) => !!wizard.analysisAdded[key];
-  const setExportSelected = (key: string, value: boolean) => {
-    if (!value) setExportMode("selected");
-    // A manual tick makes the pre-"all" snapshot stale: this is now their choice.
-    picksBeforeAllRef.current = null;
+  const setExportSelected = (key: string, value: boolean) =>
     updateWizard(grantId, (w) => ({
       ...w,
       analysisAdded: { ...w.analysisAdded, [key]: value },
     }));
-  };
   const exportKeys = foundSections.map((s) => s.id);
   const allExportSelected =
     exportKeys.length > 0 && exportKeys.every((k) => isExportSelected(k));
-  const selectAllForExport = () => {
-    // Remember what was ticked so switching back to "selected" can restore it.
-    if (exportMode !== "all") picksBeforeAllRef.current = wizard.analysisAdded;
-    setExportMode("all");
+  // Only the cards on screen are touched, so ticks belonging to data points the
+  // user has since deselected on Review are left as they were.
+  const toggleAllExport = () =>
     updateWizard(grantId, (w) => ({
       ...w,
       analysisAdded: {
         ...w.analysisAdded,
-        ...Object.fromEntries(exportKeys.map((k) => [k, true])),
+        ...Object.fromEntries(exportKeys.map((k) => [k, !allExportSelected])),
       },
     }));
-  };
-  // Switching back to "selected" undoes the automatic select-all, restoring the
-  // ticks the user had before.
-  const useSelectedExportMode = () => {
-    setExportMode("selected");
-    const snapshot = picksBeforeAllRef.current;
-    if (!snapshot) return;
-    picksBeforeAllRef.current = null;
-    updateWizard(grantId, (w) => ({ ...w, analysisAdded: snapshot }));
-  };
 
   // The Analysis step stays locked until the user unlocks it from Review, so
   // they see their data before an analysis is built from it.
@@ -183,8 +163,6 @@ export default function ApplyWizardPage() {
   // Resetting starts the application over: back to Share Your Context, with the
   // analysis cleared and locked again.
   const resetAnalysis = () => {
-    setExportMode("selected");
-    picksBeforeAllRef.current = null;
     updateWizard(grantId, (w) => ({
       ...w,
       analysisAdded: {},
@@ -255,10 +233,8 @@ export default function ApplyWizardPage() {
               setRueaExpanded={setRueaExpanded}
               isExportSelected={isExportSelected}
               setExportSelected={setExportSelected}
-              exportMode={exportMode}
               allExportSelected={allExportSelected}
-              selectAllForExport={selectAllForExport}
-              useSelectedExportMode={useSelectedExportMode}
+              toggleAllExport={toggleAllExport}
               setStep={setStep}
               REVIEW_STEP={REVIEW_STEP}
             />
