@@ -3,7 +3,55 @@ import { persist } from "zustand/middleware";
 import { GrantLifecycleStage } from "@/types/grantRecord";
 import type { SearchFilters, SortOption } from "@/data/selectors";
 import { DEFAULT_FILTERS } from "@/data/selectors";
-import { NSRService } from "@/types/data";
+import { InitiativeSourceKind, NSRService } from "@/types/data";
+import type {
+  DocumentSource,
+  InitiativeSource,
+  WebpageSource,
+} from "@/types/data";
+import { documentType } from "@/types/constants";
+import {
+  REPOSITORY_CONVERSATIONS,
+  REPOSITORY_FILES,
+  REPOSITORY_LINKS,
+  USER_MAYA_ID,
+} from "@/data/seed";
+
+// Ids for sources the user adds at runtime. Flows reference sources by id and
+// both sides are persisted, so an id has to stay unique across sessions, not
+// just within one - hence the timestamp, since the counter restarts on reload.
+// Only ever called from an event handler, never during render, so it can't
+// desync server and client markup.
+let repositoryIdCounter = 0;
+const nextRepositoryId = () => `added-${Date.now()}-${repositoryIdCounter++}`;
+
+const defaultRepository = (): InitiativeSource[] => [
+  ...REPOSITORY_FILES,
+  ...REPOSITORY_LINKS,
+  ...REPOSITORY_CONVERSATIONS,
+];
+
+/**
+ * Revive one persisted source. JSON carries neither of the two things a source
+ * needs: `creationTime` comes back as a string, and a document's `File` comes
+ * back as an empty object.
+ *
+ * The file is replaced with an empty placeholder of the right name. Nothing
+ * reads a file's contents today - the Profile screen's download affordance
+ * isn't wired up - and in production the real bytes come from the database
+ * rather than from the browser's local storage.
+ */
+function hydrateSource(s: InitiativeSource): InitiativeSource {
+  const creationTime = new Date(s.creationTime);
+  switch (s.kind) {
+    case InitiativeSourceKind.Document:
+      return { ...s, creationTime, file: new File([], s.name) };
+    case InitiativeSourceKind.Webpage:
+      return { ...s, creationTime };
+    case InitiativeSourceKind.Chat:
+      return { ...s, creationTime };
+  }
+}
 
 export type OnboardOrg = {
   // The person filling this out - their name greets them across the app.
@@ -61,6 +109,10 @@ export type ReportState = {
   step: number;
   stepStatus: Record<number, StepStatus>;
   share: Record<NSRService, boolean>;
+  // Ids of the repository sources attached to this flow, not their labels: the
+  // repository is the source of truth for what a source is called, and an id
+  // that has been deleted there stops resolving here rather than lingering as
+  // a stale copy of its name.
   uploads: string[];
   chat: {
     commitment: ReportChatState;
@@ -78,6 +130,10 @@ export type ReportState = {
 export type WizardState = {
   step: number;
   share: Record<NSRService, boolean>;
+  // Ids of the repository sources attached to this flow, not their labels: the
+  // repository is the source of truth for what a source is called, and an id
+  // that has been deleted there stops resolving here rather than lingering as
+  // a stale copy of its name.
   uploads: string[];
   found: Record<string, boolean>;
   rueaExpanded: Record<string, boolean>;
@@ -305,6 +361,18 @@ type AppState = {
 
   toasts: Toast[];
 
+  /**
+   * The org-wide data repository listed on the Profile screen: the seeded
+   * sources plus everything the user has uploaded or linked while gathering
+   * data. Adding a source anywhere in the app files it here, which is what the
+   * Profile screen tells the user will happen.
+   *
+   * Persisted, because flows reference these by id and would otherwise lose
+   * their attachments on reload. See `hydrateSource` for what JSON can't carry
+   * across - a document's `File` and every `creationTime`.
+   */
+  repository: InitiativeSource[];
+
   // actions
   recordNav: (path: string) => void;
   ackPrivacy: () => void;
@@ -367,6 +435,15 @@ type AppState = {
   ) => void;
 
   addToast: (text: string) => void;
+
+  // Both return the ids of the sources they filed, so a caller that is also
+  // attaching them to a flow has something to attach. Files whose type we don't
+  // accept are skipped rather than stored unlabelled, so the returned list can
+  // be shorter than the one passed in; the callers already report those back to
+  // the user.
+  addRepositoryDocuments: (files: File[]) => string[];
+  addRepositoryWebpage: (link: string) => string;
+  removeRepositorySource: (id: string) => void;
   removeToast: (id: number) => void;
 };
 
@@ -419,6 +496,8 @@ export const useAppStore = create<AppState>()(
       navCount: 0,
 
       toasts: [],
+
+      repository: defaultRepository(),
 
       recordNav: (path) =>
         set((state) => {
@@ -601,6 +680,73 @@ export const useAppStore = create<AppState>()(
       },
       removeToast: (id) =>
         set((state) => ({ toasts: state.toasts.filter((t) => t.id !== id) })),
+
+      addRepositoryDocuments: (files) => {
+        const added = files.flatMap((file) => {
+          const type = documentType(file.name);
+          if (!type) return [];
+          const source: DocumentSource = {
+            id: nextRepositoryId(),
+            kind: InitiativeSourceKind.Document,
+            folder: null,
+            creationTime: new Date(),
+            creator: USER_MAYA_ID,
+            isDeleted: false,
+            file,
+            name: file.name,
+            type,
+          };
+          return [source];
+        });
+        set((state) => ({ repository: [...state.repository, ...added] }));
+        return added.map((s) => s.id);
+      },
+
+      addRepositoryWebpage: (link) => {
+        const source: WebpageSource = {
+          id: nextRepositoryId(),
+          kind: InitiativeSourceKind.Webpage,
+          folder: null,
+          creationTime: new Date(),
+          creator: USER_MAYA_ID,
+          isDeleted: false,
+          link,
+          // The page's HTML is fetched and cached server-side when the source
+          // is persisted; nothing is retrieved in the browser.
+          content: "",
+        };
+        set((state) => ({ repository: [...state.repository, source] }));
+        return source.id;
+      },
+
+      // Deleting a source here deletes it everywhere: a flow can't go on citing
+      // a file or link the user has taken out of their repository. The reverse
+      // doesn't hold - detaching a chip from one application is not a delete.
+      removeRepositorySource: (id) =>
+        set((state) => {
+          // Flows hold ids, so detaching is an exact match - no guessing from
+          // labels, and two sources that happen to share a name stay distinct.
+          const detach = <T extends { uploads: string[] }>(
+            flows: Record<string, T>,
+          ) => {
+            const entries = Object.entries(flows);
+            if (!entries.some(([, f]) => f.uploads.includes(id))) return flows;
+            return Object.fromEntries(
+              entries.map(([key, f]) => [
+                key,
+                f.uploads.includes(id)
+                  ? { ...f, uploads: f.uploads.filter((u) => u !== id) }
+                  : f,
+              ]),
+            ) as Record<string, T>;
+          };
+
+          return {
+            repository: state.repository.filter((s) => s.id !== id),
+            wizard: detach(state.wizard),
+            report: detach(state.report),
+          };
+        }),
     }),
     {
       name: "vibrant-grants-store",
@@ -623,6 +769,12 @@ export const useAppStore = create<AppState>()(
           ...current,
           ...p,
           onboardOrg: { ...emptyOnboardOrg(), ...(p.onboardOrg ?? {}) },
+          // Sources come back off JSON inert - see `hydrateSource`. A saved
+          // repository replaces the seed outright rather than merging with it,
+          // so a seeded source the user deleted stays deleted.
+          repository: p.repository
+            ? p.repository.map(hydrateSource)
+            : current.repository,
         };
       },
 
@@ -639,6 +791,7 @@ export const useAppStore = create<AppState>()(
         deletedGrants: state.deletedGrants,
         wizard: state.wizard,
         report: state.report,
+        repository: state.repository,
       }),
     },
   ),

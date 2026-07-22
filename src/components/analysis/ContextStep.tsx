@@ -1,7 +1,7 @@
 "use client";
 
 import { DATA_DETAILS, SHARE_KEYS, dataActionLabel } from "@/data/seed";
-import type { NSRService } from "@/types/data";
+import type { InitiativeSource, NSRService } from "@/types/data";
 import CheckboxRow from "@/components/primitives/CheckboxRow";
 import DataUploadField from "@/components/analysis/DataUploadField";
 import { ArrowRight, ExternalLink } from "lucide-react";
@@ -19,16 +19,22 @@ export default function ContextStep({
   uploads,
   toggleShare,
   setUsageKey,
-  addUploads,
+  addFiles,
+  addLink,
   removeUpload,
   onContinue,
 }: {
   share: Record<NSRService, boolean>;
-  uploads: string[];
+  // Resolved repository sources, not ids: the chips read their text off the
+  // source itself so the repository stays the one place a source is named.
+  uploads: InitiativeSource[];
   toggleShare: (key: NSRService) => void;
   setUsageKey: (key: NSRService) => void;
-  addUploads: (names: string[]) => void;
-  removeUpload: (index: number) => void;
+  // Files arrive whole rather than by name: each page attaches them to its own
+  // flow and files them in the user's data repository, which keeps the file.
+  addFiles: (files: File[]) => void;
+  addLink: (link: string) => void;
+  removeUpload: (id: string) => void;
   // Advancing differs by flow: the wizard only records the step as visited,
   // while the report also marks this step complete. Each page supplies its own.
   onContinue: () => void;
@@ -96,8 +102,8 @@ export default function ContextStep({
         </p>
         <DataUploadField
           uploads={uploads}
-          onAddFiles={addUploads}
-          onAddLink={(link) => addUploads([link])}
+          onAddFiles={addFiles}
+          onAddLink={addLink}
           onRemove={removeUpload}
         />
       </div>

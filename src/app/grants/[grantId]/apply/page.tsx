@@ -37,6 +37,9 @@ export default function ApplyWizardPage() {
   const view = useGrantView(grantId);
   const wizard = useAppStore((s) => s.getWizard(grantId));
   const updateWizard = useAppStore((s) => s.updateWizard);
+  const repository = useAppStore((s) => s.repository);
+  const addRepositoryDocuments = useAppStore((s) => s.addRepositoryDocuments);
+  const addRepositoryWebpage = useAppStore((s) => s.addRepositoryWebpage);
   const [usageKey, setUsageKey] = useState<NSRService | null>(null);
 
   // Once a data form is completed, auto-check its "Share your context" box so
@@ -90,16 +93,32 @@ export default function ApplyWizardPage() {
       share: { ...w.share, [key]: !w.share[key] },
     }));
 
-  const addUploads = (names: string[]) =>
-    updateWizard(grantId, (w) => ({
-      ...w,
-      uploads: [...w.uploads, ...names],
-    }));
+  // Anything added here is attached to this application *and* filed in the
+  // org-wide repository on the Profile screen, which is where the user is told
+  // their uploads are kept for reuse. Removing the chip below only detaches it
+  // from this application - it stays in the repository until deleted there.
+  const addFiles = (files: File[]) => {
+    const ids = addRepositoryDocuments(files);
+    updateWizard(grantId, (w) => ({ ...w, uploads: [...w.uploads, ...ids] }));
+  };
 
-  const removeUpload = (index: number) =>
+  const addLink = (link: string) => {
+    const id = addRepositoryWebpage(link);
+    updateWizard(grantId, (w) => ({ ...w, uploads: [...w.uploads, id] }));
+  };
+
+  // Attached sources are looked up rather than stored by name, so a source
+  // deleted from the repository drops out of this list on its own.
+  const uploadSources = wizard.uploads.flatMap(
+    (id) => repository.find((s) => s.id === id) ?? [],
+  );
+
+  // Detaches the source from this application only - it stays in the user's
+  // repository, which is the one place a source is actually deleted.
+  const removeUpload = (id: string) =>
     updateWizard(grantId, (w) => ({
       ...w,
-      uploads: w.uploads.filter((_, i) => i !== index),
+      uploads: w.uploads.filter((u) => u !== id),
     }));
 
   // Data points start unchecked; the user opts them in on the review step.
@@ -211,10 +230,11 @@ export default function ApplyWizardPage() {
           {wizard.step === 1 && (
             <ContextStep
               share={wizard.share}
-              uploads={wizard.uploads}
+              uploads={uploadSources}
               toggleShare={toggleShare}
               setUsageKey={setUsageKey}
-              addUploads={addUploads}
+              addFiles={addFiles}
+              addLink={addLink}
               removeUpload={removeUpload}
               onContinue={() => setStep(REVIEW_STEP)}
             />

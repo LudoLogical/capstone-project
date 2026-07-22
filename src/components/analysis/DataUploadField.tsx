@@ -2,27 +2,25 @@
 
 import { useRef, useState } from "react";
 import { Paperclip, FileText, X } from "lucide-react";
-import { DOCUMENT_SOURCE_TYPES } from "@/types/constants";
-import { formatWebpageLabel, normalizeWebpageUrl } from "@/utils/url";
+import type { InitiativeSource } from "@/types/data";
+import { DOCUMENT_SOURCE_TYPES, documentType } from "@/types/constants";
+import { normalizeWebpageUrl } from "@/utils/url";
+import { sourceLabel } from "@/utils/source";
 
 /** The `accept` attribute for the file picker, e.g. ".txt,.md,...". */
 const ACCEPTED_EXTENSIONS = DOCUMENT_SOURCE_TYPES.map((t) => `.${t}`).join(",");
 
 /**
- * Whether an uploaded document's file type, read off its name, is one we
- * accept. The picker's `accept` filter is only a hint - a user can always
- * override it in the OS dialog - so uploads are checked here too.
- */
-function isDocument(fileName: string): boolean {
-  const ext = fileName.split(".").pop()?.toLowerCase();
-  return DOCUMENT_SOURCE_TYPES.some((t) => t === ext);
-}
-
-/**
  * Add-supporting-data control: a real file picker that opens the user's Finder
- * and accepts actual files, plus an optional link field. Selected file names
- * and links are surfaced back to the caller, which stores them; uploads are
- * shown as removable chips.
+ * and accepts actual files, plus an optional link field. Selected files and
+ * links are surfaced back to the caller, which stores them; uploads are shown
+ * as removable chips.
+ *
+ * The picked `File`s are handed over whole rather than by name - the caller
+ * files them in the user's data repository, which keeps the file itself.
+ *
+ * Chips are rendered from the repository sources themselves, so a chip's text
+ * is always what the repository currently says that source is called.
  */
 export default function DataUploadField({
   uploads,
@@ -30,10 +28,12 @@ export default function DataUploadField({
   onAddLink,
   onRemove,
 }: {
-  uploads: string[];
-  onAddFiles: (names: string[]) => void;
+  // Already resolved against the repository by the caller: a source the user
+  // has since deleted there simply isn't in this list.
+  uploads: InitiativeSource[];
+  onAddFiles: (files: File[]) => void;
   onAddLink: (link: string) => void;
-  onRemove: (index: number) => void;
+  onRemove: (id: string) => void;
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [linkDraft, setLinkDraft] = useState("");
@@ -47,10 +47,10 @@ export default function DataUploadField({
   // so a rejected upload is never mistaken for a successful one.
   const pickFiles = (files: FileList | null) => {
     if (!files) return;
-    const names = Array.from(files).map((f) => f.name);
-    const accepted = names.filter(isDocument);
+    const picked = Array.from(files);
+    const accepted = picked.filter((f) => documentType(f.name));
     if (accepted.length > 0) onAddFiles(accepted);
-    setRejected(names.filter((n) => !isDocument(n)));
+    setRejected(picked.filter((f) => !documentType(f.name)).map((f) => f.name));
   };
 
   const addLink = () => {
@@ -128,19 +128,17 @@ export default function DataUploadField({
 
       {uploads.length > 0 && (
         <div className="flex flex-wrap gap-2">
-          {uploads.map((u, i) => {
-            // A chip holds either a file name or a canonical link; only the
-            // latter is shortened, and only for display.
-            const label = formatWebpageLabel(u);
+          {uploads.map((source) => {
+            const label = sourceLabel(source);
             return (
               <span
-                key={`${u}-${i}`}
+                key={source.id}
                 className="inline-flex items-center gap-1.5 rounded-full border border-border-strong bg-surface-alt py-1 pr-1.5 pl-3 text-xs font-bold text-ink-secondary"
               >
                 <FileText size={12} className="shrink-0" />
                 {label}
                 <button
-                  onClick={() => onRemove(i)}
+                  onClick={() => onRemove(source.id)}
                   aria-label={`Remove ${label}`}
                   className="flex h-4 w-4 flex-none items-center justify-center rounded-full text-ink-muted transition duration-150 hover:bg-divider-2 hover:text-ink"
                 >

@@ -36,6 +36,9 @@ export default function ReportFlowPage() {
   const view = useGrantView(grantId);
   const report = useAppStore((s) => s.getReport(grantId));
   const updateReport = useAppStore((s) => s.updateReport);
+  const repository = useAppStore((s) => s.repository);
+  const addRepositoryDocuments = useAppStore((s) => s.addRepositoryDocuments);
+  const addRepositoryWebpage = useAppStore((s) => s.addRepositoryWebpage);
   const addToast = useAppStore((s) => s.addToast);
   const dontAskDeleteFound = useAppStore((s) => s.dontAskDeleteFound);
   const setDontAskDeleteFound = useAppStore((s) => s.setDontAskDeleteFound);
@@ -82,15 +85,31 @@ export default function ReportFlowPage() {
       ...r,
       share: { ...r.share, [key]: !r.share[key] },
     }));
-  const addUploads = (names: string[]) =>
+  // Anything added here is attached to this report *and* filed in the org-wide
+  // repository on the Profile screen, which is where the user is told their
+  // uploads are kept for reuse. Removing the chip below only detaches it from
+  // this report - it stays in the repository until deleted there.
+  const addFiles = (files: File[]) => {
+    const ids = addRepositoryDocuments(files);
+    updateReport(grantId, (r) => ({ ...r, uploads: [...r.uploads, ...ids] }));
+  };
+
+  const addLink = (link: string) => {
+    const id = addRepositoryWebpage(link);
+    updateReport(grantId, (r) => ({ ...r, uploads: [...r.uploads, id] }));
+  };
+
+  // Attached sources are looked up rather than stored by name, so a source
+  // deleted from the repository drops out of this list on its own.
+  const uploadSources = report.uploads.flatMap(
+    (id) => repository.find((s) => s.id === id) ?? [],
+  );
+  // Detaches the source from this report only - it stays in the user's
+  // repository, which is the one place a source is actually deleted.
+  const removeUpload = (id: string) =>
     updateReport(grantId, (r) => ({
       ...r,
-      uploads: [...r.uploads, ...names],
-    }));
-  const removeUpload = (index: number) =>
-    updateReport(grantId, (r) => ({
-      ...r,
-      uploads: r.uploads.filter((_, i) => i !== index),
+      uploads: r.uploads.filter((u) => u !== id),
     }));
   // The card sends the value it wants stored, already flipped from the state
   // the user can actually see (the topmost card reads as open with nothing
@@ -363,10 +382,11 @@ export default function ReportFlowPage() {
           {report.step === 1 && (
             <ContextStep
               share={report.share}
-              uploads={report.uploads}
+              uploads={uploadSources}
               toggleShare={toggleShare}
               setUsageKey={setUsageKey}
-              addUploads={addUploads}
+              addFiles={addFiles}
+              addLink={addLink}
               removeUpload={removeUpload}
               onContinue={() => saveAndContinue(1)}
             />

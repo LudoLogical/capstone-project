@@ -1,50 +1,20 @@
 "use client";
 
 import { useMemo, useRef, useState, type ReactNode } from "react";
-import {
-  InitiativeSourceKind,
-  type DocumentSource,
-  type InitiativeSource,
-} from "@/types/data";
-import { USER_DISPLAY_NAME, USER_MAYA_ID } from "@/data/seed";
+import { InitiativeSourceKind, type InitiativeSource } from "@/types/data";
+import { USER_DISPLAY_NAME } from "@/data/seed";
 import { formatLongDate } from "@/utils/format";
 import type { LucideIcon } from "lucide-react";
 import { Download, ExternalLink, Trash2 } from "lucide-react";
 import Pagination from "@/components/primitives/Pagination";
-import { DOCUMENT_SOURCE_TYPES, DocumentSourceType } from "@/types/constants";
-import { formatWebpageLabel, normalizeWebpageUrl } from "@/utils/url";
+import { DOCUMENT_SOURCE_TYPES, documentType } from "@/types/constants";
+import { normalizeWebpageUrl } from "@/utils/url";
+import { sourceLabel } from "@/utils/source";
 
 const PAGE_SIZE = 6;
 
 /** The `accept` attribute for the file picker, e.g. ".txt,.md,...". */
 const ACCEPTED_EXTENSIONS = DOCUMENT_SOURCE_TYPES.map((t) => `.${t}`).join(",");
-
-/**
- * The file type of an uploaded document, read off its name, or `null` if it
- * isn't one we accept. The picker's `accept` filter is only a hint - a user can
- * always override it in the OS dialog - so uploads are checked here too.
- */
-function documentType(fileName: string): DocumentSourceType | null {
-  const ext = fileName.split(".").pop()?.toLowerCase();
-  return DOCUMENT_SOURCE_TYPES.find((t) => t === ext) ?? null;
-}
-
-/**
- * The field that is used as a source's label varies by its kind. A webpage's
- * stored link is canonical (`https://example.org/`), which is more than the
- * user needs to read, so it's shortened for display; the full link is still
- * what the row's anchor points at.
- */
-function sourceLabel(source: InitiativeSource): string {
-  switch (source.kind) {
-    case InitiativeSourceKind.Document:
-      return source.name;
-    case InitiativeSourceKind.Webpage:
-      return formatWebpageLabel(source.link);
-    case InitiativeSourceKind.Chat:
-      return source.content;
-  }
-}
 
 export default function RepositorySection({
   title,
@@ -53,7 +23,10 @@ export default function RepositorySection({
   addLabel,
   addIcon: AddIcon,
   verb,
-  sources: initialSources,
+  sources,
+  onAddDocuments,
+  onAddWebpage,
+  onRemove,
   underlineLabel = false,
   addPlaceholder,
   fileUpload = false,
@@ -65,15 +38,18 @@ export default function RepositorySection({
   addLabel?: string;
   addIcon?: LucideIcon;
   verb: "Uploaded" | "Logged";
+  // Owned by the store, not by this section: sources added while gathering data
+  // for a grant have to show up here too, so the list can't be local state.
   sources: InitiativeSource[];
+  // Absent on the read-only section, which has nothing to add.
+  onAddDocuments?: (files: File[]) => void;
+  onAddWebpage?: (link: string) => void;
+  onRemove: (id: string) => void;
   underlineLabel?: boolean;
   addPlaceholder?: string;
   fileUpload?: boolean;
   help?: ReactNode;
 }) {
-  // Canonical sources adapted into display rows. These are never persisted -
-  // the section holds them in local state for the life of the page.
-  const [sources, setSources] = useState(initialSources);
   const [page, setPage] = useState(0);
   const [helpOpen, setHelpOpen] = useState(false);
   const [adding, setAdding] = useState(false);
@@ -84,44 +60,11 @@ export default function RepositorySection({
   // user edits it again so the message doesn't outlive the mistake.
   const [draftError, setDraftError] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const idCounter = useRef(0);
 
-  const nextId = () => `new-${Date.now()}-${idCounter.current++}`;
-
-  const append = (source: InitiativeSource) =>
-    setSources((prev) => {
-      const next = [...prev, source];
-      // Jump to the last page so the new item is visible.
-      setPage(Math.ceil(next.length / PAGE_SIZE) - 1);
-      return next;
-    });
-
-  const appendDocument = (file: File, type: DocumentSource["type"]) =>
-    append({
-      id: nextId(),
-      kind: InitiativeSourceKind.Document,
-      folder: null,
-      creationTime: new Date(),
-      creator: USER_MAYA_ID,
-      isDeleted: false,
-      file,
-      name: file.name,
-      type,
-    });
-
-  const appendWebpage = (link: string) =>
-    append({
-      id: nextId(),
-      kind: InitiativeSourceKind.Webpage,
-      folder: null,
-      creationTime: new Date(),
-      creator: USER_MAYA_ID,
-      isDeleted: false,
-      link,
-      // The page's HTML is fetched and cached server-side when the source is
-      // persisted; nothing is retrieved in the browser.
-      content: "",
-    });
+  // Jump to the last page so newly added items are visible. The list lives in
+  // the store now, so the new length is computed rather than read back.
+  const showLastPageFor = (added: number) =>
+    setPage(Math.ceil((sources.length + added) / PAGE_SIZE) - 1);
 
   const addWebpage = () => {
     if (!draft.trim()) return;
@@ -130,7 +73,8 @@ export default function RepositorySection({
       setDraftError(true);
       return;
     }
-    appendWebpage(url);
+    onAddWebpage?.(url);
+    showLastPageFor(1);
     setDraft("");
     setDraftError(false);
     setAdding(false);
@@ -140,13 +84,13 @@ export default function RepositorySection({
   // so a rejected upload is never mistaken for a successful one.
   const onFilesPicked = (files: FileList | null) => {
     if (!files) return;
-    const skipped: string[] = [];
-    Array.from(files).forEach((file) => {
-      const type = documentType(file.name);
-      if (type) appendDocument(file, type);
-      else skipped.push(file.name);
-    });
-    setRejected(skipped);
+    const picked = Array.from(files);
+    const accepted = picked.filter((f) => documentType(f.name));
+    if (accepted.length > 0) {
+      onAddDocuments?.(accepted);
+      showLastPageFor(accepted.length);
+    }
+    setRejected(picked.filter((f) => !documentType(f.name)).map((f) => f.name));
   };
 
   const pageCount = Math.max(1, Math.ceil(sources.length / PAGE_SIZE));
@@ -156,9 +100,6 @@ export default function RepositorySection({
     () => sources.slice(safePage * PAGE_SIZE, safePage * PAGE_SIZE + PAGE_SIZE),
     [sources, safePage],
   );
-
-  const remove = (id: string) =>
-    setSources((prev) => prev.filter((it) => it.id !== id));
 
   const labelText = `text-sm font-semibold text-ink ${
     underlineLabel ? "underline underline-offset-2" : ""
@@ -350,7 +291,7 @@ export default function RepositorySection({
                     </div>
                   </div>
                   <button
-                    onClick={() => remove(item.id)}
+                    onClick={() => onRemove(item.id)}
                     aria-label={`Remove ${label}`}
                     className="inline-flex items-center gap-1.5 rounded-lg border border-accent-tint-border bg-accent-tint px-3 py-2 text-xs font-semibold text-accent-ink transition duration-150 hover:border-accent hover:bg-accent-tint-2"
                   >
