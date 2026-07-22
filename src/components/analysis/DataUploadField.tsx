@@ -121,8 +121,8 @@ export default function DataUploadField({
       </div>
       {linkError && (
         <p role="alert" className="mb-3 max-w-2xl text-sm text-accent-ink">
-          That doesn&apos;t look like a webpage address. Links should look like
-          example.org or https://example.org/page.
+          That isn&apos;t a valid URL. Links should look like example.org or
+          https://example.org/page.
         </p>
       )}
 

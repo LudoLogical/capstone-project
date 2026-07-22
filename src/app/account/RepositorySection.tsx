@@ -319,8 +319,8 @@ export default function RepositorySection({
                   role="alert"
                   className="w-full max-w-2xl text-sm text-accent-ink"
                 >
-                  That doesn&apos;t look like a webpage address. Links should
-                  look like example.org or https://example.org/page.
+                  That isn&apos;t a valid URL. Links should look like
+                  example.org or https://example.org/page.
                 </p>
               )}
             </div>
