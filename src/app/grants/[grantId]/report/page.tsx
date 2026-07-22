@@ -12,6 +12,7 @@ import {
   POINT_CONTEXT,
   REPORT_QUESTION_STEPS,
   RUEA_SECTIONS,
+  userPointAnalysis,
 } from "@/data/seed";
 import { type AnalysisCardSection } from "@/components/analysis/RueaCard";
 import Modal from "@/components/primitives/Modal";
@@ -27,7 +28,7 @@ import ReportStepRail from "@/app/grants/[grantId]/report/ReportStepRail";
 import ContextStep from "@/components/analysis/ContextStep";
 import ReportChatStepPane from "@/app/grants/[grantId]/report/ReportChatStepPane";
 import ReportReviewStep from "@/app/grants/[grantId]/report/ReportReviewStep";
-import ReportAnalysisStep from "@/app/grants/[grantId]/report/ReportAnalysisStep";
+import AnalysisStep from "@/components/analysis/AnalysisStep";
 
 export default function ReportFlowPage() {
   const { grantId = "" } = useParams<{ grantId: string }>();
@@ -91,41 +92,65 @@ export default function ReportFlowPage() {
       ...r,
       uploads: r.uploads.filter((_, i) => i !== index),
     }));
-  // `current` is the card's effective open state (the first card defaults to
-  // open even with no stored value), so the first click always flips what the
-  // user actually sees.
-  const toggleAnalysis = (id: string, current: boolean) =>
+  // The card sends the value it wants stored, already flipped from the state
+  // the user can actually see (the topmost card reads as open with nothing
+  // stored), so this stays a plain write.
+  const setAnalysisExpanded = (id: string, value: boolean) =>
     updateReport(grantId, (r) => ({
       ...r,
-      analysisExpanded: {
-        ...r.analysisExpanded,
-        [id]: !current,
-      },
+      analysisExpanded: { ...r.analysisExpanded, [id]: value },
     }));
 
   const questionStepId = QUESTION_STEP_ID_BY_INDEX[report.step];
 
-  // The analysis always tracks the review: every data point still selected there
-  // gets a card here, and unselecting one drops its card. Points backed by an
-  // authoritative datum get the full benchmarked analysis; the rest get the same
-  // card without comparison bars.
+  // The analysis always tracks the review: every data point still selected
+  // there gets exactly one card here, and unselecting one drops its card. That
+  // mapping is the contract the Analysis step is built on - which is why this
+  // is total over the selection, with a stand-in analysis for any point that
+  // has none of its own rather than a silent omission. Points backed by an
+  // authoritative datum get the full benchmarked analysis; the rest get the
+  // same card without comparison bars.
   const analysisSections: AnalysisCardSection[] = REPORT_QUESTION_STEPS.flatMap(
     (sd) => {
       const chat = report.chat[sd.id];
-      const selected = sd.items.filter(
-        (it) => !chat.removed?.[it.id] && isPicked(chat.picks, it.id),
-      );
-      return selected.flatMap((it) => {
-        const ruea = it.analysisId
-          ? RUEA_SECTIONS.find((s) => s.id === it.analysisId)
-          : undefined;
-        if (ruea) return [ruea];
-        const pa = POINT_ANALYSES[it.id];
-        if (!pa) return [];
-        return [{ id: it.id, analysis: pa, ...POINT_CONTEXT[it.id] }];
-      });
+      const seeded = sd.items
+        .filter((it) => !chat.removed?.[it.id] && isPicked(chat.picks, it.id))
+        .map((it) => {
+          const ruea = it.analysisId
+            ? RUEA_SECTIONS.find((s) => s.id === it.analysisId)
+            : undefined;
+          if (ruea) return ruea;
+          const pa = POINT_ANALYSES[it.id];
+          return {
+            id: it.id,
+            analysis: pa ?? userPointAnalysis(it.id, it.label, it.source),
+            ...POINT_CONTEXT[it.id],
+          };
+        });
+      // Points the user typed into this step's chat. They are selected by the
+      // same `custom-<i>` key the chat writes, but the card is keyed by step as
+      // well - the index restarts in every step, so an unqualified id would
+      // collide across them and make two cards share one open/ticked entry.
+      const typed = (chat.custom ?? [])
+        // Keyed off the original index, before any filtering - that is what
+        // both `picks` and `customSources` are keyed by.
+        .map((text, i) => ({
+          text,
+          itemId: `custom-${i}`,
+          citation: chat.customSources?.[i]
+            ? `From ${chat.customSources[i]}`
+            : "Added by you",
+        }))
+        .filter(
+          (it) => !chat.removed?.[it.itemId] && isPicked(chat.picks, it.itemId),
+        )
+        .map(({ text, itemId, citation }) => {
+          const id = `${sd.id}-${itemId}`;
+          return { id, analysis: userPointAnalysis(id, text, citation) };
+        });
+      return [...seeded, ...typed];
     },
-  ).filter((s) => !report.removedAnalyses[s.id]);
+  );
 
   // Resetting starts the report over: back to the requirements checklist, every
   // card cleared, and the Analysis step locked again until the user re-unlocks
@@ -145,22 +170,8 @@ export default function ReportFlowPage() {
       removedAnalyses: {},
       supportingPicks: {},
       analysisExpanded: {},
-      customSupporting: [],
     }));
   };
-
-  const editCustomSupporting = (index: number, text: string) =>
-    updateReport(grantId, (r) => ({
-      ...r,
-      customSupporting: r.customSupporting.map((t, i) =>
-        i === index ? text : t,
-      ),
-    }));
-  const deleteCustomSupporting = (index: number) =>
-    updateReport(grantId, (r) => ({
-      ...r,
-      customSupporting: r.customSupporting.filter((_, i) => i !== index),
-    }));
 
   // The consolidated review (step 6): every data point gathered across the four
   // question sections, grouped by section. Removed items drop out. This is the
@@ -391,18 +402,18 @@ export default function ReportFlowPage() {
           )}
 
           {report.step === 7 && (
-            <ReportAnalysisStep
-              report={report}
-              analysisSections={analysisSections}
-              toggleAnalysis={toggleAnalysis}
-              isAnalysisSelected={isAnalysisSelected}
-              toggleAnalysisSelected={toggleAnalysisSelected}
-              allAnalysisSelected={allAnalysisSelected}
-              toggleAllAnalysisSelected={toggleAllAnalysisSelected}
-              editCustomSupporting={editCustomSupporting}
-              deleteCustomSupporting={deleteCustomSupporting}
-              setStep={setStep}
-              saveToGrant={saveToGrant}
+            <AnalysisStep
+              sections={analysisSections}
+              expanded={report.analysisExpanded}
+              setExpanded={setAnalysisExpanded}
+              isSelected={isAnalysisSelected}
+              toggleSelected={toggleAnalysisSelected}
+              allSelected={allAnalysisSelected}
+              toggleAll={toggleAllAnalysisSelected}
+              usageBullet="IN YOUR REPORT shows you how you can use it to demonstrate the impact you've had"
+              applyLabel="In your report"
+              onBack={() => setStep(6)}
+              onSaveAndExit={saveToGrant}
             />
           )}
         </div>

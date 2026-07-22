@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useAppStore } from "@/store/useAppStore";
 import { NSRService } from "@/types/data";
 import { useGrantView } from "@/store/derived";
@@ -11,7 +11,7 @@ import BackButton from "@/components/primitives/BackButton";
 import ApplyStepRail from "@/app/grants/[grantId]/apply/ApplyStepRail";
 import ContextStep from "@/components/analysis/ContextStep";
 import ApplyReviewStep from "@/app/grants/[grantId]/apply/ApplyReviewStep";
-import ApplyAnalysisStep from "@/app/grants/[grantId]/apply/ApplyAnalysisStep";
+import AnalysisStep from "@/components/analysis/AnalysisStep";
 
 /**
  * The application flow is three steps: share your context, review the data we
@@ -33,6 +33,7 @@ function stepPlan() {
 
 export default function ApplyWizardPage() {
   const { grantId = "" } = useParams<{ grantId: string }>();
+  const router = useRouter();
   const view = useGrantView(grantId);
   const wizard = useAppStore((s) => s.getWizard(grantId));
   const updateWizard = useAppStore((s) => s.updateWizard);
@@ -134,10 +135,12 @@ export default function ApplyWizardPage() {
   // the user opts cards in. Reuses the persisted `analysisAdded` map, keyed by
   // section id.
   const isExportSelected = (key: string) => !!wizard.analysisAdded[key];
-  const setExportSelected = (key: string, value: boolean) =>
+  // Flipped inside the updater so a tick always negates what is actually
+  // stored, not a render-time snapshot of it.
+  const toggleExportSelected = (key: string) =>
     updateWizard(grantId, (w) => ({
       ...w,
-      analysisAdded: { ...w.analysisAdded, [key]: value },
+      analysisAdded: { ...w.analysisAdded, [key]: !w.analysisAdded[key] },
     }));
   const exportKeys = foundSections.map((s) => s.id);
   const allExportSelected =
@@ -232,16 +235,17 @@ export default function ApplyWizardPage() {
           )}
 
           {wizard.step === ANALYSIS_STEP && (
-            <ApplyAnalysisStep
-              wizard={wizard}
-              foundSections={foundSections}
-              setRueaExpanded={setRueaExpanded}
-              isExportSelected={isExportSelected}
-              setExportSelected={setExportSelected}
-              allExportSelected={allExportSelected}
-              toggleAllExport={toggleAllExport}
-              setStep={setStep}
-              REVIEW_STEP={REVIEW_STEP}
+            <AnalysisStep
+              sections={foundSections}
+              expanded={wizard.rueaExpanded}
+              setExpanded={setRueaExpanded}
+              isSelected={isExportSelected}
+              toggleSelected={toggleExportSelected}
+              allSelected={allExportSelected}
+              toggleAll={toggleAllExport}
+              usageBullet="IN YOUR APPLICATION shows you how you can use it to enhance your pitch."
+              onBack={() => setStep(REVIEW_STEP)}
+              onSaveAndExit={() => router.push("/")}
             />
           )}
         </div>

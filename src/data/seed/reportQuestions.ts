@@ -1,5 +1,6 @@
 import type { DatumAnalysis } from "@/types/analysis";
 import type { RueaBar } from "@/components/analysis/StatBars";
+import { VisualizationMethod } from "@/types/data";
 import {
   DATUM_COMMIT_WALKING_GROUPS,
   DATUM_COMMIT_SCREENING,
@@ -7,6 +8,7 @@ import {
   DATUM_NUTRITION_WORKSHOPS,
   DATUM_SCREENING_SESSIONS,
   DATUM_NEIGHBORHOODS_SERVED,
+  SRC_USER_CHAT,
 } from "./datum";
 
 // Content for the 4 chat-style Q&A steps of the Repository Report Flow.
@@ -169,6 +171,48 @@ export const POINT_CONTEXT: Record<
       "3 sessions short of the promised cadence, or about 86% delivered.",
   },
 };
+
+/**
+ * Both halves of the analysis shown for a data point the user supplied
+ * themselves. The two sections say the same thing because in a live build both
+ * would be model output, and there is no model behind this prototype.
+ */
+const AI_PENDING = [
+  "This section is normally written by AI, which reads the data point above in the context of your grant.",
+  "That model isn't wired up in this prototype - in the production version of the app, the generated analysis will appear here instead of this note.",
+];
+
+/**
+ * A stable stand-in for `Datum.id`, derived from the point's key so it doesn't
+ * change between renders. Kept negative to stay clear of the seeded ids.
+ * Nothing reads it - selection and card keys are the id strings - but it still
+ * has to be a number, and an honest one.
+ */
+const standInDatumId = (key: string) =>
+  -Array.from(key).reduce((h, c) => (h * 31 + c.charCodeAt(0)) | 0, 7);
+
+/**
+ * The analysis for a data point that has none of its own: anything the user
+ * typed into a question step's chat, and any seeded point with no entry above.
+ * Every selected data point gets exactly one card, so a point with nothing
+ * behind it still needs an analysis rather than being dropped from the step.
+ */
+export const userPointAnalysis = (
+  key: string,
+  content: string,
+  citation: string,
+): DatumAnalysis => ({
+  datum: {
+    id: standInDatumId(key),
+    content,
+    citation,
+    visualizationMethod: VisualizationMethod.None,
+    source: SRC_USER_CHAT,
+  },
+  // The type documents `null` as meaning the user added this point manually.
+  relevance: null,
+  result: { understand: AI_PENDING, apply: AI_PENDING },
+});
 
 /** An item whose label and source are simply its analysed datum's. */
 const fromAnalysis = (id: string): ReportQuestionItem => ({

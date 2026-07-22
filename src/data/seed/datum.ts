@@ -1,6 +1,7 @@
 import type {
   AISDatum,
   AuthoritativeDatum,
+  ChatSource,
   DocumentSource,
   InitiativeDatum,
   NSRServiceDatum,
@@ -131,10 +132,11 @@ export const DATUM_PROGRAM_RETENTION: AISDatum = {
 
 // ---- Report data points (the four question sections) -----------------------
 
-// Two stand-in sources for report data points the user reports themselves: one
-// for figures restated from the grant application, one for facts already on the
-// org profile. InitiativeDatum requires a source, and neither has a document
-// behind it in this prototype.
+// Three stand-in sources for report data points the user reports themselves:
+// one for figures restated from the grant application, one for facts already on
+// the org profile, and one for anything they type into a question step's chat.
+// InitiativeDatum requires a source, and none of them has a document behind it
+// in this prototype.
 export const SRC_GRANT_APPLICATION: DocumentSource = {
   id: "src-doc-grant-application",
   kind: InitiativeSourceKind.Document,
@@ -157,6 +159,19 @@ export const SRC_ORG_PROFILE: DocumentSource = {
   file: new File(["Account profile (seed placeholder)"], "profile.pdf"),
   name: "Account profile",
   type: "pdf",
+};
+
+// Unlike the two above, this one stands in for a live conversation rather than
+// a document, so it carries no fixed content of its own - each data point built
+// against it supplies the user's own words.
+export const SRC_USER_CHAT: ChatSource = {
+  id: "src-chat-report-conversation",
+  kind: InitiativeSourceKind.Chat,
+  folder: null,
+  creationTime: new Date("2026-01-15T00:00:00Z"),
+  creator: USER_MAYA_ID,
+  isDeleted: false,
+  content: "",
 };
 
 const commitment = (id: number, content: string): InitiativeDatum => ({

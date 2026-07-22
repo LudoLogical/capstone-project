@@ -69,9 +69,6 @@ export type ReportState = {
     outcomes: ReportChatState;
   };
   supportingPicks: Record<string, boolean>;
-  // Extra data points the user typed in themselves on the supporting-data step.
-  // Always treated as included.
-  customSupporting: string[];
   // Seed analyses the user deleted from the Analysis step, keyed by section id.
   removedAnalyses: Record<string, boolean>;
   analysisExpanded: Record<string, boolean>;
@@ -153,7 +150,6 @@ export function makeReportState(): ReportState {
       outcomes: emptyChat(),
     },
     supportingPicks: {},
-    customSupporting: [],
     removedAnalyses: {},
     analysisExpanded: {},
     analysisCardIndex: 0,
