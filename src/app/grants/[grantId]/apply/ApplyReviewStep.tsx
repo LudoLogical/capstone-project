@@ -9,6 +9,7 @@ export default function ApplyReviewStep({
   toggleFound,
   allFound,
   toggleAllFound,
+  reviewHasSelection,
   analysisUnlocked,
   unlockAnalysis,
   setStep,
@@ -18,13 +19,14 @@ export default function ApplyReviewStep({
   toggleFound: (id: string) => void;
   allFound: boolean;
   toggleAllFound: () => void;
+  // Nothing to analyze until at least one data point is checked. Supplied by
+  // the page so this button and the rail's Analysis step agree.
+  reviewHasSelection: boolean;
   analysisUnlocked: boolean;
   unlockAnalysis: () => void;
   setStep: (step: number) => void;
   REVIEW_STEP: number;
 }) {
-  // Nothing to analyze until at least one data point is checked.
-  const anyFound = RUEA_SECTIONS.some((s) => isFound(s.id));
   return (
     <div>
       <h1 className="mb-2 font-serif text-xl leading-tight font-bold">
@@ -88,7 +90,7 @@ export default function ApplyReviewStep({
         </button>
         <button
           onClick={unlockAnalysis}
-          disabled={!anyFound}
+          disabled={!reviewHasSelection}
           className="inline-flex items-center gap-2 rounded-xl bg-accent-ink px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
         >
           {analysisUnlocked ? (

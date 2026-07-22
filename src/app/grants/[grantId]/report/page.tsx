@@ -212,6 +212,13 @@ export default function ReportFlowPage() {
       },
     }));
 
+  // The single gate on reaching Analysis: at least one data point is checked on
+  // Review. Shared by Review's "Save and analyze" button and the rail's
+  // Analysis step so the two can't disagree.
+  const reviewHasSelection = reviewGroups.some((g) =>
+    g.items.some((it) => it.picked),
+  );
+
   const allReviewPicked =
     reviewGroups.length > 0 &&
     reviewGroups.every((g) => g.items.every((it) => it.picked));
@@ -282,6 +289,13 @@ export default function ReportFlowPage() {
       requirementsSet: true,
     }));
 
+  // Editing reopens the gate with the current text loaded, so the user amends
+  // what's there rather than retyping it.
+  const editRequirements = () => {
+    setReqDraft(report.requirements);
+    updateReport(grantId, (r) => ({ ...r, requirementsSet: false }));
+  };
+
   // Tapping a common requirement appends it as its own line, so the user can
   // build the list by clicking and still edit or add to it by hand.
   const addRequirement = (text: string) =>
@@ -328,41 +342,13 @@ export default function ReportFlowPage() {
         <ReportStepRail
           report={report}
           isComplete={isComplete}
-          analysisHasData={
-            analysisSections.length > 0 || report.customSupporting.length > 0
-          }
-          reviewHasSelection={reviewGroups.some((g) =>
-            g.items.some((it) => it.picked),
-          )}
+          reviewHasSelection={reviewHasSelection}
           setStep={setStep}
           resetAnalysis={resetAnalysis}
+          editRequirements={editRequirements}
         />
 
         <div className="min-w-0 max-w-3xl flex-1">
-          {report.requirements.trim() && (
-            <div className="mb-5 rounded-2xl border border-accent-tint-border bg-accent-tint-soft p-5">
-              <div className="mb-1 flex items-center justify-between gap-3">
-                <div className="text-xs font-bold tracking-wider text-accent-ink uppercase">
-                  Reporting requirements
-                </div>
-                <button
-                  onClick={() => {
-                    setReqDraft(report.requirements);
-                    updateReport(grantId, (r) => ({
-                      ...r,
-                      requirementsSet: false,
-                    }));
-                  }}
-                  className="flex-none text-xs font-semibold text-accent-ink-2 underline underline-offset-2 hover:text-accent"
-                >
-                  Edit
-                </button>
-              </div>
-              <p className="text-sm leading-relaxed whitespace-pre-wrap text-ink-body">
-                {report.requirements}
-              </p>
-            </div>
-          )}
           {report.step === 1 && (
             <ContextStep
               share={report.share}
@@ -395,6 +381,7 @@ export default function ReportFlowPage() {
               toggleReviewItem={toggleReviewItem}
               allReviewPicked={allReviewPicked}
               toggleAllReviewPicked={toggleAllReviewPicked}
+              reviewHasSelection={reviewHasSelection}
               deleteReviewItem={deleteReviewItem}
               dontAskDeleteFound={dontAskDeleteFound}
               setDontAskDeleteFound={setDontAskDeleteFound}

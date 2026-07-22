@@ -125,6 +125,11 @@ export default function ApplyWizardPage() {
 
   const foundSections = RUEA_SECTIONS.filter((s) => isFound(s.id));
 
+  // The single gate on reaching Analysis: at least one data point is checked on
+  // Review. Shared by Review's "Save and analyze" button and the rail's
+  // Analysis step so the two can't disagree.
+  const reviewHasSelection = foundSections.length > 0;
+
   // Export selection on the Analyze step. Each card's checkbox starts unchecked;
   // the user opts cards in. Reuses the persisted `analysisAdded` map, keyed by
   // section id.
@@ -194,8 +199,7 @@ export default function ApplyWizardPage() {
           REVIEW_STEP={REVIEW_STEP}
           ANALYSIS_STEP={ANALYSIS_STEP}
           analysisUnlocked={analysisUnlocked}
-          analysisHasData={foundSections.length > 0}
-          reviewHasSelection={foundSections.length > 0}
+          reviewHasSelection={reviewHasSelection}
           setStep={setStep}
           resetAnalysis={resetAnalysis}
         />
@@ -219,6 +223,7 @@ export default function ApplyWizardPage() {
               toggleFound={toggleFound}
               allFound={allFound}
               toggleAllFound={toggleAllFound}
+              reviewHasSelection={reviewHasSelection}
               analysisUnlocked={analysisUnlocked}
               unlockAnalysis={unlockAnalysis}
               setStep={setStep}

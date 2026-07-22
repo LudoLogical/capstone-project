@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import type { WizardState } from "@/store/useAppStore";
 import ResetWorkflowButton from "@/components/analysis/ResetWorkflowButton";
-import { Check, Database, Sparkles } from "lucide-react";
+import { Check, Database, Lightbulb } from "lucide-react";
 
 /** The sticky step rail beside the collection wizard. */
 export default function ApplyStepRail({
@@ -13,7 +13,6 @@ export default function ApplyStepRail({
   REVIEW_STEP,
   ANALYSIS_STEP,
   analysisUnlocked,
-  analysisHasData,
   reviewHasSelection,
   setStep,
   resetAnalysis,
@@ -24,7 +23,6 @@ export default function ApplyStepRail({
   REVIEW_STEP: number;
   ANALYSIS_STEP: number;
   analysisUnlocked: boolean;
-  analysisHasData: boolean;
   reviewHasSelection: boolean;
   setStep: (step: number) => void;
   resetAnalysis: () => void;
@@ -43,11 +41,11 @@ export default function ApplyStepRail({
                 const label = STEP_LABELS[n - 1];
                 const current = wizard.step === n;
                 const visited = !!wizard.visited[n];
-                // Analysis stays locked until it has been unlocked from Review
-                // and there is at least one data point to analyze.
+                // Analysis is locked exactly when Review has nothing selected -
+                // the same condition that disables Review's own
+                // "Save and analyze" button.
                 const isAnalysis = n === ANALYSIS_STEP;
-                const locked =
-                  isAnalysis && (!analysisUnlocked || !analysisHasData);
+                const locked = isAnalysis && !reviewHasSelection;
                 // Visiting Review isn't finishing it - it only counts as done
                 // once the user has picked at least one data point and unlocked
                 // the analysis from it.
@@ -82,7 +80,7 @@ export default function ApplyStepRail({
                       {/* Analysis always keeps its own icon, never a tick:
                           it's a destination, not a task to complete. */}
                       {locked || isAnalysis ? (
-                        <Sparkles size={12} />
+                        <Lightbulb size={12} />
                       ) : !current && done ? (
                         <Check size={12} />
                       ) : (

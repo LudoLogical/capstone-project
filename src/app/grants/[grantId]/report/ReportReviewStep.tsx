@@ -12,6 +12,7 @@ export default function ReportReviewStep({
   toggleReviewItem,
   allReviewPicked,
   toggleAllReviewPicked,
+  reviewHasSelection,
   deleteReviewItem,
   dontAskDeleteFound,
   setDontAskDeleteFound,
@@ -23,6 +24,9 @@ export default function ReportReviewStep({
   toggleReviewItem: (stepId: ReviewGroup["stepId"], itemId: string) => void;
   allReviewPicked: boolean;
   toggleAllReviewPicked: () => void;
+  // Nothing to analyze until at least one data point is checked. Supplied by
+  // the page so this button and the rail's Analysis step agree.
+  reviewHasSelection: boolean;
   deleteReviewItem: (stepId: ReviewGroup["stepId"], itemId: string) => void;
   dontAskDeleteFound: boolean;
   setDontAskDeleteFound: () => void;
@@ -33,8 +37,6 @@ export default function ReportReviewStep({
     stepId: ReviewGroup["stepId"];
     itemId: string;
   } | null>(null);
-  // Nothing to analyze until at least one data point is checked.
-  const anyPicked = reviewGroups.some((g) => g.items.some((it) => it.picked));
   return (
     <div>
       <h1 className="mb-2 font-serif text-xl leading-tight font-bold">
@@ -128,7 +130,7 @@ export default function ReportReviewStep({
         </button>
         <button
           onClick={() => saveAndContinue(6)}
-          disabled={!anyPicked}
+          disabled={!reviewHasSelection}
           className="inline-flex items-center gap-2 rounded-xl bg-accent-ink px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isComplete(6) ? (
