@@ -3,9 +3,8 @@
 import { useRef, useState } from "react";
 import { Paperclip, FileText, X } from "lucide-react";
 import type { InitiativeSource } from "@/types/data";
-import { DOCUMENT_SOURCE_TYPES, documentType } from "@/types/constants";
-import { normalizeWebpageUrl } from "@/utils/url";
-import { sourceLabel } from "@/utils/source";
+import { DOCUMENT_SOURCE_TYPES } from "@/types/constants";
+import { documentType, normalizeWebpageUrl, sourceLabel } from "@/utils/format";
 
 /** The `accept` attribute for the file picker, e.g. ".txt,.md,...". */
 const ACCEPTED_EXTENSIONS = DOCUMENT_SOURCE_TYPES.map((t) => `.${t}`).join(",");

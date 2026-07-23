@@ -3,13 +3,16 @@
 import { useMemo, useRef, useState, type ReactNode } from "react";
 import { InitiativeSourceKind, type InitiativeSource } from "@/types/data";
 import { USER_DISPLAY_NAME } from "@/data/seed";
-import { formatLongDate } from "@/utils/format";
+import {
+  documentType,
+  formatLongDate,
+  normalizeWebpageUrl,
+  sourceLabel,
+} from "@/utils/format";
 import type { LucideIcon } from "lucide-react";
 import { Download, ExternalLink, Trash2 } from "lucide-react";
 import Pagination from "@/components/primitives/Pagination";
-import { DOCUMENT_SOURCE_TYPES, documentType } from "@/types/constants";
-import { normalizeWebpageUrl } from "@/utils/url";
-import { sourceLabel } from "@/utils/source";
+import { DOCUMENT_SOURCE_TYPES } from "@/types/constants";
 
 const PAGE_SIZE = 6;
 

@@ -79,14 +79,3 @@ export const DOCUMENT_SOURCE_TYPES = [
  * A file type that is acceptable as a DocumentSources.
  */
 export type DocumentSourceType = (typeof DOCUMENT_SOURCE_TYPES)[number];
-
-/**
- * The file type of an uploaded document, read off its name, or `null` if it
- * isn't one we accept. A file picker's `accept` filter is only a hint - a user
- * can always override it in the OS dialog - so uploads are checked with this
- * wherever they are taken in.
- */
-export function documentType(fileName: string): DocumentSourceType | null {
-  const ext = fileName.split(".").pop()?.toLowerCase();
-  return DOCUMENT_SOURCE_TYPES.find((t) => t === ext) ?? null;
-}

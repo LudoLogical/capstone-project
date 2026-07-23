@@ -9,7 +9,7 @@ import type {
   InitiativeSource,
   WebpageSource,
 } from "@/types/data";
-import { documentType } from "@/types/constants";
+import { documentType } from "@/utils/format";
 import {
   REPOSITORY_CONVERSATIONS,
   REPOSITORY_FILES,
