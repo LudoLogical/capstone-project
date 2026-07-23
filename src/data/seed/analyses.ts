@@ -63,16 +63,15 @@ const sampleBars = (datum: AISDatum, unit: string): RueaBar[] =>
  * point suggested for two different reporting requirements yields one card,
  * not two.
  *
- * `analysis` is the canonical DatumAnalysis. `bars`, `evalNote` and
- * `provenanceKey` are presentation extras - a comparison to draw, a one-line
- * reading of it, and the key into the citation modal - and only exist where
- * there is something real to show.
+ * `analysis` is the canonical DatumAnalysis. `bars` and `evalNote` are
+ * presentation extras - a comparison to draw and a one-line reading of it - and
+ * only exist where there is something real to show. Nothing here describes the
+ * datum's provenance: the citation modal reads that off the datum itself.
  */
 type AnalysisEntry = {
   analysis: DatumAnalysis;
   bars?: RueaBar[];
   evalNote?: string;
-  provenanceKey?: string;
 };
 
 export const ANALYSIS_REGISTRY: Record<number, AnalysisEntry> = {
@@ -80,26 +79,22 @@ export const ANALYSIS_REGISTRY: Record<number, AnalysisEntry> = {
     analysis: ANALYSIS_CVD_RATE,
     bars: authoritativeBars(DATUM_CVD_RATE, "%"),
     evalNote: "36% below the county average.",
-    provenanceKey: "cvd",
   },
   [DATUM_PRODUCE_ACCESS.id]: {
     analysis: ANALYSIS_PRODUCE_ACCESS,
     bars: authoritativeBars(DATUM_PRODUCE_ACCESS, "%"),
     evalNote:
       "27% above the county average, but still 28 points behind the best-served neighborhoods.",
-    provenanceKey: "produce",
   },
   [DATUM_RESIDENTS_REACHED.id]: {
     analysis: ANALYSIS_RESIDENTS_REACHED,
     bars: sampleBars(DATUM_RESIDENTS_REACHED, "residents"),
     evalNote: "27% growth in unique residents served, year over year.",
-    provenanceKey: "served",
   },
   [DATUM_PROGRAM_RETENTION.id]: {
     analysis: ANALYSIS_PROGRAM_RETENTION,
     bars: sampleBars(DATUM_PROGRAM_RETENTION, "%"),
     evalNote: "14-point improvement in season-over-season retention.",
-    provenanceKey: "served",
   },
 
   // The commitments and delivery counts behind a report. Where a commitment
@@ -279,6 +274,5 @@ export function analysisForDatum(datum: Datum): AnalysisCardSection {
     analysis: entry?.analysis ?? pendingAnalysis(datum),
     bars: entry?.bars,
     evalNote: entry?.evalNote,
-    provenanceKey: entry?.provenanceKey,
   };
 }

@@ -8,12 +8,10 @@ import { Check, ChevronUp, ChevronDown } from "lucide-react";
 /**
  * What the card needs to render: a canonical DatumAnalysis plus the optional
  * presentation extras. Built by `analysisForDatum`, which is total over every
- * Datum - a data point with no comparison to draw and nothing to cite simply
- * arrives without bars or a provenance key.
+ * Datum - a data point with no comparison to draw simply arrives without bars.
  */
 export type AnalysisCardSection = {
   id: string;
-  provenanceKey?: string;
   analysis: DatumAnalysis;
   bars?: RueaBar[];
   evalNote?: string;
@@ -127,13 +125,12 @@ export default function RueaCard({
             </ul>
           </div>
 
-          {/* The row keeps the button at its natural width - as a direct child
-              of the column it would stretch to fill. */}
-          {section.provenanceKey && (
-            <div className="flex flex-wrap gap-2.5">
-              <CiteButton provenanceKey={section.provenanceKey} />
-            </div>
-          )}
+          {/* Every data point can be cited, because every Datum carries its own
+              citation. The row keeps the button at its natural width - as a
+              direct child of the column it would stretch to fill. */}
+          <div className="flex flex-wrap gap-2.5">
+            <CiteButton datum={analysis.datum} />
+          </div>
         </div>
       )}
     </div>

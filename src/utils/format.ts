@@ -145,3 +145,29 @@ export function sourceLabel(source: InitiativeSource): string {
       return source.content;
   }
 }
+
+/** What kind of thing a source is, in a word. */
+export function sourceKindLabel(kind: InitiativeSourceKind): string {
+  switch (kind) {
+    case InitiativeSourceKind.Document:
+      return "Document";
+    case InitiativeSourceKind.Webpage:
+      return "Webpage";
+    case InitiativeSourceKind.Chat:
+      return "Conversation";
+  }
+}
+
+/**
+ * A `Datum`'s value written out with its unit.
+ *
+ * A unit is prose rather than a symbol ("% of adults", "sessions"), so it can't
+ * simply be concatenated: a leading "%" belongs against the number while a word
+ * needs a space before it. Thousands are grouped against an explicit locale,
+ * like `formatCurrencyFull`, so the server and the browser agree.
+ */
+export function formatMeasure(value: number, unit?: string): string {
+  const amount = value.toLocaleString("en-US");
+  if (!unit) return amount;
+  return unit.startsWith("%") ? `${amount}${unit}` : `${amount} ${unit}`;
+}

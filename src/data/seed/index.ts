@@ -6,7 +6,6 @@ export * from "./datum";
 export * from "./initiatives";
 export * from "./grantRecords";
 export * from "./stories";
-export * from "./provenance";
 export * from "./orgProfiles";
 export * from "./repository";
 export * from "./datumPool";
