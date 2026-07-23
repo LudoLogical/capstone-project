@@ -75,3 +75,51 @@ export const REGION_WESTMORELAND_COUNTY: Region = {
   },
   censusTract: null,
 };
+
+/** Every Region this seed draws an actual boundary for. */
+export const SEEDED_REGIONS: Region[] = [
+  REGION_PITTSBURGH,
+  REGION_ALLEGHENY_COUNTY,
+  REGION_WESTMORELAND_COUNTY,
+  REGION_HILLTOP_TRACT,
+];
+
+/**
+ * The Region a place name refers to.
+ *
+ * Where the seed knows the place, that Region is returned whole - boundary and
+ * all. Everywhere else the name is all we have, so the Region is built around
+ * it with no rings in its boundary: a place the user has named but that nothing
+ * has drawn yet.
+ *
+ * In production this is where a geocoder goes. It would take the same string
+ * and return the same shape, only with real coordinates, so nothing downstream
+ * of here would change.
+ */
+export function regionNamed(name: string): Region {
+  const trimmed = name.trim();
+  const seeded = SEEDED_REGIONS.find(
+    (r) => r.name.toLowerCase() === trimmed.toLowerCase(),
+  );
+  if (seeded) return seeded;
+  return {
+    name: trimmed,
+    // Unknown until something draws it; a single unbroken boundary is the
+    // ordinary case and the honest assumption for a named place.
+    isContiguous: true,
+    coordinates: { coordinates: [] },
+    censusTract: null,
+  };
+}
+
+/** Whether two Regions refer to the same place. */
+export const sameRegion = (a: Region, b: Region) =>
+  a.name.toLowerCase() === b.name.toLowerCase();
+
+/**
+ * The picked Regions that `options` doesn't already offer - places the user
+ * named themselves. They are listed alongside the presets so a place the user
+ * added is visible, and can be unpicked the same way any preset can.
+ */
+export const unlistedRegions = (picked: Region[], options: Region[]) =>
+  picked.filter((p) => !options.some((o) => sameRegion(o, p)));

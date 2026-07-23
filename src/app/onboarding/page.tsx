@@ -1,13 +1,17 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useAppStore } from "@/store/useAppStore";
 import { ISSUE_TAGS, LOCATION_OPTIONS } from "@/data/selectors";
+import { regionNamed, sameRegion, unlistedRegions } from "@/data/seed/geo";
+import type { Region } from "@/types/geo";
 import {
   Search,
   BarChart3,
   Users,
   Check,
+  Plus,
   ArrowLeft,
   ArrowRight,
   type LucideIcon,
@@ -54,6 +58,24 @@ export default function OnboardingPage() {
   const toggleIssue = useAppStore((s) => s.toggleOnboardIssue);
   const toggleArea = useAppStore((s) => s.toggleOnboardArea);
   const completeOnboarding = useAppStore((s) => s.completeOnboarding);
+  const [areaDraft, setAreaDraft] = useState("");
+
+  const isPicked = (region: Region) =>
+    org.areas.some((a) => sameRegion(a, region));
+
+  // Stands in for the location picker this becomes in production: there, the
+  // field would suggest places as the user types and hand back a geocoded
+  // Region. Here the name is taken as given and `regionNamed` turns it into the
+  // same shape, so only the field itself changes later.
+  const addArea = () => {
+    const region = regionNamed(areaDraft);
+    if (!region.name || isPicked(region)) {
+      setAreaDraft("");
+      return;
+    }
+    toggleArea(region);
+    setAreaDraft("");
+  };
 
   // Finishing or skipping both land on the dashboard. `replace` keeps setup out
   // of the history stack, so Back can't walk the user into a flow they've done.
@@ -200,17 +222,41 @@ export default function OnboardingPage() {
                   Select all that apply.
                 </span>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {LOCATION_OPTIONS.map((area) => (
+              {/* The presets, then anything the user named themselves - shown
+                  the same way, so an added place can be unpicked like any
+                  other. */}
+              <div className="mb-2.5 flex flex-wrap gap-2">
+                {[
+                  ...LOCATION_OPTIONS,
+                  ...unlistedRegions(org.areas, LOCATION_OPTIONS),
+                ].map((area) => (
                   <button
-                    key={area}
+                    key={area.name}
                     type="button"
                     onClick={() => toggleArea(area)}
-                    className={chip(org.areas.includes(area))}
+                    className={chip(isPicked(area))}
                   >
-                    {area}
+                    {area.name}
                   </button>
                 ))}
+              </div>
+              <div className="flex gap-2">
+                <input
+                  value={areaDraft}
+                  onChange={(e) => setAreaDraft(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && addArea()}
+                  placeholder="Somewhere else? Add it here"
+                  aria-label="Add a community you serve"
+                  className="min-w-0 flex-1 rounded-xl border border-border-strong bg-white px-4 py-2 text-sm text-ink outline-none focus:border-accent"
+                />
+                <button
+                  type="button"
+                  onClick={addArea}
+                  disabled={!areaDraft.trim()}
+                  className="inline-flex flex-none items-center gap-2 rounded-xl border border-border-strong bg-white px-4 py-2 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 enabled:hover:border-accent disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <Plus size={14} className="shrink-0" /> Add
+                </button>
               </div>
 
               {matchCount > 0 && (

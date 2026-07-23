@@ -11,6 +11,8 @@ import type {
   WebpageSource,
 } from "@/types/data";
 import type { ReportingRequirement } from "@/types/grant";
+import type { Region } from "@/types/geo";
+import { sameRegion } from "@/data/seed/geo";
 import { documentType } from "@/utils/format";
 import {
   REPOSITORY_CONVERSATIONS,
@@ -61,10 +63,13 @@ export type OnboardOrg = {
   name: string;
   // Where collaborators reach the org - shown as the sender on warm intros.
   email: string;
-  // Issue and service-area tags, drawn from the same lists as the Explore
-  // search filter (ISSUE_TAGS / LOCATION_OPTIONS), so they're plain strings.
+  // Issue tags, drawn from the same list as the Explore search filter
+  // (ISSUE_TAGS), so they're plain strings.
   issues: string[];
-  areas: string[];
+  // Where this org works. `Initiative.serviceAreas` is `Region[]`, and the user
+  // can name a place the presets don't list, so these are Regions rather than
+  // names - see `regionNamed`.
+  areas: Region[];
 };
 
 const emptyOnboardOrg = (): OnboardOrg => ({
@@ -395,7 +400,7 @@ type AppState = {
   setOnboardStep: (step: number) => void;
   patchOnboardOrg: (patch: Partial<OnboardOrg>) => void;
   toggleOnboardIssue: (issue: string) => void;
-  toggleOnboardArea: (area: string) => void;
+  toggleOnboardArea: (area: Region) => void;
   completeOnboarding: () => void;
   setStage: (grantId: string, stage: GrantLifecycleStage) => void;
   setDiscoverable: (grantId: string, on: boolean) => void;
@@ -552,12 +557,12 @@ export const useAppStore = create<AppState>()(
         }),
       toggleOnboardArea: (area) =>
         set((state) => {
-          const has = state.onboardOrg.areas.includes(area);
+          const has = state.onboardOrg.areas.some((a) => sameRegion(a, area));
           return {
             onboardOrg: {
               ...state.onboardOrg,
               areas: has
-                ? state.onboardOrg.areas.filter((a) => a !== area)
+                ? state.onboardOrg.areas.filter((a) => !sameRegion(a, area))
                 : [...state.onboardOrg.areas, area],
             },
           };
@@ -801,7 +806,17 @@ export const useAppStore = create<AppState>()(
         return {
           ...current,
           ...p,
-          onboardOrg: { ...emptyOnboardOrg(), ...(p.onboardOrg ?? {}) },
+          onboardOrg: {
+            ...emptyOnboardOrg(),
+            ...(p.onboardOrg ?? {}),
+            // `areas` used to be plain place names. There is no migrating a
+            // name to a Region - the boundary was never recorded - so a profile
+            // saved before the change drops its areas rather than handing every
+            // reader a string where a Region belongs.
+            areas: (p.onboardOrg?.areas ?? []).filter(
+              (a) => typeof a === "object" && a !== null && "name" in a,
+            ),
+          },
           // Sources come back off JSON inert - see `hydrateSource`. A saved
           // repository replaces the seed outright rather than merging with it,
           // so a seeded source the user deleted stays deleted.

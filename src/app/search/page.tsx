@@ -12,7 +12,9 @@ import {
   sortGrants,
   type SortOption,
 } from "@/data/selectors";
-import { Search } from "lucide-react";
+import { regionNamed, sameRegion, unlistedRegions } from "@/data/seed/geo";
+import type { Region } from "@/types/geo";
+import { Plus, Search } from "lucide-react";
 import CheckboxRow from "@/components/primitives/CheckboxRow";
 import RadioRow from "@/components/primitives/RadioRow";
 import RangeHistogram from "@/components/grants/RangeHistogram";
@@ -51,6 +53,7 @@ export default function SearchPage() {
   const [page, setPage] = useState(0);
   const [issuesExpanded, setIssuesExpanded] = useState(false);
   const [locationsExpanded, setLocationsExpanded] = useState(false);
+  const [locationDraft, setLocationDraft] = useState("");
   const selectedIssues = draftFilters.issues;
 
   const views = useAllGrantViews();
@@ -85,14 +88,33 @@ export default function SearchPage() {
     applyFilters();
   };
 
-  const toggleLocation = (name: string) => {
-    const has = draftFilters.locations.includes(name);
-    const next = has
-      ? draftFilters.locations.filter((l) => l !== name)
-      : [...draftFilters.locations, name];
+  const isPicked = (region: Region) =>
+    draftFilters.locations.some((l) => sameRegion(l, region));
+
+  const toggleLocation = (region: Region) => {
+    const next = isPicked(region)
+      ? draftFilters.locations.filter((l) => !sameRegion(l, region))
+      : [...draftFilters.locations, region];
     setDraftFilters({ locations: next });
     applyFilters();
   };
+
+  // Stands in for the location picker this becomes in production: there, the
+  // field would suggest places as the user types and hand back a geocoded
+  // Region. Here the name is taken as given and `regionNamed` turns it into the
+  // same shape, so only the field itself changes later.
+  const addLocation = () => {
+    const region = regionNamed(locationDraft);
+    if (region.name && !isPicked(region)) toggleLocation(region);
+    setLocationDraft("");
+  };
+
+  // A place the user named is always listed, whether or not the presets are
+  // collapsed - it would otherwise be filtering the results invisibly.
+  const customLocations = unlistedRegions(
+    draftFilters.locations,
+    LOCATION_OPTIONS,
+  );
 
   const selectedOrgType = draftFilters.orgTypes[0] ?? "";
 
@@ -203,14 +225,16 @@ export default function SearchPage() {
               {(locationsExpanded
                 ? LOCATION_OPTIONS
                 : LOCATION_OPTIONS.slice(0, COLLAPSED_COUNT)
-              ).map((loc) => (
-                <CheckboxRow
-                  key={loc}
-                  checked={draftFilters.locations.includes(loc)}
-                  onToggle={() => toggleLocation(loc)}
-                  label={loc}
-                />
-              ))}
+              )
+                .concat(customLocations)
+                .map((loc) => (
+                  <CheckboxRow
+                    key={loc.name}
+                    checked={isPicked(loc)}
+                    onToggle={() => toggleLocation(loc)}
+                    label={loc.name}
+                  />
+                ))}
             </div>
             {LOCATION_OPTIONS.length > COLLAPSED_COUNT && (
               <div className="mt-2.5">
@@ -221,6 +245,23 @@ export default function SearchPage() {
                 />
               </div>
             )}
+            <div className="mt-2.5 flex gap-2">
+              <input
+                value={locationDraft}
+                onChange={(e) => setLocationDraft(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && addLocation()}
+                placeholder="Add a location"
+                aria-label="Add a target location"
+                className="min-w-0 flex-1 rounded-lg border border-border-strong bg-white px-3 py-2 text-sm text-ink outline-none focus:border-accent"
+              />
+              <button
+                onClick={addLocation}
+                disabled={!locationDraft.trim()}
+                className="inline-flex flex-none items-center gap-1.5 rounded-lg border border-border-strong bg-white px-3 py-2 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 enabled:hover:border-accent disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <Plus size={14} className="shrink-0" /> Add
+              </button>
+            </div>
           </div>
 
           <div className="mb-1 text-xs font-bold tracking-wider text-ink-muted uppercase">

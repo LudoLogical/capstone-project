@@ -159,7 +159,7 @@ export default function HomePage() {
             <span className="text-xl font-bold text-ink">{orgName}</span>
             {onboardOrg.areas.length > 0 && (
               <span className="text-sm text-ink-muted">
-                - Serving {onboardOrg.areas.join(", ")}
+                - Serving {onboardOrg.areas.map((a) => a.name).join(", ")}
               </span>
             )}
           </div>

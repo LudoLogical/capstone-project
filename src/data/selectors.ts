@@ -1,5 +1,7 @@
 import type Grant from "@/types/grant";
+import type { Region } from "@/types/geo";
 import GrantRecord, { GrantLifecycleStage } from "@/types/grantRecord";
+import { regionNamed, sameRegion } from "@/data/seed/geo";
 
 export function isSaved(record: GrantRecord | undefined): boolean {
   if (!record) return false;
@@ -17,7 +19,9 @@ export type SearchFilters = {
   issues: string[];
   // At most one organization type (radio, single-select). Empty = any.
   orgTypes: string[];
-  locations: string[];
+  // Places, not place names: the user can add one the presets don't list, and
+  // a Region is what the rest of the model means by a place. See `regionNamed`.
+  locations: Region[];
   deadlineFrom: string;
   deadlineTo: string;
   fundMin: number;
@@ -57,8 +61,14 @@ export function filterGrants(grants: Grant[], filters: SearchFilters): Grant[] {
     // now and doesn't narrow results - every seed grant accepts the org
     // types offered in the sidebar.
     if (filters.locations.length > 0) {
-      const grantRegionNames = grant.targetRegions.map((r) => r.name);
-      if (!filters.locations.some((l) => grantRegionNames.includes(l)))
+      // Matched by name: a Region the user typed in has no boundary to test a
+      // grant's target regions against, and two Regions that name the same
+      // place are the same place.
+      if (
+        !filters.locations.some((l) =>
+          grant.targetRegions.some((r) => sameRegion(r, l)),
+        )
+      )
         return false;
     }
     if (filters.deadlineFrom) {
@@ -125,7 +135,15 @@ export const ORG_TYPE_OPTIONS: { id: string; label: string; hint?: string }[] =
     },
   ];
 
-export const LOCATION_OPTIONS = [
+/**
+ * The places offered as one-click options wherever a user picks where they
+ * work or where funding must be spent.
+ *
+ * Resolved through `regionNamed`, so the four the seed has drawn arrive with
+ * their real boundaries and the rest arrive as named places with none - the
+ * same shape anything the user types in gets.
+ */
+export const LOCATION_OPTIONS: Region[] = [
   "City of Pittsburgh",
   "Allegheny County",
   "Westmoreland County",
@@ -138,7 +156,7 @@ export const LOCATION_OPTIONS = [
   "East Liberty",
   "Homestead",
   "McKeesport",
-];
+].map(regionNamed);
 
 // Broad issue tags surfaced in the Explore search filter and onboarding. Shared
 // so the two stay in sync.
