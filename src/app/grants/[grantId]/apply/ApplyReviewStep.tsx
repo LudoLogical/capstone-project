@@ -37,12 +37,12 @@ export default function ApplyReviewStep({
       <h1 className="mb-2 font-serif text-xl leading-tight font-bold">
         Review Your Data
       </h1>
-      <div className="mb-4 flex items-center justify-between gap-3">
+      <div className="mb-5 flex items-center justify-between gap-3">
         <p className="max-w-xl text-sm leading-relaxed text-ink-muted">
           {data.length === 0 ? (
             <>
-              We look for relevant data once you&apos;ve finished sharing your
-              context, so there&apos;s nothing here yet.
+              We look for relevant data once you&apos;ve completed the previous
+              step, so there&apos;s nothing here yet.
             </>
           ) : (
             <>
@@ -62,12 +62,7 @@ export default function ApplyReviewStep({
           </button>
         )}
       </div>
-      {data.length === 0 && (
-        <p className="mb-5 rounded-2xl border border-dashed border-border-strong px-4 py-8 text-center text-sm text-ink-muted">
-          Go back to Share your context and continue from there.
-        </p>
-      )}
-      <div className="mb-5 flex flex-col gap-2.5">
+      <div className="mb-6 flex flex-col gap-2.5">
         {data.map((datum) => {
           const selected = isFound(datum.id);
           return (
@@ -98,7 +93,7 @@ export default function ApplyReviewStep({
         })}
       </div>
 
-      <div className="mt-6 flex items-center justify-between gap-2.5">
+      <div className="flex items-center justify-between gap-2.5">
         <button
           onClick={() => setStep(REVIEW_STEP - 1)}
           className="inline-flex items-center gap-2 rounded-xl border border-border-strong bg-white px-5 py-3 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 enabled:hover:border-accent disabled:cursor-not-allowed disabled:opacity-50"

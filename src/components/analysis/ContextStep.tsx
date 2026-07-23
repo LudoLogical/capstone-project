@@ -54,7 +54,7 @@ export default function ContextStep({
       <div className="mb-2.5 text-xs font-bold tracking-wider text-ink-muted uppercase">
         From the Vibrancy Portal
       </div>
-      <div className="mb-5 flex flex-col gap-3.5 rounded-2xl border border-border bg-surface p-6">
+      <div className="mb-5 flex flex-col gap-2.5 rounded-2xl border border-border bg-surface p-6">
         {SHARE_KEYS.map((key) => {
           const d = DATA_DETAILS[key];
           const completed = d.completed;

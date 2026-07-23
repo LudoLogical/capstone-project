@@ -42,9 +42,10 @@ export default function ReportReviewStep({
       </h1>
       <div className="mb-5 flex items-center justify-between gap-3">
         <p className="max-w-xl text-sm leading-relaxed text-ink-muted">
-          Below is every data point we surfaced while you worked through each
-          question. The ones you approved are checked - uncheck any you
-          don&apos;t want analyzed, or check something you passed over.
+          These are all of the data points that the AI assistant suggested as
+          you worked through each question. The ones you approved are checked -
+          uncheck any you aren&apos;t interested in, or check something you
+          passed over.
         </p>
         {reviewGroups.length > 0 && (
           <button
@@ -57,48 +58,52 @@ export default function ReportReviewStep({
       </div>
 
       {reviewGroups.length === 0 ? (
-        <p className="mb-5 rounded-2xl border border-dashed border-border-strong px-4 py-8 text-center text-sm text-ink-muted">
+        <p className="mb-6 rounded-2xl border border-dashed border-border-strong px-4 py-8 text-center text-sm text-ink-muted">
           No data points yet. Go back through the questions to gather some.
         </p>
       ) : (
-        reviewGroups.map((group) => (
-          <div key={group.requirementIndex} className="mb-5">
-            <div className="mb-2.5 text-xs font-bold tracking-wider text-ink-muted uppercase">
-              {group.label}
-            </div>
-            <div className="flex flex-col gap-2.5">
-              {group.items.map(({ datum, approved }) => (
-                <button
-                  key={datum.id}
-                  onClick={() => toggleApproved(datum.id)}
-                  aria-pressed={approved}
-                  className={`flex w-full items-start gap-3 rounded-2xl border px-4 py-4 text-left ${
-                    approved
-                      ? "border-accent bg-accent-tint"
-                      : "border-border-strong bg-white"
-                  }`}
-                >
-                  <span
-                    aria-hidden
-                    className={`mt-0.5 flex h-5.5 w-5.5 flex-none items-center justify-center rounded-md border-2 text-sm font-extrabold text-white ${
-                      approved ? "border-accent bg-accent" : "border-ink-muted"
+        <div className="mb-6 flex flex-col gap-5">
+          {reviewGroups.map((group) => (
+            <div key={group.requirementIndex}>
+              <div className="mb-2.5 text-xs font-bold tracking-wider text-ink-muted uppercase">
+                {group.label}
+              </div>
+              <div className="flex flex-col gap-2.5">
+                {group.items.map(({ datum, approved }) => (
+                  <button
+                    key={datum.id}
+                    onClick={() => toggleApproved(datum.id)}
+                    aria-pressed={approved}
+                    className={`flex w-full items-start gap-3 rounded-2xl border px-4 py-4 text-left ${
+                      approved
+                        ? "border-accent bg-accent-tint-soft"
+                        : "border-border-strong bg-white"
                     }`}
                   >
-                    {approved ? <Check size={14} /> : null}
-                  </span>
-                  <span>
-                    <span className="block text-sm font-semibold">
-                      {datum.content}
+                    <span
+                      aria-hidden
+                      className={`mt-0.5 flex h-5.5 w-5.5 flex-none items-center justify-center rounded-md border-2 text-sm font-extrabold text-white ${
+                        approved
+                          ? "border-accent bg-accent"
+                          : "border-ink-muted"
+                      }`}
+                    >
+                      {approved ? <Check size={14} /> : null}
                     </span>
-                    <span className="block text-xs text-ink-muted">
-                      {datum.citation}
+                    <span>
+                      <span className="block text-sm font-semibold">
+                        {datum.content}
+                      </span>
+                      <span className="block text-xs text-ink-muted">
+                        {datum.citation}
+                      </span>
                     </span>
-                  </span>
-                </button>
-              ))}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
-        ))
+          ))}
+        </div>
       )}
 
       <div className="flex items-center justify-between gap-2.5">

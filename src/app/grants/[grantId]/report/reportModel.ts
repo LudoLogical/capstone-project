@@ -28,11 +28,11 @@ export const questionStep = (index: number) => index + 2;
 /** The step that reviews everything gathered, for `n` requirements. */
 export const reviewStep = (n: number) => n + 2;
 
-/** The step that analyses what survived review, for `n` requirements. */
+/**
+ * The step that analyses what survived review, for `n` requirements. Also the
+ * step count, since it is the last one.
+ */
 export const analysisStep = (n: number) => n + 3;
-
-/** How many steps the flow has in total, for `n` requirements. */
-export const totalSteps = (n: number) => n + 3;
 
 /**
  * Which requirement a step number is asking about, or null if the step isn't a

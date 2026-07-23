@@ -3,7 +3,9 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
+  CONTEXT_STEP,
   analysisStep,
+  requirementIndexForStep,
   reviewStep,
   stepGroups,
 } from "@/app/grants/[grantId]/report/reportModel";
@@ -19,14 +21,12 @@ export default function ReportStepRail({
   reviewHasSelection,
   setStep,
   resetAnalysis,
-  editRequirements,
 }: {
   report: ReportState;
   isComplete: (n: number) => boolean;
   reviewHasSelection: boolean;
   setStep: (step: number) => void;
   resetAnalysis: () => void;
-  editRequirements: () => void;
 }) {
   const router = useRouter();
   const [requirementsOpen, setRequirementsOpen] = useState(false);
@@ -62,13 +62,31 @@ export default function ReportStepRail({
                 // "Save and analyze" button.
                 const isAnalysis = s.n === ANALYSIS_STEP;
                 const locked = isAnalysis && !reviewHasSelection;
-                // Visiting Review isn't finishing it - it only counts as done
-                // once the user has picked at least one data point and unlocked
-                // the analysis from it.
+                const questionIndex = requirementIndexForStep(
+                  s.n,
+                  report.requirements.length,
+                );
+                // What counts as finished differs by step, so each says so for
+                // itself:
+                //  - sharing your context is done once you've moved past it;
+                //    there is nothing to confirm.
+                //  - a question is done when you tick it off inside the step.
+                //    That's your call, not ours, so it holds even while you're
+                //    still standing on it - the tick is the confirmation.
+                //  - visiting Review isn't finishing it: it counts only once
+                //    it has been saved with at least one data point selected.
+                //  - Analysis is a destination rather than a task, so it is
+                //    never marked done.
                 const done =
-                  s.n === REVIEW_STEP &&
-                  isComplete(REVIEW_STEP) &&
-                  reviewHasSelection;
+                  s.n === CONTEXT_STEP
+                    ? !current
+                    : questionIndex !== null
+                      ? !!report.conversations[questionIndex]?.markedComplete
+                      : s.n === REVIEW_STEP
+                        ? !current &&
+                          isComplete(REVIEW_STEP) &&
+                          reviewHasSelection
+                        : false;
                 return (
                   <button
                     key={s.n}
@@ -83,12 +101,16 @@ export default function ReportStepRail({
                         : "border-transparent hover:bg-surface-alt"
                     } ${locked ? "cursor-not-allowed" : "cursor-pointer"}`}
                   >
+                    {/* Finished wins over current: a step you've ticked off
+                        stays ticked off while you're looking at it. Which one
+                        you're on is still carried by the row's own accent
+                        border and bold label. */}
                     <div
                       className={`flex h-5 w-5 flex-none items-center justify-center rounded-full text-xs font-bold ${
-                        current
-                          ? "bg-accent text-white"
-                          : done
-                            ? "bg-success-ink-2 text-white"
+                        done
+                          ? "bg-success-ink-2 text-white"
+                          : current
+                            ? "bg-accent text-white"
                             : "bg-divider-2 text-ink-muted"
                       }`}
                     >
@@ -96,7 +118,7 @@ export default function ReportStepRail({
                           number: it's a destination, not a numbered task. */}
                       {isAnalysis ? (
                         <Lightbulb size={12} />
-                      ) : !current && done ? (
+                      ) : done ? (
                         <Check size={12} />
                       ) : (
                         s.n
@@ -152,17 +174,14 @@ export default function ReportStepRail({
             </div>
           ))}
         </div>
-        {/* Editing reopens the requirements gate, which replaces this page,
-            so the modal closes with it. */}
-        <button
-          onClick={() => {
-            setRequirementsOpen(false);
-            editRequirements();
-          }}
-          className="inline-flex items-center gap-2 rounded-lg bg-accent-ink px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 hover:bg-accent-ink-2 active:translate-y-px"
-        >
-          Edit
-        </button>
+        {/* There is no Edit here: the steps above are generated from these
+            requirements, so changing one would strand the conversation it
+            belongs to. Starting over is the only coherent way to change them. */}
+        <p className="text-sm leading-relaxed text-ink-muted">
+          The steps of this workflow are generated from the requirements above,
+          so you can&apos;t change them unless you start over using the
+          &quot;reset this workfow&quot; button at the bottom of the sidebar.
+        </p>
       </Modal>
     </aside>
   );

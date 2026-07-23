@@ -22,20 +22,12 @@ import { ArrowRight } from "lucide-react";
  */
 export default function ReportRequirementsGate({
   grant,
-  current,
   submitRequirements,
 }: {
   grant: Grant;
-  // What the report already holds, when the user is amending rather than
-  // starting. Empty on a fresh report.
-  current: ReportingRequirement[];
   submitRequirements: (next: ReportingRequirement[]) => void;
 }) {
-  // Amending reopens this screen on what the report currently holds, so the
-  // user edits what's there rather than retyping it.
-  const [draft, setDraft] = useState(() =>
-    current.map((r) => r.statement).join("\n"),
-  );
+  const [draft, setDraft] = useState("");
 
   // Tapping a common requirement appends it as its own line, so the user can
   // build the list by clicking and still edit or add to it by hand.
@@ -93,8 +85,7 @@ export default function ReportRequirementsGate({
           disabled={!draft.trim()}
           className="inline-flex items-center gap-2 rounded-xl bg-accent-ink px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px"
         >
-          {current.length > 0 ? "Save requirements" : "Start report"}{" "}
-          <ArrowRight size={16} className="shrink-0" />
+          Start report <ArrowRight size={16} className="shrink-0" />
         </button>
       </div>
     </div>

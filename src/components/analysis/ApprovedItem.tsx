@@ -27,7 +27,7 @@ export default function ApprovedItem({
       aria-checked
       role="checkbox"
       aria-label={`Remove ${datum.content} from your approved data`}
-      className="flex w-full items-start gap-3 rounded-xl border border-accent bg-accent-tint px-3.5 py-3 text-left transition duration-150 hover:border-accent-ink"
+      className="flex w-full items-start gap-3 rounded-xl border border-accent bg-accent-tint-soft px-3.5 py-3 text-left transition duration-150 hover:border-accent-ink"
     >
       <span
         aria-hidden

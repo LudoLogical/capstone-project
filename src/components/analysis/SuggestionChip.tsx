@@ -27,7 +27,7 @@ export default function SuggestionChip({
       title={datum.citation}
       className={`flex max-w-full items-start gap-2 rounded-xl border px-3 py-2 text-left text-sm transition duration-150 ${
         approved
-          ? "border-accent bg-accent-tint font-semibold text-accent-ink"
+          ? "border-accent bg-accent-tint-soft font-semibold text-accent-ink"
           : "border-border-strong bg-white text-ink-muted hover:border-accent hover:text-ink"
       }`}
     >

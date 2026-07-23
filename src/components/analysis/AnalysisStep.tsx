@@ -66,7 +66,7 @@ export default function AnalysisStep({
       <h1 className="mb-2 font-serif text-xl leading-tight font-bold">
         Data Analysis
       </h1>
-      <div className="mb-4 flex flex-col gap-2">
+      <div className="mb-5 flex flex-col gap-2.5">
         <p className="text-sm leading-relaxed text-ink-muted">
           Each card below breaks down each of the data points you selected.
         </p>
@@ -80,7 +80,7 @@ export default function AnalysisStep({
         />
       </div>
 
-      <div className="mb-6 flex flex-col gap-4">
+      <div className="mb-5 flex flex-col gap-2.5">
         {sections.map((s, i) => {
           // The topmost card starts expanded and the rest start collapsed, but
           // once the user has toggled a card, their choice wins.
@@ -100,7 +100,7 @@ export default function AnalysisStep({
       </div>
 
       {/* Sits below the cards: both actions here act on what's selected above. */}
-      <div className="mb-6 flex items-center justify-between gap-3 rounded-xl border border-accent-tint-border bg-accent-tint-soft px-4 py-3">
+      <div className="mb-5 flex items-center justify-between gap-3 rounded-xl border border-accent-tint-border bg-accent-tint-soft px-4 py-3">
         <div className="flex items-center gap-2">
           <Download size={16} className="shrink-0 text-accent" />
           <p className="text-sm leading-relaxed text-ink-body">

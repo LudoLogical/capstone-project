@@ -77,7 +77,7 @@ export function chatDatum(
   return {
     id,
     content: source.content,
-    citation: "Shared by you in this conversation",
+    citation: "Shared by you in a conversation with AI",
     visualizationMethod: VisualizationMethod.None,
     source,
   };

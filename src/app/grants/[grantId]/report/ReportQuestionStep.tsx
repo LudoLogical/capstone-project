@@ -3,10 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { Datum } from "@/types/data";
 import type { ReportingRequirement } from "@/types/grant";
-import type {
-  ReportConversationState,
-  ReportState,
-} from "@/store/useAppStore";
+import type { ReportConversationState, ReportState } from "@/store/useAppStore";
 import {
   firstMentionIds,
   nextDatumId,
@@ -24,7 +21,7 @@ import CheckboxRow from "@/components/primitives/CheckboxRow";
 import {
   ArrowLeft,
   ArrowRight,
-  BarChart3,
+  Sparkles,
   Link as LinkIcon,
   Paperclip,
 } from "lucide-react";
@@ -244,22 +241,19 @@ export default function QuestionStep({
       <div className="mb-2 text-xs font-bold tracking-wider text-ink-muted uppercase">
         Question {requirementIndex + 1} · {requirement.shortName}
       </div>
-      <p className="mb-4 max-w-2xl text-sm leading-relaxed text-ink-muted">
+      <p className="mb-5 max-w-2xl text-sm leading-relaxed text-ink-muted">
         {requirement.statement}
       </p>
 
       {/* One chat window: a titled header, the thread, and the composer all live
           inside a single frame so they read as one interface rather than three
           stacked panels. */}
-      <div className="mb-4 overflow-hidden rounded-2xl border border-border bg-surface">
-        <div className="flex items-center gap-2.5 border-b border-divider bg-surface-alt px-5 py-3">
-          <div className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-accent-tint text-sm text-accent-ink">
-            <BarChart3 size={15} />
+      <div className="mb-5 overflow-hidden rounded-2xl border border-border bg-surface-alt">
+        <div className="flex items-center gap-2.5 border-b border-divider px-5 py-4">
+          <div className="text-accent-ink">
+            <Sparkles size={16} />
           </div>
-          <div className="text-sm font-bold">Reporting assistant</div>
-          <span className="rounded-full border border-accent-tint-border bg-accent-tint px-2 py-0.5 text-xs font-bold tracking-wider text-accent-ink uppercase">
-            AI
-          </span>
+          <div className="text-sm font-bold">AI assistant</div>
         </div>
 
         {/* The thread: tall enough to hold roughly ten back-and-forth exchanges
@@ -267,7 +261,7 @@ export default function QuestionStep({
             funder's question. */}
         <div
           ref={threadRef}
-          className="flex max-h-160 min-h-104 flex-col gap-2.5 overflow-y-auto bg-white p-5"
+          className="flex h-104 flex-col gap-2.5 overflow-y-auto bg-white p-5"
         >
           {conversation.messages.map((m, i) => {
             // A data point can be raised more than once - the assistant
@@ -291,7 +285,7 @@ export default function QuestionStep({
                   {m.text}
                 </div>
                 {chips.length > 0 && (
-                  <div className="mb-1 flex max-w-4/5 flex-col gap-1.5 self-start">
+                  <div className="flex max-w-4/5 flex-col gap-1.5 self-start">
                     {chips.map((datum) => (
                       <SuggestionChip
                         key={datum.id}
@@ -318,7 +312,7 @@ export default function QuestionStep({
           )}
         </div>
 
-        <div className="flex gap-2.5 border-t border-border-strong bg-divider-2 px-5 py-4">
+        <div className="flex gap-2.5 border-t border-divider px-5 py-4">
           <input
             ref={inputRef}
             // Focused on load so the user can just start typing.
@@ -359,7 +353,7 @@ export default function QuestionStep({
         {/* Sources can be added here as well as on the context step - a link is
             one more thing the assistant can read while answering this
             question. */}
-        <div className="flex flex-wrap items-center gap-2.5 border-t border-divider bg-divider-2 px-5 pb-4">
+        <div className="flex flex-wrap items-center gap-2.5 px-5 pb-4">
           <LinkIcon size={14} className="shrink-0 text-ink-muted" />
           <input
             value={linkDraft}
@@ -393,17 +387,18 @@ export default function QuestionStep({
         </div>
       </div>
 
-      <div className="mb-4 rounded-2xl border border-border bg-surface-alt p-6">
+      <div className="mb-6 rounded-2xl border border-border bg-surface-alt p-6">
         <div className="mb-1 text-sm font-bold">
           Your approved data for this question
         </div>
         <p className="mb-3 text-xs leading-relaxed text-ink-muted">
-          Everything you&apos;ve approved above. Untick one to take it back out.
+          Everything you&apos;ve added above. Uncheck a data point to remove it
+          from this list.
         </p>
         {approvedHere.length === 0 ? (
           <p className="rounded-xl border border-dashed border-border-strong px-4 py-6 text-center text-sm text-ink-muted">
-            Nothing approved yet. Tap any data point in the conversation above to
-            add it here.
+            You haven&apos;t approved any data yet. Click on a data point in the
+            conversation above to add it here.
           </p>
         ) : (
           <div className="flex max-h-96 flex-col gap-2 overflow-y-auto pr-1">
@@ -421,7 +416,7 @@ export default function QuestionStep({
             })}
           </div>
         )}
-        <div className="mt-4 border-t border-divider pt-4">
+        <div className="mt-4 border-t border-border-strong pt-4">
           <CheckboxRow
             checked={conversation.markedComplete}
             onToggle={toggleMarkedComplete}
@@ -431,7 +426,7 @@ export default function QuestionStep({
         </div>
       </div>
 
-      <div className="mt-5 flex items-center justify-between gap-2.5">
+      <div className="mt-6 flex items-center justify-between gap-2.5">
         <button
           onClick={() => setStep(requirementIndex + 1)}
           className="inline-flex items-center gap-2 rounded-xl border border-border-strong bg-white px-5 py-3 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 enabled:hover:border-accent disabled:cursor-not-allowed disabled:opacity-50"

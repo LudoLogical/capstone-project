@@ -20,7 +20,6 @@ import {
   requirementIndexForStep,
   resolveDatum,
   reviewStep,
-  totalSteps,
 } from "@/app/grants/[grantId]/report/reportModel";
 import ReportRequirementsGate from "@/app/grants/[grantId]/report/ReportRequirementsGate";
 import ReportStepRail from "@/app/grants/[grantId]/report/ReportStepRail";
@@ -202,43 +201,31 @@ export default function ReportFlowPage() {
 
   /**
    * Accepting the requirements is what gives the flow its questions, so it also
-   * opens one conversation apiece.
+   * opens one conversation apiece - each already holding its question and the
+   * assistant's first suggestions.
    *
-   * Editing them later is an amendment, not a restart: a requirement that
-   * survived keeps the conversation the user already had, and only a new one
-   * starts from scratch. Approvals are keyed by data point, so they hold either
-   * way.
+   * This only ever runs on a report that hasn't started, since the requirements
+   * can't be amended once it has; resetting is what brings the user back here,
+   * and that clears the conversations these replace.
    */
   const submitRequirements = (next: ReportingRequirement[]) =>
-    updateReport(grantId, (r) => {
-      const existing = new Map(
-        r.requirements.map((req, i) => [req.statement, r.conversations[i]]),
-      );
-      return {
-        ...r,
-        requirements: next,
-        requirementsSet: true,
-        conversations: next.map(
-          (req) => existing.get(req.statement) ?? openConversation(req),
-        ),
-        // Dropping a requirement can leave the user standing on a step that no
-        // longer exists.
-        step: Math.min(r.step, totalSteps(next.length)),
-      };
-    });
+    updateReport(grantId, (r) => ({
+      ...r,
+      requirements: next,
+      requirementsSet: true,
+      conversations: next.map(openConversation),
+    }));
 
-  // Editing reopens the gate with the current requirements loaded, so the user
-  // amends what's there rather than starting over.
-  const editRequirements = () =>
-    updateReport(grantId, (r) => ({ ...r, requirementsSet: false }));
-
-  // Gate: before anything else, the user settles this grant's reporting
+  // Gate: before anything else, the user supplies this grant's reporting
   // requirements. They're then kept in view and woven through every step.
+  //
+  // There is no way back here short of resetting: the questions are generated
+  // from these, so amending them mid-report would strand the conversations
+  // hanging off the ones that changed.
   if (!report.requirementsSet) {
     return (
       <ReportRequirementsGate
         grant={grant}
-        current={report.requirements}
         submitRequirements={submitRequirements}
       />
     );
@@ -293,7 +280,6 @@ export default function ReportFlowPage() {
           reviewHasSelection={reviewHasSelection}
           setStep={setStep}
           resetAnalysis={resetAnalysis}
-          editRequirements={editRequirements}
         />
 
         <div className="min-w-0 max-w-3xl flex-1">

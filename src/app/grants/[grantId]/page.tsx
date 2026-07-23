@@ -19,7 +19,7 @@ import BulletList from "@/components/primitives/BulletList";
 import TimelineCell from "@/app/grants/[grantId]/TimelineCell";
 import {
   Star,
-  BarChart3,
+  Sparkles,
   ExternalLink,
   ArrowRight,
   Copy,
@@ -252,7 +252,7 @@ export default function GrantDetailPage() {
       {/* How your work lines up - the fit read, no score (items 2 & 9) */}
       <div className="mb-3.5 rounded-2xl border border-border bg-surface p-6">
         <div className="mb-1 inline-flex items-center gap-1 rounded-full border border-accent-tint-border bg-accent-tint px-3 py-1 text-xs font-bold text-accent-ink">
-          <BarChart3 size={12} />
+          <Sparkles size={12} />
           AI-ASSISTED
         </div>
         <div className="mt-2.5 text-base font-bold">How your work lines up</div>
@@ -293,7 +293,7 @@ export default function GrantDetailPage() {
               onClick={() => {}}
               className="inline-flex items-center gap-2 rounded-lg bg-accent-ink px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px"
             >
-              <BarChart3 size={14} className="shrink-0" />
+              <Sparkles size={14} className="shrink-0" />
               Generate with AI
             </button>
           </div>
@@ -349,7 +349,7 @@ export default function GrantDetailPage() {
         {isAwarded ? (
           <div className="rounded-2xl border border-accent-tint-border bg-accent-tint-soft px-6 py-5">
             <div className="mb-2.5 inline-flex items-center gap-1 rounded-full border border-accent-tint-border bg-accent-tint px-3 py-1 text-xs font-bold text-accent-ink">
-              <BarChart3 size={12} />
+              <Sparkles size={12} />
               AI-ASSISTED
             </div>
             <div className="mb-1.5 text-base font-bold">
@@ -384,7 +384,7 @@ export default function GrantDetailPage() {
         ) : (
           <div className="rounded-2xl border border-accent-tint-border bg-accent-tint-soft px-6 py-5">
             <div className="mb-2.5 inline-flex items-center gap-1 rounded-full border border-accent-tint-border bg-accent-tint px-3 py-1 text-xs font-bold text-accent-ink">
-              <BarChart3 size={12} />
+              <Sparkles size={12} />
               AI-ASSISTED
             </div>
             <div className="mb-1.5 text-base font-bold">Ready to apply?</div>
