@@ -2,7 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { STEP_GROUPS } from "@/app/grants/[grantId]/report/reportModel";
+import {
+  analysisStep,
+  reviewStep,
+  stepGroups,
+} from "@/app/grants/[grantId]/report/reportModel";
 import type { ReportState } from "@/store/useAppStore";
 import ResetWorkflowButton from "@/components/analysis/ResetWorkflowButton";
 import Modal from "@/components/primitives/Modal";
@@ -26,6 +30,9 @@ export default function ReportStepRail({
 }) {
   const router = useRouter();
   const [requirementsOpen, setRequirementsOpen] = useState(false);
+  const groups = stepGroups(report.requirements);
+  const REVIEW_STEP = reviewStep(report.requirements.length);
+  const ANALYSIS_STEP = analysisStep(report.requirements.length);
   return (
     <aside className="sticky top-22 w-56 flex-none rounded-2xl border border-border bg-surface p-4">
       <div className="flex flex-col gap-3">
@@ -42,7 +49,7 @@ export default function ReportStepRail({
             </span>
           </button>
         </div>
-        {STEP_GROUPS.map((group) => (
+        {groups.map((group) => (
           <div key={group.title}>
             <div className="mb-1.5 px-1 text-xs font-bold tracking-wider text-ink-muted uppercase">
               {group.title}
@@ -53,12 +60,15 @@ export default function ReportStepRail({
                 // Analysis is locked exactly when Review has nothing selected -
                 // the same condition that disables Review's own
                 // "Save and analyze" button.
-                const isAnalysis = s.n === 7;
+                const isAnalysis = s.n === ANALYSIS_STEP;
                 const locked = isAnalysis && !reviewHasSelection;
                 // Visiting Review isn't finishing it - it only counts as done
                 // once the user has picked at least one data point and unlocked
                 // the analysis from it.
-                const done = s.n === 6 && isComplete(6) && reviewHasSelection;
+                const done =
+                  s.n === REVIEW_STEP &&
+                  isComplete(REVIEW_STEP) &&
+                  reviewHasSelection;
                 return (
                   <button
                     key={s.n}
@@ -130,10 +140,17 @@ export default function ReportStepRail({
         onClose={() => setRequirementsOpen(false)}
         title="Reporting requirements"
       >
-        <div className="mb-5 max-h-56 overflow-y-auto rounded-xl border border-border-soft bg-surface p-3">
-          <p className="text-sm leading-relaxed whitespace-pre-wrap text-ink-body">
-            {report.requirements}
-          </p>
+        <div className="mb-5 flex max-h-56 flex-col gap-3 overflow-y-auto rounded-xl border border-border-soft bg-surface p-3">
+          {report.requirements.map((r) => (
+            <div key={r.statement}>
+              <div className="text-xs font-bold tracking-wider text-ink-muted uppercase">
+                {r.shortName}
+              </div>
+              <p className="text-sm leading-relaxed text-ink-body">
+                {r.statement}
+              </p>
+            </div>
+          ))}
         </div>
         {/* Editing reopens the requirements gate, which replaces this page,
             so the modal closes with it. */}

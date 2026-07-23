@@ -205,6 +205,10 @@ export const DATUM_COMMIT_SCREENING = commitment(
   11,
   "Blood-pressure screening every other walking-group session",
 );
+export const DATUM_COMMIT_WORKSHOPS = commitment(
+  16,
+  "Monthly nutrition workshops using locally sourced produce",
+);
 export const DATUM_WALKING_SESSIONS = surveyCount(
   12,
   "42 walking-group sessions held across 2025",

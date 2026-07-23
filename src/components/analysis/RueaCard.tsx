@@ -7,9 +7,9 @@ import { Check, ChevronUp, ChevronDown } from "lucide-react";
 
 /**
  * What the card needs to render: a canonical DatumAnalysis plus the optional
- * presentation extras. `RueaSection` satisfies this directly, and so does a
- * data point analysed without a RUEA section behind it - those simply have no
- * comparison bars and nothing to cite.
+ * presentation extras. Built by `analysisForDatum`, which is total over every
+ * Datum - a data point with no comparison to draw and nothing to cite simply
+ * arrives without bars or a provenance key.
  */
 export type AnalysisCardSection = {
   id: string;

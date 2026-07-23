@@ -5,7 +5,13 @@ import { useParams, useRouter } from "next/navigation";
 import { useAppStore } from "@/store/useAppStore";
 import { NSRService } from "@/types/data";
 import { useGrantView } from "@/store/derived";
-import { DATA_DETAILS, RUEA_SECTIONS, SHARE_KEYS } from "@/data/seed";
+import {
+  analysisForDatum,
+  DATA_DETAILS,
+  seedDatumById,
+  SHARE_KEYS,
+} from "@/data/seed";
+import { initialWritingSuggestions } from "@/ai/local";
 import Modal from "@/components/primitives/Modal";
 import BackButton from "@/components/primitives/BackButton";
 import ApplyStepRail from "@/app/grants/[grantId]/apply/ApplyStepRail";
@@ -121,20 +127,40 @@ export default function ApplyWizardPage() {
       uploads: w.uploads.filter((u) => u !== id),
     }));
 
-  // Data points start unchecked; the user opts them in on the review step.
-  const isFound = (id: string) => !!wizard.found[id];
+  /**
+   * Finishing the context step is what runs the assistant over everything the
+   * user shared, so that is where the data points come from. Written once: a
+   * user who comes back to this step and continues again keeps the selections
+   * they have already made.
+   */
+  const surfaceData = () =>
+    updateWizard(grantId, (w) => ({
+      ...w,
+      surfaced: w.surfaced.length > 0 ? w.surfaced : initialWritingSuggestions(),
+      step: REVIEW_STEP,
+      visited: { ...w.visited, [REVIEW_STEP]: true },
+    }));
 
-  const toggleFound = (id: string) =>
+  // The data points the assistant surfaced, in the order it ranked them.
+  const surfacedData = wizard.surfaced.flatMap(
+    (id) => seedDatumById(id) ?? [],
+  );
+
+  // Data points start unchecked; the user opts them in on the review step.
+  const isFound = (id: number) => !!wizard.found[id];
+
+  const toggleFound = (id: number) =>
     updateWizard(grantId, (w) => ({
       ...w,
       found: { ...w.found, [id]: !w.found[id] },
     }));
 
-  const allFound = RUEA_SECTIONS.every((s) => isFound(s.id));
+  const allFound =
+    surfacedData.length > 0 && surfacedData.every((d) => isFound(d.id));
   const toggleAllFound = () =>
     updateWizard(grantId, (w) => ({
       ...w,
-      found: Object.fromEntries(RUEA_SECTIONS.map((s) => [s.id, !allFound])),
+      found: Object.fromEntries(surfacedData.map((d) => [d.id, !allFound])),
     }));
 
   const setRueaExpanded = (id: string, value: boolean) =>
@@ -143,7 +169,9 @@ export default function ApplyWizardPage() {
       rueaExpanded: { ...w.rueaExpanded, [id]: value },
     }));
 
-  const foundSections = RUEA_SECTIONS.filter((s) => isFound(s.id));
+  const foundSections = surfacedData
+    .filter((d) => isFound(d.id))
+    .map(analysisForDatum);
 
   // The single gate on reaching Analysis: at least one data point is checked on
   // Review. Shared by Review's "Save and analyze" button and the rail's
@@ -188,10 +216,14 @@ export default function ApplyWizardPage() {
   };
 
   // Resetting starts the application over: back to Share Your Context, with the
-  // analysis cleared and locked again.
+  // data re-surfaced from scratch and the analysis locked again. The selections
+  // go with it - the user meets these data points fresh, and meeting them fresh
+  // means none of them are picked yet.
   const resetAnalysis = () => {
     updateWizard(grantId, (w) => ({
       ...w,
+      surfaced: [],
+      found: {},
       analysisAdded: {},
       rueaExpanded: {},
       analysisUnlocked: false,
@@ -236,12 +268,13 @@ export default function ApplyWizardPage() {
               addFiles={addFiles}
               addLink={addLink}
               removeUpload={removeUpload}
-              onContinue={() => setStep(REVIEW_STEP)}
+              onContinue={surfaceData}
             />
           )}
 
           {wizard.step === REVIEW_STEP && (
             <ApplyReviewStep
+              data={surfacedData}
               isFound={isFound}
               toggleFound={toggleFound}
               allFound={allFound}

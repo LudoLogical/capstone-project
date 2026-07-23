@@ -1,166 +1,252 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { REPORT_QUESTION_STEPS } from "@/data/seed";
-import type { ReportChatState, ReportState } from "@/store/useAppStore";
+import type { Datum } from "@/types/data";
+import type { ReportingRequirement } from "@/types/grant";
+import type {
+  ReportConversationState,
+  ReportState,
+} from "@/store/useAppStore";
 import {
-  isPicked,
-  assistantReply,
-  type QuestionStepId,
+  firstMentionIds,
+  nextDatumId,
+  suggestedIds,
 } from "@/app/grants/[grantId]/report/reportModel";
-import DeleteDataConfirmModal from "@/components/modals/DeleteDataConfirmModal";
-import FoundItem from "@/components/analysis/FoundItem";
-import { ArrowLeft, ArrowRight, BarChart3, Paperclip } from "lucide-react";
+import {
+  recordsDataPoint,
+  reportConversationTurn,
+  type ConversationEvent,
+} from "@/ai/local";
+import { documentType, normalizeWebpageUrl } from "@/utils/format";
+import SuggestionChip from "@/components/analysis/SuggestionChip";
+import ApprovedItem from "@/components/analysis/ApprovedItem";
+import CheckboxRow from "@/components/primitives/CheckboxRow";
+import {
+  ArrowLeft,
+  ArrowRight,
+  BarChart3,
+  Link as LinkIcon,
+  Paperclip,
+} from "lucide-react";
+
+/** How long the assistant "types" before its reply lands. */
+const REPLY_DELAY_MS = 600;
 
 /**
- * Steps 2-5: one chat-style question section, wrapped in Back/Continue.
+ * One reporting requirement, answered in conversation.
  *
- * Mounted with a key of its section id, so moving between sections gets a fresh
- * composer - its focus, scroll position and any open dialog belong to the
- * section being answered rather than carrying over from the last one.
+ * The requirement's question is the assistant's opening message rather than a
+ * heading above the chat, and the data points it surfaces are chips under the
+ * message that raised them. Approving a chip is the only thing the user does
+ * with a suggestion - they can leave one alone, but they can't delete it.
+ *
+ * Mounted with a key of its requirement index, so moving between questions gets
+ * a fresh composer - its focus and scroll position belong to the question being
+ * answered rather than carrying over from the last one.
  */
 export default function QuestionStep({
-  questionStepId,
-  report,
+  requirementIndex,
+  requirement,
+  conversation,
+  approved,
+  datumFor,
+  toggleApproved,
   grantId,
   updateReport,
-  dontAskDeleteFound,
-  setDontAskDeleteFound,
+  addFiles,
+  addLink,
+  addRepositoryChat,
   setStep,
   saveAndContinue,
 }: {
-  questionStepId: QuestionStepId;
-  report: ReportState;
+  requirementIndex: number;
+  requirement: ReportingRequirement;
+  conversation: ReportConversationState;
+  // Approval is report-wide, keyed by Datum.id - the same map the review step
+  // writes, so the two can't drift.
+  approved: Record<number, boolean>;
+  datumFor: (id: number) => Datum | undefined;
+  toggleApproved: (id: number) => void;
   grantId: string;
   updateReport: (id: string, fn: (r: ReportState) => ReportState) => void;
-  // When true, deleting a found item skips the confirmation dialog.
-  dontAskDeleteFound: boolean;
-  setDontAskDeleteFound: () => void;
+  // Both file this report's new sources in the org-wide repository and attach
+  // them here, exactly as the context step does.
+  addFiles: (files: File[]) => string[];
+  addLink: (link: string) => string;
+  addRepositoryChat: (content: string) => string;
   setStep: (step: number) => void;
   saveAndContinue: (n: number) => void;
 }) {
-  const stepDef = REPORT_QUESTION_STEPS.find((q) => q.id === questionStepId)!;
-  const chat = report.chat[questionStepId];
-  // The draft lives in the section's own chat state, so each page keeps its own
-  // unsent message.
-  const draft = chat.draft ?? "";
+  const draft = conversation.draft ?? "";
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const threadRef = useRef<HTMLDivElement>(null);
-  // The found item awaiting delete confirmation, or null when no dialog is open.
-  const [pendingDelete, setPendingDelete] = useState<{
-    id: string;
-    label: string;
-  } | null>(null);
+  const [linkDraft, setLinkDraft] = useState("");
+  // Set when the link field holds something that isn't a URL, cleared as soon
+  // as the user edits it again so the message doesn't outlive the mistake.
+  const [linkError, setLinkError] = useState(false);
+  const [rejectedFile, setRejectedFile] = useState<string | null>(null);
 
   // Keep the newest message in view as the conversation grows (including the
   // assistant's reply, which lands a beat after the user's).
   useEffect(() => {
     const el = threadRef.current;
     if (el) el.scrollTop = el.scrollHeight;
-  }, [chat.messages.length]);
+  }, [conversation.messages.length]);
 
-  // Every edit below touches this one section's slice of the report, so the
-  // nesting that reaches it lives here rather than in each handler.
-  const patchChat = (
-    patch: (prev: ReportChatState) => Partial<ReportChatState>,
-  ) =>
-    updateReport(grantId, (r) => ({
-      ...r,
-      chat: {
-        ...r.chat,
-        [questionStepId]: {
-          ...r.chat[questionStepId],
-          ...patch(r.chat[questionStepId]),
-        },
-      },
-    }));
+  // Every edit below touches this one conversation, so the nesting that reaches
+  // it lives here rather than in each handler.
+  const patchConversation = (
+    r: ReportState,
+    patch: (prev: ReportConversationState) => Partial<ReportConversationState>,
+  ): ReportState => ({
+    ...r,
+    conversations: r.conversations.map((c, i) =>
+      i === requirementIndex ? { ...c, ...patch(c) } : c,
+    ),
+  });
 
-  const setDraft = (text: string) => patchChat(() => ({ draft: text }));
+  const setDraft = (text: string) =>
+    updateReport(grantId, (r) => patchConversation(r, () => ({ draft: text })));
 
-  const togglePick = (itemId: string) =>
-    patchChat((prev) => ({
-      picks: { ...prev.picks, [itemId]: !isPicked(prev.picks, itemId) },
-    }));
+  /**
+   * The assistant's turn, a beat after whatever the user just did.
+   *
+   * Computed inside the update so it reads the conversation as it actually
+   * stands - what has already been raised, and what the user has approved
+   * since. `sourceId` is resolved to a data point id here rather than passed
+   * in, so the id minted by the write below is the one referred to.
+   */
+  const respond = (event: ConversationEvent, sourceId: string | null) => {
+    setTimeout(() => {
+      updateReport(grantId, (r) => {
+        const c = r.conversations[requirementIndex];
+        if (!c) return r;
+        const recorded = sourceId
+          ? Object.entries(r.chatData)
+              .filter(([, id]) => id === sourceId)
+              .map(([datumId]) => Number(datumId))
+          : [];
+        const response = reportConversationTurn({
+          requirement,
+          event,
+          raised: suggestedIds(c),
+          approved: Object.entries(r.approved)
+            .filter(([, on]) => on)
+            .map(([id]) => Number(id)),
+          recorded,
+          // The opening message carries the initial round, so the follow-up
+          // rounds are the assistant's replies after it.
+          replies: c.messages.filter((m) => m.from === "ai").length - 1,
+        });
+        return patchConversation(r, (prev) => ({
+          messages: [
+            ...prev.messages,
+            {
+              from: "ai",
+              text: response.message,
+              suggestions: response.suggestions,
+            },
+          ],
+        }));
+      });
+    }, REPLY_DELAY_MS);
+  };
 
-  // Live conversation: the user's message lands immediately (along with a
-  // pre-selected "shared by you" data item), then the assistant replies a beat
-  // later.
+  /**
+   * Send a message.
+   *
+   * What the user says is theirs, so anything that carries information is
+   * recorded verbatim as a `ChatSource` and offered back as a data point in the
+   * assistant's reply. It is offered, not approved: the running list of
+   * approved data points is the user's to add to, never ours.
+   */
   const send = () => {
     const text = draft.trim();
     if (!text) return;
-    patchChat((prev) => {
-      const custom = prev.custom ?? [];
-      return {
-        custom: [...custom, text],
-        picks: { ...prev.picks, [`custom-${custom.length}`]: true },
+    const sourceId = recordsDataPoint(text) ? addRepositoryChat(text) : null;
+    updateReport(grantId, (r) => {
+      // Filed in the repository, where the user can see and delete it, but not
+      // added to this report's attached sources - those are the ones they
+      // deliberately handed over, and a sentence typed into a chat isn't one.
+      const withSource = sourceId
+        ? {
+            ...r,
+            chatData: { ...r.chatData, [nextDatumId(r.chatData)]: sourceId },
+          }
+        : r;
+      return patchConversation(withSource, (prev) => ({
         messages: [...prev.messages, { from: "user", text }],
         // Clears the composer in the same write that records the message, so
         // the box can never hold a message that has already been sent.
         draft: "",
-      };
-    });
-    setTimeout(() => {
-      patchChat((prev) => ({
-        messages: [
-          ...prev.messages,
-          { from: "ai", text: assistantReply(stepDef.topic, text) },
-        ],
       }));
-    }, 600);
-  };
-
-  // Attaching a file drops it into the chat and surfaces a fact from it into
-  // the found list (pre-selected, sourced to the file).
-  const attach = (fileName: string) => {
-    patchChat((prev) => {
-      const custom = prev.custom ?? [];
-      const newIndex = custom.length;
-      return {
-        custom: [...custom, `Key figures pulled from ${fileName}`],
-        customSources: { ...(prev.customSources ?? {}), [newIndex]: fileName },
-        picks: { ...prev.picks, [`custom-${newIndex}`]: true },
-        messages: [
-          ...prev.messages,
-          { from: "user", text: `Attached ${fileName}` },
-        ],
-      };
     });
-    setTimeout(() => {
-      patchChat((prev) => ({
+    respond({ kind: "message", text }, sourceId);
+  };
+
+  // A file attached here is filed in the repository and attached to this
+  // report, the same as one added on the context step - it's a source the
+  // assistant can read, not a data point in itself.
+  const attach = (file: File) => {
+    if (!documentType(file.name)) {
+      setRejectedFile(file.name);
+      return;
+    }
+    setRejectedFile(null);
+    addFiles([file]);
+    updateReport(grantId, (r) =>
+      patchConversation(r, (prev) => ({
         messages: [
           ...prev.messages,
-          {
-            from: "ai",
-            text: `Thanks - we read “${fileName}” and pulled the key figures into the list below, tagged to the file so reviewers can trace them.`,
-          },
+          { from: "user", text: `Attached ${file.name}` },
         ],
-      }));
-    }, 600);
+      })),
+    );
+    respond({ kind: "document", name: file.name }, null);
   };
 
-  const deleteItem = (itemId: string) =>
-    patchChat((prev) => ({
-      removed: { ...(prev.removed ?? {}), [itemId]: true },
-      // Drop it from the selection too, so it isn't carried forward anywhere
-      // that reads picks.
-      picks: { ...prev.picks, [itemId]: false },
-    }));
-
-  const requestDelete = (id: string, label: string) => {
-    if (dontAskDeleteFound) deleteItem(id);
-    else setPendingDelete({ id, label });
+  const submitLink = () => {
+    if (!linkDraft.trim()) return;
+    const url = normalizeWebpageUrl(linkDraft);
+    if (!url) {
+      setLinkError(true);
+      return;
+    }
+    addLink(url);
+    setLinkDraft("");
+    setLinkError(false);
+    updateReport(grantId, (r) =>
+      patchConversation(r, (prev) => ({
+        messages: [...prev.messages, { from: "user", text: `Added ${url}` }],
+      })),
+    );
+    respond({ kind: "webpage", link: url }, null);
   };
+
+  const toggleMarkedComplete = () =>
+    updateReport(grantId, (r) =>
+      patchConversation(r, (prev) => ({
+        markedComplete: !prev.markedComplete,
+      })),
+    );
+
+  // Everything raised here that the user has approved. Approval is report-wide,
+  // so a data point approved under another question shows as approved here too
+  // the moment it is raised.
+  const approvedHere = suggestedIds(conversation).filter((id) => approved[id]);
+  const waiting =
+    conversation.messages[conversation.messages.length - 1]?.from === "user";
 
   return (
     <div>
       <div className="mb-2 text-xs font-bold tracking-wider text-ink-muted uppercase">
-        Question {stepDef.index} · {stepDef.topic}
+        Question {requirementIndex + 1} · {requirement.shortName}
       </div>
-      <h2 className="mb-4 font-serif text-xl leading-tight font-bold">
-        {stepDef.question}
-      </h2>
+      <p className="mb-4 max-w-2xl text-sm leading-relaxed text-ink-muted">
+        {requirement.statement}
+      </p>
 
       {/* One chat window: a titled header, the thread, and the composer all live
           inside a single frame so they read as one interface rather than three
@@ -177,30 +263,25 @@ export default function QuestionStep({
         </div>
 
         {/* The thread: tall enough to hold roughly ten back-and-forth exchanges
-            before it scrolls, and to give an empty chat open space. */}
+            before it scrolls. It is never empty - the assistant opens with the
+            funder's question. */}
         <div
           ref={threadRef}
           className="flex max-h-160 min-h-104 flex-col gap-2.5 overflow-y-auto bg-white p-5"
         >
-          {chat.messages.length === 0 ? (
-            <div className="m-auto max-w-sm px-6 text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-accent-tint text-2xl text-accent-ink">
-                <BarChart3 size={15} />
-              </div>
-              <div className="text-sm font-bold text-ink">
-                You&apos;re chatting with an AI assistant
-              </div>
-              <p className="mt-1.5 text-sm leading-relaxed text-ink-muted">
-                Tell it about {stepDef.topic.toLowerCase()} in your own words,
-                or attach a file. Everything you share is saved below with a
-                source you can trace, and nothing is submitted for you.
-              </p>
-            </div>
-          ) : (
-            <>
-              {chat.messages.map((m, i) => (
+          {conversation.messages.map((m, i) => {
+            // A data point can be raised more than once - the assistant
+            // reconsiders the data on every turn - but it is one data point, so
+            // it is chipped under the message that raised it first.
+            const chips =
+              m.from === "ai"
+                ? firstMentionIds(conversation, i).flatMap(
+                    (id) => datumFor(id) ?? [],
+                  )
+                : [];
+            return (
+              <div key={i} className="contents">
                 <div
-                  key={i}
                   className={`max-w-4/5 rounded-xl border px-3.5 py-2.5 text-sm leading-normal ${
                     m.from === "user"
                       ? "self-end border-accent bg-accent text-white"
@@ -209,55 +290,33 @@ export default function QuestionStep({
                 >
                   {m.text}
                 </div>
-              ))}
-              {/* The assistant "types" between the user's message landing and
-                  its reply arriving, giving the exchange a live feel. */}
-              {chat.messages[chat.messages.length - 1]?.from === "user" && (
-                <div className="max-w-4/5 self-start rounded-xl border border-border-strong bg-surface-alt px-3.5 py-2.5 text-sm text-ink-muted">
-                  <span className="inline-flex gap-1">
-                    <span className="animate-pulse">●</span>
-                    <span className="animate-pulse [animation-delay:0.15s]">
-                      ●
-                    </span>
-                    <span className="animate-pulse [animation-delay:0.3s]">
-                      ●
-                    </span>
-                  </span>
-                </div>
-              )}
-            </>
+                {chips.length > 0 && (
+                  <div className="mb-1 flex max-w-4/5 flex-col gap-1.5 self-start">
+                    {chips.map((datum) => (
+                      <SuggestionChip
+                        key={datum.id}
+                        datum={datum}
+                        approved={!!approved[datum.id]}
+                        onToggle={() => toggleApproved(datum.id)}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+          {/* The assistant "types" between the user's message landing and its
+              reply arriving, giving the exchange a live feel. */}
+          {waiting && (
+            <div className="max-w-4/5 self-start rounded-xl border border-border-strong bg-surface-alt px-3.5 py-2.5 text-sm text-ink-muted">
+              <span className="inline-flex gap-1">
+                <span className="animate-pulse">●</span>
+                <span className="animate-pulse [animation-delay:0.15s]">●</span>
+                <span className="animate-pulse [animation-delay:0.3s]">●</span>
+              </span>
+            </div>
           )}
         </div>
-
-        {/* Starter prompts sit on the same white surface as the thread, running
-            right up to the typing box. Clicking one drops it into the box (and
-            highlights it) for the user to finish in their own words. */}
-        {stepDef.suggestions.length > 0 && (
-          <div className="grid grid-cols-1 gap-2 bg-white px-5 pb-4 sm:grid-cols-2">
-            {stepDef.suggestions.map((s) => {
-              // Stays lit while its phrase is still in the box; delete the
-              // phrase and it unlights.
-              const chosen = draft.includes(s);
-              return (
-                <button
-                  key={s}
-                  onClick={() => {
-                    setDraft(s);
-                    inputRef.current?.focus();
-                  }}
-                  aria-pressed={chosen}
-                  className={`rounded-xl border px-4 py-3 text-left text-sm transition duration-150 ${
-                    chosen
-                      ? "border-accent bg-accent-tint font-semibold text-accent-ink"
-                      : "border-border-strong bg-white text-ink-muted hover:border-accent hover:text-ink"
-                  }`}
-                >
-                  {s}
-                </button>
-              );
-            })}
-          </div>
-        )}
 
         <div className="flex gap-2.5 border-t border-border-strong bg-divider-2 px-5 py-4">
           <input
@@ -268,7 +327,7 @@ export default function QuestionStep({
             onChange={(e) => setDraft(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && send()}
             placeholder="Tell the assistant anything in your own words..."
-            aria-label={`Response to: ${stepDef.question}`}
+            aria-label={`Response to: ${requirement.question}`}
             className="w-full rounded-xl border border-border-strong bg-white px-4 py-3 text-sm text-ink outline-none focus:border-accent"
           />
           <input
@@ -277,7 +336,7 @@ export default function QuestionStep({
             className="hidden"
             onChange={(e) => {
               const file = e.target.files?.[0];
-              if (file) attach(file.name);
+              if (file) attach(file);
               e.target.value = "";
             }}
           />
@@ -296,71 +355,91 @@ export default function QuestionStep({
             Send
           </button>
         </div>
+
+        {/* Sources can be added here as well as on the context step - a link is
+            one more thing the assistant can read while answering this
+            question. */}
+        <div className="flex flex-wrap items-center gap-2.5 border-t border-divider bg-divider-2 px-5 pb-4">
+          <LinkIcon size={14} className="shrink-0 text-ink-muted" />
+          <input
+            value={linkDraft}
+            onChange={(e) => {
+              setLinkDraft(e.target.value);
+              setLinkError(false);
+            }}
+            onKeyDown={(e) => e.key === "Enter" && submitLink()}
+            placeholder="Add a webpage for us to read, e.g. yourorg.org/impact"
+            aria-label="Add a webpage link"
+            className="min-w-64 flex-1 rounded-lg border border-border-strong bg-white px-3 py-2 text-sm text-ink outline-none focus:border-accent"
+          />
+          <button
+            onClick={submitLink}
+            className="inline-flex flex-none items-center gap-2 rounded-lg border border-border-strong bg-white px-4 py-2 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 hover:border-accent"
+          >
+            Add link
+          </button>
+          {linkError && (
+            <p role="alert" className="w-full text-xs text-accent-ink">
+              That doesn&apos;t look like a web address. Try something like
+              yourorg.org/impact.
+            </p>
+          )}
+          {rejectedFile && (
+            <p role="alert" className="w-full text-xs text-accent-ink">
+              We can&apos;t read {rejectedFile} - try a document or spreadsheet
+              instead.
+            </p>
+          )}
+        </div>
       </div>
 
       <div className="mb-4 rounded-2xl border border-border bg-surface-alt p-6">
-        <div className="mb-3 text-sm font-bold">
-          We found the following information:
+        <div className="mb-1 text-sm font-bold">
+          Your approved data for this question
         </div>
-        <div className="flex max-h-96 flex-col gap-2 overflow-y-auto pr-1">
-          {stepDef.items
-            .filter((item) => !chat.removed?.[item.id])
-            .map((item) => (
-              <FoundItem
-                key={item.id}
-                id={item.id}
-                label={item.label}
-                source={item.source}
-                picked={!!chat.picks[item.id]}
-                onTogglePick={() => togglePick(item.id)}
-                onDelete={() => requestDelete(item.id, item.label)}
-              />
-            ))}
-          {(chat.custom ?? []).map((text, i) => {
-            const id = `custom-${i}`;
-            if (chat.removed?.[id]) return null;
-            return (
-              <FoundItem
-                key={id}
-                id={id}
-                label={text}
-                source={
-                  chat.customSources?.[i]
-                    ? `From ${chat.customSources[i]}`
-                    : "Added by you"
-                }
-                picked={!!chat.picks[id]}
-                onTogglePick={() => togglePick(id)}
-                onDelete={() => requestDelete(id, text)}
-              />
-            );
-          })}
+        <p className="mb-3 text-xs leading-relaxed text-ink-muted">
+          Everything you&apos;ve approved above. Untick one to take it back out.
+        </p>
+        {approvedHere.length === 0 ? (
+          <p className="rounded-xl border border-dashed border-border-strong px-4 py-6 text-center text-sm text-ink-muted">
+            Nothing approved yet. Tap any data point in the conversation above to
+            add it here.
+          </p>
+        ) : (
+          <div className="flex max-h-96 flex-col gap-2 overflow-y-auto pr-1">
+            {approvedHere.flatMap((id) => {
+              const datum = datumFor(id);
+              return datum
+                ? [
+                    <ApprovedItem
+                      key={id}
+                      datum={datum}
+                      onRemove={() => toggleApproved(id)}
+                    />,
+                  ]
+                : [];
+            })}
+          </div>
+        )}
+        <div className="mt-4 border-t border-divider pt-4">
+          <CheckboxRow
+            checked={conversation.markedComplete}
+            onToggle={toggleMarkedComplete}
+            label="I've finished answering this question"
+            hint="You can come back and change your answer at any time."
+          />
         </div>
       </div>
 
-      <DeleteDataConfirmModal
-        open={pendingDelete !== null}
-        onClose={() => setPendingDelete(null)}
-        onConfirm={() => {
-          if (pendingDelete) deleteItem(pendingDelete.id);
-          setPendingDelete(null);
-        }}
-        onConfirmDontAsk={() => {
-          setDontAskDeleteFound();
-          if (pendingDelete) deleteItem(pendingDelete.id);
-          setPendingDelete(null);
-        }}
-      />
-
       <div className="mt-5 flex items-center justify-between gap-2.5">
         <button
-          onClick={() => setStep(report.step - 1)}
+          onClick={() => setStep(requirementIndex + 1)}
           className="inline-flex items-center gap-2 rounded-xl border border-border-strong bg-white px-5 py-3 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 enabled:hover:border-accent disabled:cursor-not-allowed disabled:opacity-50"
         >
           <ArrowLeft size={16} className="shrink-0" /> Previous step
         </button>
         <button
-          onClick={() => saveAndContinue(report.step)}
+          onClick={() => saveAndContinue(requirementIndex + 2)}
           className="inline-flex items-center gap-2 rounded-xl bg-accent-ink px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
         >
           Save and continue <ArrowRight size={16} className="shrink-0" />

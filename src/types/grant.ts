@@ -151,7 +151,7 @@ type Grant = {
      * Every ReportingRequirement in this array must appear in and be extracted
      * directly from the original listing for this Grant.
      */
-    reporting: ReportingRequirement[];
+    reporting?: ReportingRequirement[];
   };
 
   /**

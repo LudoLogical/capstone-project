@@ -4,24 +4,23 @@ import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { useAppStore } from "@/store/useAppStore";
 import { NSRService } from "@/types/data";
+import type { Datum } from "@/types/data";
 import type { ReportState } from "@/store/useAppStore";
+import type { ReportingRequirement } from "@/types/grant";
 import { useGrantView } from "@/store/derived";
-import {
-  DATA_DETAILS,
-  POINT_ANALYSES,
-  POINT_CONTEXT,
-  REPORT_QUESTION_STEPS,
-  RUEA_SECTIONS,
-  userPointAnalysis,
-} from "@/data/seed";
-import { type AnalysisCardSection } from "@/components/analysis/RueaCard";
+import { DATA_DETAILS } from "@/data/seed";
 import Modal from "@/components/primitives/Modal";
 import BackButton from "@/components/primitives/BackButton";
 import {
-  STEP_NAV,
-  isPicked,
-  QUESTION_STEP_ID_BY_INDEX,
-  type QuestionStepId,
+  CONTEXT_STEP,
+  analysisStep,
+  approvedAnalysisSections,
+  buildReviewGroups,
+  openConversation,
+  requirementIndexForStep,
+  resolveDatum,
+  reviewStep,
+  totalSteps,
 } from "@/app/grants/[grantId]/report/reportModel";
 import ReportRequirementsGate from "@/app/grants/[grantId]/report/ReportRequirementsGate";
 import ReportStepRail from "@/app/grants/[grantId]/report/ReportStepRail";
@@ -39,11 +38,9 @@ export default function ReportFlowPage() {
   const repository = useAppStore((s) => s.repository);
   const addRepositoryDocuments = useAppStore((s) => s.addRepositoryDocuments);
   const addRepositoryWebpage = useAppStore((s) => s.addRepositoryWebpage);
+  const addRepositoryChat = useAppStore((s) => s.addRepositoryChat);
   const addToast = useAppStore((s) => s.addToast);
-  const dontAskDeleteFound = useAppStore((s) => s.dontAskDeleteFound);
-  const setDontAskDeleteFound = useAppStore((s) => s.setDontAskDeleteFound);
   const [usageKey, setUsageKey] = useState<NSRService | null>(null);
-  const [reqDraft, setReqDraft] = useState("");
 
   // Which sources start shared comes solely from the seeded defaults in
   // `makeReportState()` - matching the wizard, and leaving a manual uncheck
@@ -51,6 +48,12 @@ export default function ReportFlowPage() {
 
   if (!view) return null;
   const { grant } = view;
+
+  // The flow's shape is the requirements: one question apiece, then review,
+  // then analysis.
+  const requirementCount = report.requirements.length;
+  const REVIEW_STEP = reviewStep(requirementCount);
+  const ANALYSIS_STEP = analysisStep(requirementCount);
 
   const isComplete = (n: number) => report.stepStatus[n] === "complete";
 
@@ -85,6 +88,7 @@ export default function ReportFlowPage() {
       ...r,
       share: { ...r.share, [key]: !r.share[key] },
     }));
+
   // Anything added here is attached to this report *and* filed in the org-wide
   // repository on the Profile screen, which is where the user is told their
   // uploads are kept for reuse. Removing the chip below only detaches it from
@@ -92,11 +96,13 @@ export default function ReportFlowPage() {
   const addFiles = (files: File[]) => {
     const ids = addRepositoryDocuments(files);
     updateReport(grantId, (r) => ({ ...r, uploads: [...r.uploads, ...ids] }));
+    return ids;
   };
 
   const addLink = (link: string) => {
     const id = addRepositoryWebpage(link);
     updateReport(grantId, (r) => ({ ...r, uploads: [...r.uploads, id] }));
+    return id;
   };
 
   // Attached sources are looked up rather than stored by name, so a source
@@ -120,173 +126,55 @@ export default function ReportFlowPage() {
       analysisExpanded: { ...r.analysisExpanded, [id]: value },
     }));
 
-  const questionStepId = QUESTION_STEP_ID_BY_INDEX[report.step];
-
-  // The analysis always tracks the review: every data point still selected
-  // there gets exactly one card here, and unselecting one drops its card. That
-  // mapping is the contract the Analysis step is built on - which is why this
-  // is total over the selection, with a stand-in analysis for any point that
-  // has none of its own rather than a silent omission. Points backed by an
-  // authoritative datum get the full benchmarked analysis; the rest get the
-  // same card without comparison bars.
-  const analysisSections: AnalysisCardSection[] = REPORT_QUESTION_STEPS.flatMap(
-    (sd) => {
-      const chat = report.chat[sd.id];
-      const seeded = sd.items
-        .filter((it) => !chat.removed?.[it.id] && isPicked(chat.picks, it.id))
-        .map((it) => {
-          const ruea = it.analysisId
-            ? RUEA_SECTIONS.find((s) => s.id === it.analysisId)
-            : undefined;
-          if (ruea) return ruea;
-          const pa = POINT_ANALYSES[it.id];
-          return {
-            id: it.id,
-            analysis: pa ?? userPointAnalysis(it.id, it.label, it.source),
-            ...POINT_CONTEXT[it.id],
-          };
-        });
-      // Points the user typed into this step's chat. They are selected by the
-      // same `custom-<i>` key the chat writes, but the card is keyed by step as
-      // well - the index restarts in every step, so an unqualified id would
-      // collide across them and make two cards share one open/ticked entry.
-      const typed = (chat.custom ?? [])
-        // Keyed off the original index, before any filtering - that is what
-        // both `picks` and `customSources` are keyed by.
-        .map((text, i) => ({
-          text,
-          itemId: `custom-${i}`,
-          citation: chat.customSources?.[i]
-            ? `From ${chat.customSources[i]}`
-            : "Added by you",
-        }))
-        .filter(
-          (it) => !chat.removed?.[it.itemId] && isPicked(chat.picks, it.itemId),
-        )
-        .map(({ text, itemId, citation }) => {
-          const id = `${sd.id}-${itemId}`;
-          return { id, analysis: userPointAnalysis(id, text, citation) };
-        });
-      return [...seeded, ...typed];
-    },
+  const requirementIndex = requirementIndexForStep(
+    report.step,
+    requirementCount,
   );
 
-  // Resetting starts the report over: back to the requirements checklist, every
-  // card cleared, and the Analysis step locked again until the user re-unlocks
-  // it from Review.
-  const resetAnalysis = () => {
-    setReqDraft("");
+  const datumFor = (id: number): Datum | undefined =>
+    resolveDatum(id, report.chatData, repository);
+
+  /**
+   * Approving is one decision per data point, taken here rather than inside a
+   * step: the same datum can be suggested under two different requirements and
+   * is listed again on Review, and every one of those places has to agree.
+   */
+  const toggleApproved = (id: number) =>
     updateReport(grantId, (r) => ({
       ...r,
-      requirements: "",
-      requirementsSet: false,
-      step: 1,
-      // Clearing step 6 re-locks step 7; step 1 becomes the live step again.
-      stepStatus: { 1: "in-progress" },
-      // The analysis is derived from the Review selections, so clearing these
-      // is what "resets" it: no cards deleted, nothing selected for export, and
-      // it rebuilds from scratch once the user unlocks it again.
-      removedAnalyses: {},
-      supportingPicks: {},
-      analysisExpanded: {},
-    }));
-  };
-
-  // The consolidated review (step 6): every data point gathered across the four
-  // question sections, grouped by section. Removed items drop out. This is the
-  // single source of truth for what the report includes.
-  const reviewGroups = REPORT_QUESTION_STEPS.map((sd) => {
-    const chat = report.chat[sd.id];
-    // Selection is shared with the section page via `picks` (unset = unchecked),
-    // so checking here checks there and vice versa.
-    // Every gathered point is listed. Unchecking one excludes it from the
-    // analysis but keeps it here; only the × removes it outright.
-    const items = [
-      ...sd.items
-        .filter((it) => !chat.removed?.[it.id])
-        .map((it) => ({
-          stepId: sd.id,
-          itemId: it.id,
-          label: it.label,
-          source: it.source,
-          picked: isPicked(chat.picks, it.id),
-        })),
-      ...(chat.custom ?? [])
-        .map((text, i) => ({
-          stepId: sd.id,
-          itemId: `custom-${i}`,
-          label: text,
-          source: chat.customSources?.[i]
-            ? `From ${chat.customSources[i]}`
-            : "Added by you",
-          picked: isPicked(chat.picks, `custom-${i}`),
-        }))
-        .filter((it) => !chat.removed?.[it.itemId]),
-    ];
-    const label = STEP_NAV.find((s) => s.n === sd.index)?.label ?? sd.topic;
-    return { stepId: sd.id, label, items };
-  }).filter((g) => g.items.length > 0);
-
-  const toggleReviewItem = (stepId: QuestionStepId, itemId: string) =>
-    updateReport(grantId, (r) => ({
-      ...r,
-      chat: {
-        ...r.chat,
-        [stepId]: {
-          ...r.chat[stepId],
-          picks: {
-            ...r.chat[stepId].picks,
-            [itemId]: !isPicked(r.chat[stepId].picks, itemId),
-          },
-        },
-      },
+      approved: { ...r.approved, [id]: !r.approved[id] },
     }));
 
-  // The single gate on reaching Analysis: at least one data point is checked on
-  // Review. Shared by Review's "Save and analyze" button and the rail's
-  // Analysis step so the two can't disagree.
+  const reviewGroups = buildReviewGroups(report, repository);
+
+  // The single gate on reaching Analysis: at least one data point is approved.
+  // Shared by Review's "Save and analyze" button and the rail's Analysis step
+  // so the two can't disagree.
   const reviewHasSelection = reviewGroups.some((g) =>
-    g.items.some((it) => it.picked),
+    g.items.some((it) => it.approved),
   );
 
   const allReviewPicked =
     reviewGroups.length > 0 &&
-    reviewGroups.every((g) => g.items.every((it) => it.picked));
-  // Every point still listed flips together. Items already removed with the ×
-  // aren't in `reviewGroups`, so they stay removed.
+    reviewGroups.every((g) => g.items.every((it) => it.approved));
   const toggleAllReviewPicked = () => {
     const next = !allReviewPicked;
-    updateReport(grantId, (r) => {
-      const chat = { ...r.chat };
-      reviewGroups.forEach((g) => {
-        chat[g.stepId] = {
-          ...chat[g.stepId],
-          picks: {
-            ...chat[g.stepId].picks,
-            ...Object.fromEntries(g.items.map((it) => [it.itemId, next])),
-          },
-        };
-      });
-      return { ...r, chat };
-    });
-  };
-
-  const deleteReviewItem = (stepId: QuestionStepId, itemId: string) =>
+    const ids = reviewGroups.flatMap((g) => g.items.map((it) => it.datum.id));
     updateReport(grantId, (r) => ({
       ...r,
-      chat: {
-        ...r.chat,
-        [stepId]: {
-          ...r.chat[stepId],
-          removed: { ...(r.chat[stepId].removed ?? {}), [itemId]: true },
-          picks: { ...r.chat[stepId].picks, [itemId]: false },
-        },
+      approved: {
+        ...r.approved,
+        ...Object.fromEntries(ids.map((id) => [id, next])),
       },
     }));
+  };
+
+  // The analysis always tracks the review: every data point still approved
+  // there gets exactly one card here, and unapproving one drops its card.
+  const analysisSections = approvedAnalysisSections(report, repository);
 
   // Export selection on the Analysis step. Each card's checkbox starts
-  // unchecked; the user opts cards in. Reuses the now-free `supportingPicks`
-  // map, keyed by section id.
+  // unchecked; the user opts cards in. Keyed by card id.
   const isAnalysisSelected = (id: string) => !!report.supportingPicks[id];
   const toggleAnalysisSelected = (id: string) =>
     updateReport(grantId, (r) => ({
@@ -300,7 +188,7 @@ export default function ReportFlowPage() {
     analysisSections.length > 0 &&
     analysisSections.every((s) => isAnalysisSelected(s.id));
   // Only the cards on screen are touched, so ticks belonging to data points the
-  // user has since deselected on Review are left as they were.
+  // user has since unapproved on Review are left as they were.
   const toggleAllAnalysisSelected = () =>
     updateReport(grantId, (r) => ({
       ...r,
@@ -312,45 +200,75 @@ export default function ReportFlowPage() {
       },
     }));
 
-  const submitRequirements = () =>
-    updateReport(grantId, (r) => ({
-      ...r,
-      requirements: reqDraft.trim(),
-      requirementsSet: true,
-    }));
+  /**
+   * Accepting the requirements is what gives the flow its questions, so it also
+   * opens one conversation apiece.
+   *
+   * Editing them later is an amendment, not a restart: a requirement that
+   * survived keeps the conversation the user already had, and only a new one
+   * starts from scratch. Approvals are keyed by data point, so they hold either
+   * way.
+   */
+  const submitRequirements = (next: ReportingRequirement[]) =>
+    updateReport(grantId, (r) => {
+      const existing = new Map(
+        r.requirements.map((req, i) => [req.statement, r.conversations[i]]),
+      );
+      return {
+        ...r,
+        requirements: next,
+        requirementsSet: true,
+        conversations: next.map(
+          (req) => existing.get(req.statement) ?? openConversation(req),
+        ),
+        // Dropping a requirement can leave the user standing on a step that no
+        // longer exists.
+        step: Math.min(r.step, totalSteps(next.length)),
+      };
+    });
 
-  // Editing reopens the gate with the current text loaded, so the user amends
-  // what's there rather than retyping it.
-  const editRequirements = () => {
-    setReqDraft(report.requirements);
+  // Editing reopens the gate with the current requirements loaded, so the user
+  // amends what's there rather than starting over.
+  const editRequirements = () =>
     updateReport(grantId, (r) => ({ ...r, requirementsSet: false }));
-  };
 
-  // Tapping a common requirement appends it as its own line, so the user can
-  // build the list by clicking and still edit or add to it by hand.
-  const addRequirement = (text: string) =>
-    setReqDraft((d) =>
-      d.includes(text) ? d : d.trim() ? `${d.trim()}\n- ${text}` : `- ${text}`,
-    );
-
-  // Gate: before anything else, the user supplies this grant's reporting
+  // Gate: before anything else, the user settles this grant's reporting
   // requirements. They're then kept in view and woven through every step.
   if (!report.requirementsSet) {
     return (
       <ReportRequirementsGate
         grant={grant}
-        reqDraft={reqDraft}
-        setReqDraft={setReqDraft}
-        addRequirement={addRequirement}
+        current={report.requirements}
         submitRequirements={submitRequirements}
       />
     );
   }
 
+  // Resetting starts the report over: back to the requirements, every
+  // conversation cleared, and the Analysis step locked again until the user
+  // re-unlocks it from Review.
+  const resetAnalysis = () =>
+    updateReport(grantId, (r) => ({
+      ...r,
+      requirements: [],
+      requirementsSet: false,
+      step: 1,
+      // Clearing the statuses re-locks Analysis; step 1 becomes the live step.
+      stepStatus: { 1: "in-progress" },
+      // The questions are rebuilt from the requirements, so the answers to the
+      // old ones can't be carried over - and the analysis is derived from what
+      // is approved, which is what clearing these actually resets.
+      conversations: [],
+      approved: {},
+      chatData: {},
+      supportingPicks: {},
+      analysisExpanded: {},
+    }));
+
   const saveToGrant = () => {
     updateReport(grantId, (r) => ({
       ...r,
-      stepStatus: { ...r.stepStatus, 7: "complete" },
+      stepStatus: { ...r.stepStatus, [ANALYSIS_STEP]: "complete" },
     }));
     addToast("Report saved to grant.");
     router.push("/");
@@ -379,7 +297,7 @@ export default function ReportFlowPage() {
         />
 
         <div className="min-w-0 max-w-3xl flex-1">
-          {report.step === 1 && (
+          {report.step === CONTEXT_STEP && (
             <ContextStep
               share={report.share}
               uploads={uploadSources}
@@ -388,43 +306,46 @@ export default function ReportFlowPage() {
               addFiles={addFiles}
               addLink={addLink}
               removeUpload={removeUpload}
-              onContinue={() => saveAndContinue(1)}
+              onContinue={() => saveAndContinue(CONTEXT_STEP)}
             />
           )}
 
-          {questionStepId && (
+          {requirementIndex !== null && report.conversations[requirementIndex] && (
             <QuestionStep
-              // Remount per section so the composer (and its focus) belongs to
+              // Remount per question so the composer (and its focus) belongs to
               // this page alone.
-              key={questionStepId}
-              questionStepId={questionStepId}
-              report={report}
+              key={requirementIndex}
+              requirementIndex={requirementIndex}
+              requirement={report.requirements[requirementIndex]}
+              conversation={report.conversations[requirementIndex]}
+              approved={report.approved}
+              datumFor={datumFor}
+              toggleApproved={toggleApproved}
               grantId={grantId}
               updateReport={updateReport}
-              dontAskDeleteFound={dontAskDeleteFound}
-              setDontAskDeleteFound={setDontAskDeleteFound}
+              addFiles={addFiles}
+              addLink={addLink}
+              addRepositoryChat={addRepositoryChat}
               setStep={setStep}
               saveAndContinue={saveAndContinue}
             />
           )}
 
-          {report.step === 6 && (
+          {report.step === REVIEW_STEP && (
             <ReportReviewStep
               reviewGroups={reviewGroups}
               isComplete={isComplete}
-              toggleReviewItem={toggleReviewItem}
+              toggleApproved={toggleApproved}
               allReviewPicked={allReviewPicked}
               toggleAllReviewPicked={toggleAllReviewPicked}
               reviewHasSelection={reviewHasSelection}
-              deleteReviewItem={deleteReviewItem}
-              dontAskDeleteFound={dontAskDeleteFound}
-              setDontAskDeleteFound={setDontAskDeleteFound}
+              reviewStep={REVIEW_STEP}
               setStep={setStep}
               saveAndContinue={saveAndContinue}
             />
           )}
 
-          {report.step === 7 && (
+          {report.step === ANALYSIS_STEP && (
             <AnalysisStep
               sections={analysisSections}
               expanded={report.analysisExpanded}
@@ -435,7 +356,7 @@ export default function ReportFlowPage() {
               toggleAll={toggleAllAnalysisSelected}
               usageBullet="IN YOUR REPORT shows you how you can use it to demonstrate the impact you've had"
               applyLabel="In your report"
-              onBack={() => setStep(6)}
+              onBack={() => setStep(REVIEW_STEP)}
               onSaveAndExit={saveToGrant}
             />
           )}

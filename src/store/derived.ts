@@ -12,9 +12,19 @@ import {
 
 export type Progress = { done: number; total: number };
 
-// A report walks through 7 steps; the dashboard reports the count marked
-// complete as n/REPORT_STEP_TOTAL.
-const REPORT_STEP_TOTAL = 7;
+/**
+ * How many steps a report has: share your context, one per reporting
+ * requirement, review, and analysis. The dashboard reports the count marked
+ * complete as n/total.
+ *
+ * A grant's reporting requirements don't exist until the user supplies them on
+ * the gate, so before a report is started there is nothing to count and the
+ * total is just the three steps every report has.
+ */
+const reportStepTotal = (grant: Grant, reportState?: ReportState) =>
+  (reportState?.requirements.length ??
+    grant.requirements.reporting?.length ??
+    0) + 3;
 
 export type GrantView = {
   grant: Grant;
@@ -151,8 +161,9 @@ function buildGrantView(
     ? Object.values(wizardState.visited ?? {}).filter(Boolean).length
     : seededWritingDone;
   // Report progress reflects the steps the user has actually marked complete
-  // in the live report flow (out of 7). Before they've touched it, fall back to
-  // whatever the seed conversations imply so an awarded grant still reads > 0.
+  // in the live report flow. Before they've touched it, fall back to whatever
+  // the seed conversations imply so an awarded grant still reads > 0.
+  const reportStepsTotal = reportStepTotal(grant, reportState);
   const reportConversations = record?.reportingAnalyses[0]?.conversations ?? [];
   const seededReportDone = reportConversations.filter(
     (c) => c.markedComplete,
@@ -164,7 +175,7 @@ function buildGrantView(
     : 0;
   const reportDone = Math.min(
     Math.max(seededReportDone, liveReportDone),
-    REPORT_STEP_TOTAL,
+    reportStepsTotal,
   );
 
   return {
@@ -199,7 +210,7 @@ function buildGrantView(
     },
     reportProgress: {
       done: reportDone,
-      total: REPORT_STEP_TOTAL,
+      total: reportStepsTotal,
     },
   };
 }

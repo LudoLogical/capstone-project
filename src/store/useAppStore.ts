@@ -5,10 +5,12 @@ import type { SearchFilters, SortOption } from "@/data/selectors";
 import { DEFAULT_FILTERS } from "@/data/selectors";
 import { InitiativeSourceKind, NSRService } from "@/types/data";
 import type {
+  ChatSource,
   DocumentSource,
   InitiativeSource,
   WebpageSource,
 } from "@/types/data";
+import type { ReportingRequirement } from "@/types/grant";
 import { documentType } from "@/utils/format";
 import {
   REPOSITORY_CONVERSATIONS,
@@ -73,26 +75,26 @@ const emptyOnboardOrg = (): OnboardOrg => ({
   areas: [],
 });
 
-export type ChatMessage = { from: "user" | "ai"; text: string };
+export type ReportMessage = {
+  from: "user" | "ai";
+  text: string;
+  // Ids of the Datum instances the assistant raised with this message. Chips
+  // are rendered from these, so a data point is always attached to the message
+  // that surfaced it. Only ever set on assistant messages.
+  suggestions?: number[];
+};
 
-export type ReportChatState = {
-  messages: ChatMessage[];
-  marked: boolean;
-  // The unsent message box contents. Kept per section so each page's chat box
-  // holds its own draft rather than sharing one across the flow.
+/**
+ * One question's conversation. Mirrors `GrantReportingConversation`: the
+ * messages, whether the user has marked it complete, and - implicitly, through
+ * the first message's `suggestions` - the initial suggestion round.
+ */
+export type ReportConversationState = {
+  messages: ReportMessage[];
+  // The unsent message box contents. Kept per conversation so each question's
+  // chat box holds its own draft rather than sharing one across the flow.
   draft: string;
-  picks: Record<string, boolean>;
-  // Entries the user typed in themselves (or that were surfaced from an attached
-  // file). They join the found-data list as extra, pre-selected items
-  // (keyed "custom-<index>" in `picks`).
-  custom: string[];
-  // Optional per-custom source label, keyed by the custom entry's index. When
-  // absent, the item is shown as "Added by you"; a file attachment sets the
-  // file name here so the surfaced fact is traceable.
-  customSources?: Record<number, string>;
-  // Found items the user deleted, keyed by item id (seed item id, or
-  // "custom-<index>"). Soft-deleted so indexes/picks stay stable.
-  removed?: Record<string, boolean>;
+  markedComplete: boolean;
 };
 
 // Per-step completion, keyed by step number (1-7). A step is only ever
@@ -102,9 +104,10 @@ export type ReportChatState = {
 export type StepStatus = "in-progress" | "complete";
 
 export type ReportState = {
-  // The funder's reporting requirements, supplied by the user up front and then
-  // kept visible throughout the flow so every step is framed by them.
-  requirements: string;
+  // The funder's reporting requirements, parsed from what the user supplied on
+  // the gate. One question step per entry, in this order, so this array is what
+  // gives the flow its shape.
+  requirements: ReportingRequirement[];
   requirementsSet: boolean;
   step: number;
   stepStatus: Record<number, StepStatus>;
@@ -114,17 +117,28 @@ export type ReportState = {
   // that has been deleted there stops resolving here rather than lingering as
   // a stale copy of its name.
   uploads: string[];
-  chat: {
-    commitment: ReportChatState;
-    events: ReportChatState;
-    community: ReportChatState;
-    outcomes: ReportChatState;
-  };
+  // One per requirement, in the same order.
+  conversations: ReportConversationState[];
+  /**
+   * The data points the user has approved, keyed by `Datum.id`.
+   *
+   * Deliberately flat and report-wide rather than per question. One data point
+   * is one decision: the same datum can be surfaced under two different
+   * requirements, and approving it in either place - or unticking it on Review
+   * - has to mean the same thing everywhere it appears.
+   */
+  approved: Record<number, boolean>;
+  /**
+   * Data points recorded from these conversations, as `Datum.id` -> the id of
+   * the `ChatSource` in the repository holding the user's words.
+   *
+   * Only the link is stored: the repository is where a source lives, so a
+   * source deleted there stops resolving into a datum rather than lingering as
+   * a stale copy of what was said.
+   */
+  chatData: Record<number, string>;
   supportingPicks: Record<string, boolean>;
-  // Seed analyses the user deleted from the Analysis step, keyed by section id.
-  removedAnalyses: Record<string, boolean>;
   analysisExpanded: Record<string, boolean>;
-  analysisCardIndex: number;
 };
 
 export type WizardState = {
@@ -135,7 +149,13 @@ export type WizardState = {
   // that has been deleted there stops resolving here rather than lingering as
   // a stale copy of its name.
   uploads: string[];
-  found: Record<string, boolean>;
+  // Ids of the Datum instances the assistant surfaced from the shared context,
+  // in the order it ranked them. Written when the user finishes the context
+  // step, which is the moment the spec has that round run.
+  surfaced: number[];
+  // Which of the surfaced data points the user has selected, keyed by
+  // `Datum.id`. Unset reads as unselected: the user opts each one in.
+  found: Record<number, boolean>;
   rueaExpanded: Record<string, boolean>;
   // Data-analysis cards the user explicitly added on the "Analyze Your Data"
   // step, keyed by section id. When any are added, the exported pack is limited
@@ -148,14 +168,6 @@ export type WizardState = {
   analysisUnlocked: boolean;
 };
 
-const emptyChat = (): ReportChatState => ({
-  messages: [],
-  marked: false,
-  draft: "",
-  picks: {},
-  custom: [],
-});
-
 export function makeWizardState(): WizardState {
   return {
     step: 1,
@@ -165,6 +177,7 @@ export function makeWizardState(): WizardState {
       [NSRService.OrganizationalAssessmentTool]: false,
     },
     uploads: [],
+    surfaced: [],
     found: {},
     rueaExpanded: {},
     analysisAdded: {},
@@ -181,6 +194,7 @@ function hydrateWizard(w: WizardState | undefined): WizardState {
     ...base,
     ...w,
     share: { ...base.share, ...w.share },
+    surfaced: Array.isArray(w.surfaced) ? w.surfaced : base.surfaced,
     analysisAdded: w.analysisAdded ?? base.analysisAdded,
     visited: w.visited ?? base.visited,
     analysisUnlocked: w.analysisUnlocked ?? base.analysisUnlocked,
@@ -189,7 +203,7 @@ function hydrateWizard(w: WizardState | undefined): WizardState {
 
 export function makeReportState(): ReportState {
   return {
-    requirements: "",
+    requirements: [],
     requirementsSet: false,
     step: 1,
     stepStatus: { 1: "in-progress" },
@@ -199,16 +213,11 @@ export function makeReportState(): ReportState {
       [NSRService.OrganizationalAssessmentTool]: false,
     },
     uploads: [],
-    chat: {
-      commitment: emptyChat(),
-      events: emptyChat(),
-      community: emptyChat(),
-      outcomes: emptyChat(),
-    },
+    conversations: [],
+    approved: {},
+    chatData: {},
     supportingPicks: {},
-    removedAnalyses: {},
     analysisExpanded: {},
-    analysisCardIndex: 0,
   };
 }
 
@@ -217,19 +226,28 @@ export function makeReportState(): ReportState {
  * was saved. Reports persisted before `stepStatus` existed have no such key, so
  * reading `report.stepStatus[n]` would throw - merging over a fresh default
  * (and deep-merging the nested objects) keeps old saves working.
+ *
+ * `requirements` used to be the raw text the user pasted rather than the parsed
+ * array, and a string there would break every step that maps over it. There is
+ * no migration for those saves - the shape they held is gone - so a report from
+ * before the change reads as one that hasn't been started, and the gate asks
+ * for its requirements again.
  */
 function hydrateReport(r: ReportState | undefined): ReportState {
   const base = makeReportState();
   if (!r) return base;
+  if (!Array.isArray(r.requirements)) return base;
   return {
     ...base,
     ...r,
-    requirements: r.requirements ?? base.requirements,
     requirementsSet: r.requirementsSet ?? base.requirementsSet,
-    removedAnalyses: r.removedAnalyses ?? base.removedAnalyses,
     stepStatus: r.stepStatus ?? base.stepStatus,
     share: { ...base.share, ...r.share },
-    chat: { ...base.chat, ...r.chat },
+    conversations: Array.isArray(r.conversations)
+      ? r.conversations
+      : base.conversations,
+    approved: r.approved ?? base.approved,
+    chatData: r.chatData ?? base.chatData,
   };
 }
 
@@ -309,9 +327,6 @@ export type CouplingModal = {
 
 type AppState = {
   privacyAcked: boolean;
-  // Set once the user picks "Yes, don't ask again" when deleting a found data
-  // point in the report flow; suppresses the confirmation afterward.
-  dontAskDeleteFound: boolean;
 
   // First-run onboarding: a user who has not finished onboarding is shown the
   // welcome + org-details flow before the dashboard.
@@ -376,7 +391,6 @@ type AppState = {
   // actions
   recordNav: (path: string) => void;
   ackPrivacy: () => void;
-  setDontAskDeleteFound: () => void;
 
   setOnboardStep: (step: number) => void;
   patchOnboardOrg: (patch: Partial<OnboardOrg>) => void;
@@ -443,6 +457,9 @@ type AppState = {
   // the user.
   addRepositoryDocuments: (files: File[]) => string[];
   addRepositoryWebpage: (link: string) => string;
+  // Files what the user said in a report conversation as a ChatSource, so a
+  // data point taken from it cites something the repository actually holds.
+  addRepositoryChat: (content: string) => string;
   removeRepositorySource: (id: string) => void;
   removeToast: (id: number) => void;
 };
@@ -453,7 +470,6 @@ export const useAppStore = create<AppState>()(
   persist(
     (set, get) => ({
       privacyAcked: false,
-      dontAskDeleteFound: false,
       onboarded: false,
       onboardStep: 0,
       onboardOrg: emptyOnboardOrg(),
@@ -517,7 +533,6 @@ export const useAppStore = create<AppState>()(
           return { navStack: [...stack, path], navCount };
         }),
 
-      setDontAskDeleteFound: () => set({ dontAskDeleteFound: true }),
       ackPrivacy: () => set({ privacyAcked: true }),
 
       setOnboardStep: (step) => set({ onboardStep: step }),
@@ -719,6 +734,24 @@ export const useAppStore = create<AppState>()(
         return source.id;
       },
 
+      // A ChatSource's content is definitionally what any Datum drawn from it
+      // says, so the user's words are stored verbatim rather than summarized -
+      // which is also what `reportConversation.md` requires of anything
+      // captured from them.
+      addRepositoryChat: (content) => {
+        const source: ChatSource = {
+          id: nextRepositoryId(),
+          kind: InitiativeSourceKind.Chat,
+          folder: null,
+          creationTime: new Date(),
+          creator: USER_MAYA_ID,
+          isDeleted: false,
+          content,
+        };
+        set((state) => ({ repository: [...state.repository, source] }));
+        return source.id;
+      },
+
       // Deleting a source here deletes it everywhere: a flow can't go on citing
       // a file or link the user has taken out of their repository. The reverse
       // doesn't hold - detaching a chip from one application is not a delete.
@@ -780,7 +813,6 @@ export const useAppStore = create<AppState>()(
 
       partialize: (state) => ({
         privacyAcked: state.privacyAcked,
-        dontAskDeleteFound: state.dontAskDeleteFound,
         onboarded: state.onboarded,
         onboardStep: state.onboardStep,
         onboardOrg: state.onboardOrg,

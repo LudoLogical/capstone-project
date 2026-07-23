@@ -1,24 +1,49 @@
 "use client";
 
+import { useState } from "react";
 import { REQUIREMENT_SUGGESTIONS } from "@/app/grants/[grantId]/report/reportModel";
+import { REPORTING_REQUIREMENTS } from "@/data/seed";
 import type Grant from "@/types/grant";
+import type { ReportingRequirement } from "@/types/grant";
 import BackButton from "@/components/primitives/BackButton";
 import { ArrowRight } from "lucide-react";
 
-/** The gate shown before a report starts: capture the funder's requirements. */
+/**
+ * The gate shown before a report starts: capture the funder's requirements.
+ *
+ * This is where a grant's reporting requirements come from - nothing has them
+ * on file until the user supplies them here. They're also what the flow is
+ * built out of, one question step apiece, so nothing else can start until
+ * they're set.
+ *
+ * What the user writes is collected but not read: the requirements handed on
+ * are the fixed `REPORTING_REQUIREMENTS`, which stand in for the AI that
+ * generates them in production. See that constant for the swap.
+ */
 export default function ReportRequirementsGate({
   grant,
-  reqDraft,
-  setReqDraft,
-  addRequirement,
+  current,
   submitRequirements,
 }: {
   grant: Grant;
-  reqDraft: string;
-  setReqDraft: (v: string) => void;
-  addRequirement: (s: string) => void;
-  submitRequirements: () => void;
+  // What the report already holds, when the user is amending rather than
+  // starting. Empty on a fresh report.
+  current: ReportingRequirement[];
+  submitRequirements: (next: ReportingRequirement[]) => void;
 }) {
+  // Amending reopens this screen on what the report currently holds, so the
+  // user edits what's there rather than retyping it.
+  const [draft, setDraft] = useState(() =>
+    current.map((r) => r.statement).join("\n"),
+  );
+
+  // Tapping a common requirement appends it as its own line, so the user can
+  // build the list by clicking and still edit or add to it by hand.
+  const addRequirement = (text: string) =>
+    setDraft((d) =>
+      d.includes(text) ? d : d.trim() ? `${d.trim()}\n${text}` : text,
+    );
+
   return (
     <div className="mx-auto w-full max-w-2xl animate-nc-rise px-8 pt-7 pb-16">
       <BackButton fallback="/" />
@@ -36,7 +61,7 @@ export default function ReportRequirementsGate({
       </div>
       <div className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
         {REQUIREMENT_SUGGESTIONS.map((s) => {
-          const alreadyAdded = reqDraft.includes(s);
+          const alreadyAdded = draft.includes(s);
           return (
             <button
               key={s}
@@ -54,19 +79,22 @@ export default function ReportRequirementsGate({
         })}
       </div>
       <textarea
-        value={reqDraft}
-        onChange={(e) => setReqDraft(e.target.value)}
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
         autoFocus
         placeholder="e.g. A narrative summary of outcomes, number of residents served, a budget-to-actuals table, and two participant stories."
         className="mb-4 min-h-44 w-full resize-y rounded-xl border border-border-strong bg-white px-4 py-3 text-sm leading-relaxed text-ink outline-none focus:border-accent"
       />
-      <div className="flex gap-2.5">
+      <div className="flex items-center gap-3.5">
         <button
-          onClick={submitRequirements}
-          disabled={!reqDraft.trim()}
+          onClick={() => submitRequirements(REPORTING_REQUIREMENTS)}
+          // The user still has to supply their requirements before the report
+          // can start, even though it's the constant above that is read.
+          disabled={!draft.trim()}
           className="inline-flex items-center gap-2 rounded-xl bg-accent-ink px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px"
         >
-          Start report <ArrowRight size={16} className="shrink-0" />
+          {current.length > 0 ? "Save requirements" : "Start report"}{" "}
+          <ArrowRight size={16} className="shrink-0" />
         </button>
       </div>
     </div>
