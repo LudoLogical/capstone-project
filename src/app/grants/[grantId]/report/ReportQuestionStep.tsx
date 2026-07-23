@@ -1,43 +1,58 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { ReportQuestionStep } from "@/data/seed";
-import type { ReportChatState } from "@/store/useAppStore";
+import { REPORT_QUESTION_STEPS } from "@/data/seed";
+import type { ReportChatState, ReportState } from "@/store/useAppStore";
+import {
+  isPicked,
+  assistantReply,
+  type QuestionStepId,
+} from "@/app/grants/[grantId]/report/reportModel";
 import DeleteDataConfirmModal from "@/components/modals/DeleteDataConfirmModal";
 import FoundItem from "@/components/analysis/FoundItem";
-import { BarChart3, Paperclip } from "lucide-react";
+import { ArrowLeft, ArrowRight, BarChart3, Paperclip } from "lucide-react";
 
-type Props = {
-  stepDef: ReportQuestionStep;
-  chat: ReportChatState;
+/**
+ * Steps 2-5: one chat-style question section, wrapped in Back/Continue.
+ *
+ * Mounted with a key of its section id, so moving between sections gets a fresh
+ * composer - its focus, scroll position and any open dialog belong to the
+ * section being answered rather than carrying over from the last one.
+ */
+export default function QuestionStep({
+  questionStepId,
+  report,
+  grantId,
+  updateReport,
+  dontAskDeleteFound,
+  setDontAskDeleteFound,
+  setStep,
+  saveAndContinue,
+}: {
+  questionStepId: QuestionStepId;
+  report: ReportState;
+  grantId: string;
+  updateReport: (id: string, fn: (r: ReportState) => ReportState) => void;
+  // When true, deleting a found item skips the confirmation dialog.
+  dontAskDeleteFound: boolean;
+  setDontAskDeleteFound: () => void;
+  setStep: (step: number) => void;
+  saveAndContinue: (n: number) => void;
+}) {
+  const stepDef = REPORT_QUESTION_STEPS.find((q) => q.id === questionStepId)!;
+  const chat = report.chat[questionStepId];
   // The draft lives in the section's own chat state, so each page keeps its own
   // unsent message.
-  onDraftChange: (text: string) => void;
-  onTogglePick: (itemId: string) => void;
-  onSend: (text: string) => void;
-  onAttach: (fileName: string) => void;
-  onDelete: (itemId: string) => void;
-  // When true, deleting a found item skips the confirmation dialog.
-  skipDeleteConfirm: boolean;
-  onSkipDeleteConfirm: () => void;
-};
-
-export default function ReportQuestionStep({
-  stepDef,
-  chat,
-  onDraftChange,
-  onTogglePick,
-  onSend,
-  onAttach,
-  onDelete,
-  skipDeleteConfirm,
-  onSkipDeleteConfirm,
-}: Props) {
   const draft = chat.draft ?? "";
-  const setDraft = onDraftChange;
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const threadRef = useRef<HTMLDivElement>(null);
+  // The found item awaiting delete confirmation, or null when no dialog is open.
+  const [pendingDelete, setPendingDelete] = useState<{
+    id: string;
+    label: string;
+  } | null>(null);
 
   // Keep the newest message in view as the conversation grows (including the
   // assistant's reply, which lands a beat after the user's).
@@ -45,20 +60,96 @@ export default function ReportQuestionStep({
     const el = threadRef.current;
     if (el) el.scrollTop = el.scrollHeight;
   }, [chat.messages.length]);
-  // The found item awaiting delete confirmation, or null when no dialog is open.
-  const [pendingDelete, setPendingDelete] = useState<{
-    id: string;
-    label: string;
-  } | null>(null);
 
+  // Every edit below touches this one section's slice of the report, so the
+  // nesting that reaches it lives here rather than in each handler.
+  const patchChat = (
+    patch: (prev: ReportChatState) => Partial<ReportChatState>,
+  ) =>
+    updateReport(grantId, (r) => ({
+      ...r,
+      chat: {
+        ...r.chat,
+        [questionStepId]: {
+          ...r.chat[questionStepId],
+          ...patch(r.chat[questionStepId]),
+        },
+      },
+    }));
+
+  const setDraft = (text: string) => patchChat(() => ({ draft: text }));
+
+  const togglePick = (itemId: string) =>
+    patchChat((prev) => ({
+      picks: { ...prev.picks, [itemId]: !isPicked(prev.picks, itemId) },
+    }));
+
+  // Live conversation: the user's message lands immediately (along with a
+  // pre-selected "shared by you" data item), then the assistant replies a beat
+  // later.
   const send = () => {
-    if (!draft.trim()) return;
-    onSend(draft.trim());
-    setDraft("");
+    const text = draft.trim();
+    if (!text) return;
+    patchChat((prev) => {
+      const custom = prev.custom ?? [];
+      return {
+        custom: [...custom, text],
+        picks: { ...prev.picks, [`custom-${custom.length}`]: true },
+        messages: [...prev.messages, { from: "user", text }],
+        // Clears the composer in the same write that records the message, so
+        // the box can never hold a message that has already been sent.
+        draft: "",
+      };
+    });
+    setTimeout(() => {
+      patchChat((prev) => ({
+        messages: [
+          ...prev.messages,
+          { from: "ai", text: assistantReply(stepDef.topic, text) },
+        ],
+      }));
+    }, 600);
   };
 
+  // Attaching a file drops it into the chat and surfaces a fact from it into
+  // the found list (pre-selected, sourced to the file).
+  const attach = (fileName: string) => {
+    patchChat((prev) => {
+      const custom = prev.custom ?? [];
+      const newIndex = custom.length;
+      return {
+        custom: [...custom, `Key figures pulled from ${fileName}`],
+        customSources: { ...(prev.customSources ?? {}), [newIndex]: fileName },
+        picks: { ...prev.picks, [`custom-${newIndex}`]: true },
+        messages: [
+          ...prev.messages,
+          { from: "user", text: `Attached ${fileName}` },
+        ],
+      };
+    });
+    setTimeout(() => {
+      patchChat((prev) => ({
+        messages: [
+          ...prev.messages,
+          {
+            from: "ai",
+            text: `Thanks - we read “${fileName}” and pulled the key figures into the list below, tagged to the file so reviewers can trace them.`,
+          },
+        ],
+      }));
+    }, 600);
+  };
+
+  const deleteItem = (itemId: string) =>
+    patchChat((prev) => ({
+      removed: { ...(prev.removed ?? {}), [itemId]: true },
+      // Drop it from the selection too, so it isn't carried forward anywhere
+      // that reads picks.
+      picks: { ...prev.picks, [itemId]: false },
+    }));
+
   const requestDelete = (id: string, label: string) => {
-    if (skipDeleteConfirm) onDelete(id);
+    if (dontAskDeleteFound) deleteItem(id);
     else setPendingDelete({ id, label });
   };
 
@@ -186,7 +277,7 @@ export default function ReportQuestionStep({
             className="hidden"
             onChange={(e) => {
               const file = e.target.files?.[0];
-              if (file) onAttach(file.name);
+              if (file) attach(file.name);
               e.target.value = "";
             }}
           />
@@ -221,7 +312,7 @@ export default function ReportQuestionStep({
                 label={item.label}
                 source={item.source}
                 picked={!!chat.picks[item.id]}
-                onTogglePick={() => onTogglePick(item.id)}
+                onTogglePick={() => togglePick(item.id)}
                 onDelete={() => requestDelete(item.id, item.label)}
               />
             ))}
@@ -239,7 +330,7 @@ export default function ReportQuestionStep({
                     : "Added by you"
                 }
                 picked={!!chat.picks[id]}
-                onTogglePick={() => onTogglePick(id)}
+                onTogglePick={() => togglePick(id)}
                 onDelete={() => requestDelete(id, text)}
               />
             );
@@ -251,15 +342,30 @@ export default function ReportQuestionStep({
         open={pendingDelete !== null}
         onClose={() => setPendingDelete(null)}
         onConfirm={() => {
-          if (pendingDelete) onDelete(pendingDelete.id);
+          if (pendingDelete) deleteItem(pendingDelete.id);
           setPendingDelete(null);
         }}
         onConfirmDontAsk={() => {
-          onSkipDeleteConfirm();
-          if (pendingDelete) onDelete(pendingDelete.id);
+          setDontAskDeleteFound();
+          if (pendingDelete) deleteItem(pendingDelete.id);
           setPendingDelete(null);
         }}
       />
+
+      <div className="mt-5 flex items-center justify-between gap-2.5">
+        <button
+          onClick={() => setStep(report.step - 1)}
+          className="inline-flex items-center gap-2 rounded-xl border border-border-strong bg-white px-5 py-3 text-sm font-semibold whitespace-nowrap text-ink transition duration-150 enabled:hover:border-accent disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <ArrowLeft size={16} className="shrink-0" /> Previous step
+        </button>
+        <button
+          onClick={() => saveAndContinue(report.step)}
+          className="inline-flex items-center gap-2 rounded-xl bg-accent-ink px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-cta transition duration-150 enabled:hover:bg-accent-ink-2 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Save and continue <ArrowRight size={16} className="shrink-0" />
+        </button>
+      </div>
     </div>
   );
 }

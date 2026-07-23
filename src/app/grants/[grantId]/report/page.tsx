@@ -26,7 +26,7 @@ import {
 import ReportRequirementsGate from "@/app/grants/[grantId]/report/ReportRequirementsGate";
 import ReportStepRail from "@/app/grants/[grantId]/report/ReportStepRail";
 import ContextStep from "@/components/analysis/ContextStep";
-import ReportChatStepPane from "@/app/grants/[grantId]/report/ReportChatStepPane";
+import QuestionStep from "@/app/grants/[grantId]/report/ReportQuestionStep";
 import ReportReviewStep from "@/app/grants/[grantId]/report/ReportReviewStep";
 import AnalysisStep from "@/components/analysis/AnalysisStep";
 
@@ -393,7 +393,10 @@ export default function ReportFlowPage() {
           )}
 
           {questionStepId && (
-            <ReportChatStepPane
+            <QuestionStep
+              // Remount per section so the composer (and its focus) belongs to
+              // this page alone.
+              key={questionStepId}
               questionStepId={questionStepId}
               report={report}
               grantId={grantId}
