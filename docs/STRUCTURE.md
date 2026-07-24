@@ -10,7 +10,7 @@ State hydration and management are performed using Zustand; the relevant files w
 
 ## Data and types
 
-The heart of this project's data ecosystem is `src/types`, which contains completely hand-written type definitions for almost all of the information that is or will be necessary to hydrate the Next.js application front end. The only major exception is user auth, which has been omitted entirely from this prototype to maximize ease of adoption. Absolutely none of the content in `src/types` was written by or with assistance from artificial intelligence.
+The heart of this project's data ecosystem is `src/types`, which contains completely hand-written type definitions for almost all of the information that is or will be necessary to hydrate the Next.js application front end (and, by extension, almost all of the domain-specific jargon that appears throughout this codebase). The only major exception is user auth, which has been omitted entirely from this prototype to maximize ease of adoption. Absolutely none of the content in `src/types` was written by or with assistance from artificial intelligence.
 
 Due to the stand-alone nature of this prototype, Most NSR-specific data sources were not available during development. As such, `src/data` contains mock seed data for the application. These data were generated using artificial intelligence.
 
