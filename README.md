@@ -2,35 +2,15 @@
 
 Find and win the perfect grant opportunity.
 
-## Getting started
+Vibrant Grants is an end-to-end grant workflow for community-driven non-profit leaders. It was developed as a collaboration between the non-profit incubator New Sun Rising and a team of Master of Human-Computer Interaction Students from Carnegie Mellon University.
 
-### Prerequisites
+## Getting Started
 
-- Node.js (latest LTS version)
-- Access to a Gemini API Key
-- `pnpm` (optional, but recommended)
+- If you just want to interact with this prototype, you can access the most recent deployment of it [here](https://capstone-project-eight-pied.vercel.app/).
+- If you want to build and run the codebase locally, check out [SETUP.md](./docs/SETUP.md).
+- If you're a developer or maintainer, you should also read [STRUCTURE.md](./docs/STRUCTURE.md) to learn more about the codebase and check [TODO.md](./docs/TODO.md) for a list of outstanding development tasks after you've set up your development environment.
 
-### Setup
+## Other Documentation
 
-1. Open a terminal and navigate to the project root.
-2. Run `pnpm install` (or `npm install` if not using `pnpm`)
-3. Run `pnpm run dev` (or `npm run dev` if not using `pnpm`)
-4. Open a web browser and navigate to `localhost:3000` (or the address shown in the terminal output if port 3000 is already in use)
-
-### Termination
-
-Ensure that the terminal has focus, then press `Ctrl+C` (the command is the same on Windows, MacOS, and Linux).
-
-## Project structure
-
-- `/src/ai` contains carefully engineered AI invocation endpoints.
-- `/src/app` contains the pages of the Next.js web application, as well as their helper components and helper code files.
-- `/src/components` contains generic components that are or can be reused throughout the Next.js web application.
-- `/src/data` contains mock seed data for the application.
-- `/src/store` contains derived types, the Zustand store, and hydration code.
-- `/src/types` contains the carefully engineered type definitions for the application.
-- `/src/utils` contains non-React code files that are or can be reused throughout the application.
-
-## Attribution
-
-This project was developed as a collaboration between New Sun Rising and Master of Human-Computer Interaction students from Carnegie Mellon University.
+- A detailed explanation of the relevance metric developed for Vibrant Grants can be found in [RELEVANCE.md](./docs/RELEVANCE.md).
+- New Sun Rising staff members and volunteers who are new to this project are encouraged to review the main design report before jumping into the code.

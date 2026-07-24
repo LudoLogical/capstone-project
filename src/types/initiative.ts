@@ -33,8 +33,7 @@ export enum InitiativeType {
 
 /**
  * An entity that serves a public or social mission and pursues Grants to
- * acquire at least some of its support. Must be either a legally incorporated
- * non-profit organization or a community project that is fiscally sponsored by NSR.
+ * acquire at least some of its support.
  */
 type Initiative = {
   /**
