@@ -26,6 +26,7 @@ import {
   INITIATIVE_HILLTOP_WELLNESS,
   INITIATIVE_HILLTOP_HARVEST,
   INITIATIVE_ALLEGHENY_COMMONS,
+  INITIATIVE_RIVERSIDE_YOUTH_STUDIO,
 } from "./initiatives";
 
 // GrantAnalysis ids are unique across every analysis in this seed, writing and
@@ -74,7 +75,7 @@ export const RECORD_HEALTHY_NEIGHBORHOODS: GrantRecord = {
   subscribed: true,
   collabContactRecords: [
     {
-      recipientID: INITIATIVE_HILLTOP_HARVEST.id,
+      recipientID: INITIATIVE_RIVERSIDE_YOUTH_STUDIO.id,
       timestamp: new Date("2026-07-09T16:20:00Z"),
     },
     {
